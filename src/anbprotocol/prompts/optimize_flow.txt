@@ -1,0 +1,11 @@
+You are an expert protocol engineer. Improve the Alice–Bob flow.
+
+Goals:
+- Ensure roles are consistent (Alice/Bob).
+- Ensure nonces/ephemeral keys are created before use in knowledge section.
+- Reduce ambiguity; fix ordering; keep steps minimal.
+
+Given flow:
+{{flow_text}}
+
+Return ONLY the improved steps in the same format: 'Alice -> Bob: ...' lines.

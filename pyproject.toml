@@ -1,0 +1,13 @@
+[project]
+name = "AnBProtocol"
+version = "0.1.1"
+description = "LangGraph agent that turns cryptographic protocol descriptions into Alice–Bob flows"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = []
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

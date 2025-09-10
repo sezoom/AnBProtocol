@@ -1,0 +1,31 @@
+You are an expert protocol engineer. Your task is to normalize a protocol description into a **concise Alice–Bob style specification**.
+
+=== RULES ===
+- Always use Alice and Bob as the two parties (map client→Alice, server→Bob if needed).
+- Define initial knowledge explicitly (e.g., Alice knows pk(B), Bob knows pk(A)).
+- Generate fresh values (e.g., NA, NB, ephemeral keys) at the first moment they are created.
+- Use clear message steps in the format:
+    [stepN] Alice -> Bob (what is generated or referenced):
+        operation {{ data }}key ;
+- Include key operations inline: `aenc`, `sign`, `kdf`, `mac`.
+- Keep steps consistent and minimal — no prose.
+- If something is missing in the input, use conservative defaults (e.g., assume Alice and Bob know each other’s public keys).
+
+=== OUTPUT FORMAT (STRICT) ===
+Protocol <shortname>:
+
+Knowledge:
+    Alice: ...
+    Bob: ...
+
+Actions:
+    [step1] Alice -> Bob (...) :
+        <content> ;
+    [step2] Bob -> Alice (...) :
+        <content> ;
+    ...
+
+end
+
+=== INPUT ===
+{{raw_text}}

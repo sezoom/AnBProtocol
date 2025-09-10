@@ -1,0 +1,4 @@
+A (client) initiates handshake with B (server). A send a fresh nonce NA.
+B responds wit a fresh nonce NB, and DH parameter g^b. Both are signed with B private key. A verifies the signature and sends g^a. Both derive SK = kdf(g^{ab} || NA || NB). A sends Finished; B verifies and replies Finished.
+Goals: mutual authentication, forward secrecy, key confirmation.
+Assumptions: PKI in place; clock sync not required.
