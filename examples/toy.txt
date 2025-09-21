@@ -1,0 +1,2 @@
+A (client) initiates handshake with B (server). A send a fresh nonce NA. B replies back with a fresh nonce NB.
+Finaly, A computes k=kdf(NA, NB) and use it to encrypt ACK using symmetric encryption algorithm and send the result to B
