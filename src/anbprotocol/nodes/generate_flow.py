@@ -13,32 +13,39 @@ STEP_RE = re.compile(
     flags=re.IGNORECASE
 )
 
-WHO_RE = re.compile(
-    r'^\s*(?P<lhs>[^()]+?)(?:\s*\((?P<note>[^)]*)\))?\s*$'
-)
-
 def _clean_content(s: str) -> str:
     s = s.strip()
     s = re.sub(r'\s+', ' ', s)
     s = re.sub(r'\s*;\s*$', '', s)
     return s
 
-def _parse_who(who: str) -> (str, Optional[str], Optional[str]):
+def _split_last_note(who: str) -> Tuple[str, Optional[str]]:
     """
-    Parse 'Alice -> Bob (note)' OR 'Both (note)' into (sender, receiver, note).
-    If there is no '->', set receiver=None.
+    Split the last parenthetical (...) at the END of the string as note.
+    Allows nested parentheses inside the note (e.g., kdf(NA, NB)).
+    Examples:
+      'Alice -> Bob (compute k = kdf(NA, NB))' -> ('Alice -> Bob', 'compute k = kdf(NA, NB)')
+      'Both (derive keys)'                     -> ('Both', 'derive keys')
+      'Alice -> Bob'                           -> ('Alice -> Bob', None)
     """
-    m = WHO_RE.match(who)
-    if not m:
-        return who.strip(), None, None
+    who = who.strip()
+    if who.endswith(')'):
+        open_idx = who.rfind('(')
+        if open_idx != -1 and open_idx < len(who) - 1:
+            lhs = who[:open_idx].strip()
+            note = who[open_idx + 1:-1].strip()
+            return lhs, (note or None)
+    return who, None
 
-    lhs = m.group('lhs').strip()
-    note = (m.group('note') or '').strip() or None
-
+def _parse_who(who: str) -> Tuple[str, Optional[str], Optional[str]]:
+    """
+    Returns (sender, receiver, note). If there is no '->', receiver is None for now.
+    """
+    lhs, note = _split_last_note(who)
     if '->' in lhs:
         sender, receiver = [x.strip() for x in lhs.split('->', 1)]
     else:
-        sender, receiver = lhs, None
+        sender, receiver = lhs.strip(), None
     return sender, receiver, note
 
 def _lines_to_messages(lines: List[str]) -> List[Dict]:
@@ -75,14 +82,28 @@ def _lines_to_messages(lines: List[str]) -> List[Dict]:
             nxt = lines[i]
             if nxt.strip().lower() == 'end' or is_step(nxt):
                 break
-            if nxt.strip():  # skip pure empty lines
+            if nxt.strip():  # skip empty lines
                 content_lines.append(nxt.strip())
             i += 1
 
         content = _clean_content(" ".join(content_lines))
 
-        msgs.append(Message(step=step, sender=sender, receiver=receiver,note=note, content=content.strip()))
-        step += 1
+        # Ensure receiver is a string (model likely requires it)
+        if receiver is None:
+            # Sensible default: for 'Both' or broadcasts, set receiver to sender
+            # (or use 'Both' explicitly if you prefer)
+            receiver = sender if sender else "Both"
+
+        msgs.append(
+            Message(
+                step=step,
+                sender=sender,
+                receiver=receiver,
+                note=note,
+                content=content
+            )
+        )
+
     return msgs
 
 def generate_flow_node(state: GraphState) -> GraphState:
