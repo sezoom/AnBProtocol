@@ -19,8 +19,8 @@ WHO_RE = re.compile(
 
 def _clean_content(s: str) -> str:
     s = s.strip()
-    s = re.sub(r'\s+', ' ', s)         # collapse whitespace
-    s = re.sub(r'\s*;\s*$', '', s)     # drop trailing semicolon
+    s = re.sub(r'\s+', ' ', s)
+    s = re.sub(r'\s*;\s*$', '', s)
     return s
 
 def _parse_who(who: str) -> (str, Optional[str], Optional[str]):
