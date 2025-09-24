@@ -2,12 +2,12 @@ You are an expert protocol engineer. Your task is to normalize a protocol descri
 
 === RULES ===
 - Always use Alice and Bob as the two parties (map client→Alice, server→Bob if needed).
-- Define initial knowledge explicitly (e.g., Alice knows pk(B), Bob knows pk(A)).
+- Define initial knowledge explicitly (e.g., Alice knows pk(B), Bob knows pk(A), Alice knows symmetric key k,bob knows symmetric key k ).
 - Generate fresh values (e.g., NA, NB, ephemeral keys) at the first moment they are created.
 - Use clear message steps in the format:
     [stepN] Alice -> Bob (what is generated or referenced):
         operation {{ data }}key ;
-- Include key operations inline: `aenc`, `sign`, `kdf`, `mac`.
+- Include key operations inline: `aenc`, `sign`, `kdf`, `mac`,`senc`,`hash`.
 - Keep steps consistent and minimal — no prose.
 - If something is missing in the input, use conservative defaults (e.g., assume Alice and Bob know each other’s public keys).
 
@@ -28,4 +28,4 @@ Actions:
 end
 
 === INPUT ===
-{{raw_text}}
+{raw_text}
