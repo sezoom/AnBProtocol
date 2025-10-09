@@ -21,20 +21,28 @@ def _clean_content(s: str) -> str:
 
 def _split_last_note(who: str) -> Tuple[str, Optional[str]]:
     """
-    Split the last parenthetical (...) at the END of the string as note.
-    Allows nested parentheses inside the note (e.g., kdf(NA, NB)).
-    Examples:
-      'Alice -> Bob (compute k = kdf(NA, NB))' -> ('Alice -> Bob', 'compute k = kdf(NA, NB)')
-      'Both (derive keys)'                     -> ('Both', 'derive keys')
-      'Alice -> Bob'                           -> ('Alice -> Bob', None)
+    Split the last *balanced* parenthetical (...) that appears at the END of `who`.
+    Correctly handles nested parentheses inside the note (e.g., kdf(NA, NB)).
     """
     who = who.strip()
-    if who.endswith(')'):
-        open_idx = who.rfind('(')
-        if open_idx != -1 and open_idx < len(who) - 1:
-            lhs = who[:open_idx].strip()
-            note = who[open_idx + 1:-1].strip()
-            return lhs, (note or None)
+    if not who.endswith(')'):
+        return who, None
+
+    depth = 0
+    # Walk backwards to find the matching '(' of the final closing ')'
+    for i in range(len(who) - 1, -1, -1):
+        ch = who[i]
+        if ch == ')':
+            depth += 1
+        elif ch == '(':
+            depth -= 1
+            if depth == 0:
+                # i is the index of the matching '(' for the final ')'
+                lhs = who[:i].strip()
+                note = who[i + 1:-1].strip()  # exclude surrounding parentheses
+                return lhs, (note or None)
+
+    # If we get here, parentheses at the end were unbalanced; treat as no note.
     return who, None
 
 def _parse_who(who: str) -> Tuple[str, Optional[str], Optional[str]]:
@@ -88,10 +96,8 @@ def _lines_to_messages(lines: List[str]) -> List[Dict]:
 
         content = _clean_content(" ".join(content_lines))
 
-        # Ensure receiver is a string (model likely requires it)
+        # Ensure receiver is a string
         if receiver is None:
-            # Sensible default: for 'Both' or broadcasts, set receiver to sender
-            # (or use 'Both' explicitly if you prefer)
             receiver = sender if sender else "Both"
 
         msgs.append(
@@ -113,8 +119,8 @@ def generate_flow_node(state: GraphState) -> GraphState:
         input_variables=["raw_text"],
     )
     raw_text = state["raw_text"]
-    print("DebugMSG_prompt:",prompt)
-    print("DebugMSG_spec:",raw_text)
+    #print("DebugMSG_prompt:",prompt)
+    #print("DebugMSG_spec:",raw_text)
     text = (prompt | llm).invoke({"raw_text": raw_text}).content
     print("DebugMSG_prompt1_output:",text)
     lines = text.splitlines()
