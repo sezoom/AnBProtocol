@@ -1,4 +1,4 @@
-You are an expert cryptographer. fix the Alice–Bob flow.
+You are an expert cryptographer. evaluate the Alice–Bob flow.
 
 Goals:
 - Ensure roles are consistent (Alice/Bob).
@@ -8,7 +8,4 @@ Goals:
 Given flow:
 {flow_text}
 
-Given feedback:
-{feedback_text}
-
-Return ONLY the improved steps in the same format: 'Alice -> Bob: ...' lines.
+Return ONLY the feedback notes

@@ -24,12 +24,18 @@ def optimize_flow_node(state: GraphState) -> GraphState:
     llm = make_llm(temperature=0.1)
     flow = state["flow"]
     text = "\n".join([f"{m.sender} -> {m.receiver}: {m.content}" for m in flow.messages])
+    #print("DebugMessage_flow_tex:", text)
     prompt = PromptTemplate(
         template=PROMPT_PATH.read_text(),
         input_variables=["flow_text"],
     )
-    improved = (prompt | llm).invoke({"flow_text": text}).content
+    #TODO: fix the loop take the last feedback note only
+    #feedback_text= flow.notes
+    feedback_text = ""
+    improved = (prompt | llm).invoke({"flow_text": text,"feedback_text":feedback_text}).content
     lines = improved.splitlines()
     state["flow"] = Flow(messages=_lines_to_messages(lines), notes=flow.notes, warnings=flow.warnings)
+    print("DebugOptimize_prompt:",prompt)
+    print("DebugMessage_result:", text)
     state["iter"] = int(state.get("iter", 0)) + 1
     return state
