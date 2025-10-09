@@ -1,4 +1,4 @@
-# AnBProtocol Agent (LangGraph)
+# AnBProtocol Agent
 
 An AI agent (built with **LangGraph**) that reads a natural-language description of a **cryptographic protocol** and produces an **Alice–Bob** style flow.
 It runs a generator → optimizer loop, validates with simple heuristics, and renders Mermaid/ASCII/JSON.
