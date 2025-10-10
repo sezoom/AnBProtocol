@@ -1,0 +1,30 @@
+Protocol: AmendedNSCK # Verified
+
+Types: Agent A,B,s;
+       Number
+       NA,NB,NB0,tagANSCK1,tagANSCK2,tagANSCK3,tagANSCK4,tagANSCK5,tagANSCK6,tagANSCK7,tagANSCK8,tagANSCK9;
+       Symmetric_key KAB;
+       Mapping sk;
+       Function pre
+
+Knowledge: A: A,B,sk(A,s),pre;
+	   B: B,A,sk(B,s),pre;
+ 	   s: A,B,sk(A,s),sk(B,s),pre
+Public:
+
+Private:
+
+
+Actions:
+A->B: tagANSCK1,A
+B->A: {|tagANSCK2,A,NB0|}sk(B,s)
+A->s: tagANSCK5,A,B,NA,{|tagANSCK3,A,NB0|}sk(B,s)
+s->A: {|tagANSCK7,NA,B,KAB,{|tagANSCK4,KAB,NB0,A|}sk(B,s)|}sk(A,s)
+A->B: {|tagANSCK6,KAB,NB0,A|}sk(B,s)
+B->A: {|tagANSCK8,NB|}KAB
+A->B: {|tagANSCK9,pre(NB)|}KAB
+
+Goals:
+B *->* A: NB
+
+ChannelKeys:

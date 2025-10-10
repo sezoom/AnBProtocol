@@ -32,4 +32,13 @@ def build_graph() -> StateGraph:
     graph.add_edge("render", END)
 
     memory = MemorySaver()
+
+    ### generating image for the current workflow
+    # from IPython.display import Image, display
+    # chain = graph.compile()
+    # png_data = chain.get_graph().draw_mermaid_png()
+    # output_file_path = "graph.png"
+    # with open(output_file_path, "wb") as f:
+    #     f.write(png_data)
+
     return graph.compile(checkpointer=memory)

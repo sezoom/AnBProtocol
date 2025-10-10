@@ -1,0 +1,26 @@
+Protocol: BilateralKeyExchange
+
+Types: Agent A,B;
+       Number NA,NB,tagBKE1,tagBKE2,tagBKE3;
+       Symmetric_key K;
+       Mapping pk;
+       Function f
+
+Knowledge: A: A,B,pk(A),pk(B),inv(pk(A)),f;
+	   B: A,B,pk(A),pk(B),inv(pk(B)),pk,f
+
+Public: pk(A),pk(B)
+
+Private: inv(pk(A)), inv(pk(B))
+
+
+Actions:
+B->A: tagBKE1,B,{NB,B}pk(A)
+A->B: {f(NB),NA,A,K}pk(B)
+B->A: {|f(NA)|}K
+
+Goals:
+A *->* B: K
+
+ChannelKeys:
+

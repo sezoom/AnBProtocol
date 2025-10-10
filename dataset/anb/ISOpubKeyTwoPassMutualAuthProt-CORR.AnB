@@ -1,0 +1,27 @@
+Protocol: ISO_twopass_mutual_CORR # Verified
+
+# The original protocol has a reflection attack that we correct here
+# by a tag in the first message.
+
+Types: Agent A,B,s;
+       Number NA,NB,Text1,Text2,Text3,Text4,tag,tagisopubkeytwopmauth1,tagisopubkeytwopmauth2,tagisopubkeytwopmauth3;
+       Mapping pk
+
+Knowledge: A: A,B,{A,pk(A)}inv(pk(s)),pk(A),inv(pk(A)),pk(s),tag;
+	   B: B,{B,pk(B)}inv(pk(s)),pk(s),pk(B),inv(pk(B)),tag
+
+Public: pk(A),pk(B),pk(s)
+
+Private: {A,pk(A)}inv(pk(s)),{B,pk(B)}inv(pk(s)),inv(pk(B))
+
+
+Actions:
+A->B: {tagisopubkeytwopmauth1,A,pk(A)}inv(pk(s)),{tagisopubkeytwopmauth2,NA,B,Text1,tag}inv(pk(A))
+B->A: {tagisopubkeytwopmauth3,B,pk(B)}inv(pk(s)),{tagisopubkeytwopmauth3,NB,A,Text3}inv(pk(B))
+
+Goals:
+B weakly authenticates A on Text1
+A weakly authenticates B on Text3
+
+ChannelKeys:
+

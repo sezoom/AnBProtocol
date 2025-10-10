@@ -1,0 +1,47 @@
+Protocol: Kerberos_PKINIT
+
+
+Types: Agent C,ath,g,s;
+       Number
+       N1,N2,T0,T1,T2,Payload,tag,tagKPKI1,tagKPKI2,tagKPKI3,tagKPKI4,tagKPKI5,tagKPKI6,tagKPKI7,tagKPKI8,tagKPKI9,tagKPKI10,tagKPKI11,tagKPKI12,tagKPKI13,tagKPKI14;
+       Function hash;
+       Mapping pk,sk;
+       Symmetric_key KCG,KCS,Ktemp,skag,skgs
+
+Knowledge: C: C,ath,g,s,pk(ath),pk(a),pk,inv(pk(C)),hash,tag;
+	   ath: ath,g,pk,inv(pk(ath)),hash,skag,tag;
+	   g: ath,g,skag,skgs,hash,tag;
+	   s: g,s,skgs,hash,tag
+
+Public: pk(ath),pk(a)
+
+Private: inv(pk(ath)), inv(pk(C))
+
+Actions:
+
+
+C -> ath: tagKPKI1,C,g,N1,{tagKPKI10,T0,N1,hash(tagKPKI8,C,g,N1)}inv(pk(C))   
+
+ath -> C: tagKPKI9,C,
+	({|ath,C,g,KCG,T1|}skag),
+        ({|g,KCG,T1,N1|}Ktemp),
+        { tag,{tagKPKI11,Ktemp}inv(pk(ath))}pk(C)
+
+C -> g: s,N2,
+	({|ath,C,g,KCG,T1|}skag),
+	({|tagKPKI3,C,T1|}KCG)
+
+g -> C: tagKPKI4,C,
+	({|tagKPKI5,C,s,KCS,T2|}skgs),
+	{|tagKPKI2,s,KCS,T2,N2|}KCG
+
+C -> s: ({|tagKPKI6,C,s,KCS,T2|}skgs),
+	{|tagKPKI7,C,hash(tagKPKI13,T2)|}KCS
+
+s -> C: ({|tagKPKI12,hash(tagKPKI14,T2)|}KCS), {|tagKPKI11,tag,Payload|}KCS
+
+Goals:
+s *->* C: Payload
+
+ChannelKeys:
+

@@ -1,0 +1,28 @@
+Protocol: NSPK
+
+Types: Agent A,B;
+       Number NA,NB,tagNSPK1,tagNSPK2,tagNSPK3;
+       Mapping pk
+
+Knowledge: A: A,pk,inv(pk(A)),B;
+	   B: B,pk,inv(pk(B))
+
+Public: pk(A),pk(B)
+
+Private: 
+
+Actions:
+A->B: {tagNSPK3,NA,A}(pk(B))
+B->A: {tagNSPK1,NA,NB,B}(pk(A))
+A->B: {tagNSPK2,NB}(pk(B))
+
+Goals:
+
+B authenticates A on NA
+A authenticates B on NB
+NA secret between A,B
+NB secret between A,B
+
+ChannelKeys:
+
+

@@ -1,0 +1,12 @@
+Protocol Simple-Nonce-KDF:
+Knowledge:
+    Alice: knows pk(B), pk(A)
+    Bob: knows pk(A), pk(B)
+
+Actions:
+    [step1] Alice -> Bob (generates NA) :
+        NA ;
+    [step2] Bob -> Alice (generates NB) :
+        NB ;
+    [step3] Alice -> Bob (computes k = kdf(NA, NB)) :
+        senc{ "ACK" }k ;

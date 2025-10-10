@@ -1,0 +1,31 @@
+Protocol: DenningSaccoCorrPub  # Verified
+
+# inserted tag to avoid encryption/decryptyion attack
+
+# inserted name of intended recipient in signature to prevent Abadi's attack
+
+Types: Agent A,B,s;
+       Number NA,Text1,Text2,Text3,Text4,tag,tagDenningSaccoCorrPub1,tagDenningSaccoCorrPub2,tagDenningSaccoCorrPub3,
+        tagDenningSaccoCorrPub4,tagDenningSaccoCorrPub5,tagDenningSaccoCorrPub6,tagDenningSaccoCorrPub7;
+       Symmetric_key KAB;
+       Mapping pk
+
+Knowledge: A: A,B,pk(A),inv(pk(A)),pk(s),tag;
+	   B: B,pk(s),pk(B),inv(pk(B)),tag;
+	   s: s,A,B,pk(A),pk(B),pk(s),inv(pk(s)),tag
+
+Public:
+
+Private:
+
+Actions:
+A->s: tagDenningSaccoCorrPub1,A,B
+s->A: {tagDenningSaccoCorrPub2,A,pk(A)}inv(pk(s)),{tagDenningSaccoCorrPub6,B,pk(B)}inv(pk(s))
+A->B: {tagDenningSaccoCorrPub5,A,pk(A)}inv(pk(s)),{tagDenningSaccoCorrPub7,B,pk(B)}inv(pk(s)),{tagDenningSaccoCorrPub3,{tagDenningSaccoCorrPub4,KAB,NA,B}inv(pk(A)),tag}pk(B)
+
+
+Goals:
+A *->* B: KAB
+
+ChannelKeys:
+
