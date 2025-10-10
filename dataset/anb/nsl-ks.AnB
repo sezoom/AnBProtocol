@@ -1,0 +1,28 @@
+Protocol: NSLKeyServer # Verified
+
+Types: Agent A,B,s;
+       Number NA,NB,tagNSLKeyServer1,tagNSLKeyServer2,tagNSLKeyServer3,tagNSLKeyServer4,tagNSLKeyServer5,tagNSLKeyServer6,tagNSLKeyServer7;
+       Mapping pk
+
+Knowledge: A: A,pk(A),inv(pk(A)),s,pk(s),B;
+	   B: B,pk(B),inv(pk(B)),s,pk(s);
+	   s: s,pk,inv(pk(s))
+
+Public:
+
+Private:
+
+Actions:
+A->s: tagNSLKeyServer1,A,B
+s->A: {tagNSLKeyServer2,B,pk(B)}(inv(pk(s)))
+A->B: {tagNSLKeyServer3,NA,A}(pk(B))
+B->s: tagNSLKeyServer4,B,A
+s->B: {tagNSLKeyServer5,A,pk(A)}(inv(pk(s)))
+B->A: {tagNSLKeyServer6,NA,NB,B}(pk(A))
+A->B: {tagNSLKeyServer7,NB}(pk(B))
+
+Goals:
+A *->* B: NA
+B *->* A: NB
+
+ChannelKeys:

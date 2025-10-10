@@ -1,0 +1,31 @@
+Protocol: DenningSacco # Verified & Certified
+
+# The protocol uses timestamps to ensure freshness; thus, when running
+# in classic mode, we get a trivial replay attack. (This does not
+# occur in the fixed-point mode since we check only weak
+# authentication there.)
+
+Types: Agent A,B,s;
+       Number T,timestamp,Payload,tagds1,tagds2,tagds3,tagds4,tagds5;
+       Symmetric_key KAB;
+       Mapping sk
+
+Knowledge: A: A,B,sk(A,s),timestamp;
+	   B: B,A,sk(B,s),timestamp;
+ 	   s: A,B,sk(A,s),sk(B,s)
+
+Public:
+
+Private:
+
+Actions:
+A->s: tagds2,A,B
+s->A: {|tagds4,B,KAB,T,{|tagds3,A,KAB,T|}sk(B,s)|}sk(A,s)
+A->B: {|tagds3,A,KAB,T|}sk(B,s)
+B->A: {|tagds1,Payload|}KAB
+
+Goals:
+B *->* A: Payload
+
+ChannelKeys:
+

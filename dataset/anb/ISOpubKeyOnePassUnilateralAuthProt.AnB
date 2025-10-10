@@ -1,0 +1,26 @@
+Protocol: ISO_onepass_pk # Verified
+
+# Note that this protocol has a trivial replay attack.  We thus
+# specify only weak authentication as goal (not considering replay).
+# The FP-module of OFMC currently does not handle injective
+# authentication
+
+Types: Agent A,B,s;
+       Number NA,Text1,tagISO_onepass_pk1,tagISO_onepass_pk2,tagISO_onepass_pk3,tagISO_onepass_pk4;
+       Mapping pk
+
+Knowledge: A: A,B,{A,pk(A)}inv(pk(s)),pk(A),inv(pk(A));
+	   B: B,pk(s)
+
+Public:
+
+Private:
+
+Actions:
+A->B: {tagISO_onepass_pk1,A,pk(A)}inv(pk(s)),
+      {tagISO_onepass_pk2,NA,B,Text1}inv(pk(A))
+
+Goals:
+B weakly authenticates A on Text1
+
+ChannelKeys:
