@@ -1,0 +1,12 @@
+Protocol ten:
+
+Knowledge:
+    A : A, sk(A), pk(A), M;
+    B : B, sk(B), pk(B);
+
+Actions:
+    [msg1] A -> B (Kf) : A . pk(A) . aenc{Kf}sk(A);
+    [msg2] B -> A : B . pk(B) . h(Kf);
+    [msg3] A -> B : aenc{senc{M}Kf . A . B}pk(B);
+
+end

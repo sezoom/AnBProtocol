@@ -1,0 +1,12 @@
+Protocol Five:
+
+Knowledge:
+    A : A, B, k(A,B);
+    B : A, B, k(A,B);
+
+Actions:
+    [p1] A -> B (n) : senc{ A . B . n . h(n) }k(A,B);
+    [p2] B -> A (m): senc{ m }k(A,B);
+    [p3] A -> B : senc{ h(m) }k(A,B);
+
+end

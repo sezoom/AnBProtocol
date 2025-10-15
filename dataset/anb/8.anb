@@ -1,0 +1,14 @@
+Protocol Eight:
+
+Knowledge:
+    A : sk(A), pk(A), pk(B), B, M;
+    B : sk(B), pk(B), pk(A), A, N;
+
+
+Actions:
+    [step1] A -> B  : aenc{ M }sk(A);
+    [step2] B -> A  : pk(B) . B . aenc{ N }sk(B);
+    [step3] A -> B  : aenc{ pk(A) . N . B }pk(B);
+    [step4] B -> A  : h(M . B . N);
+
+end
