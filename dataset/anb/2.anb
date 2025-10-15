@@ -1,0 +1,14 @@
+Protocol two:
+Declarations:
+    xor/2;
+
+Knowledge:
+    A: Ks;
+    B: Ks;
+
+Actions:
+    [m1] A -> B (N): N;
+    [m2] B -> A : xor(N, Ks);
+    [m3] A -> B (M): senc{xor(M, N)}Ks;
+end
+

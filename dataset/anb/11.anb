@@ -1,0 +1,16 @@
+Protocol eleven:
+
+Declarations:
+    g/0;
+
+Knowledge:
+    A : pk(B), B;
+    B : pk(A), A;
+
+Actions:
+    [msg1] A -> B (na) : aenc{ g()^na . A . pk(A) }sk(A) . pk(A);
+    [msg2] B -> A (N, nb) : aenc{ N . g()^nb . B . pk(B) }pk(A);
+    [msg3] A -> B : senc{ h(N) }(g()^(nb*na));
+    [msg4] B -> A : aenc{ g()^(na*nb) }sk(B);
+
+end

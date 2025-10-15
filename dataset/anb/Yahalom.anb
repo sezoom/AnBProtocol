@@ -1,0 +1,14 @@
+Protocol Yahalom:
+
+Knowledge:
+    A : A, B, S, K(A,S);
+    B : B, S, K(B,S);
+    S : A, B, S, K(A,S), K(B,S);
+
+Actions:
+    [p1] A -> S (Na) : A . B . senc{ Na }(K(A,S));
+    [p2] S -> B (Nb) : senc{ A . Na . Nb . senc{ Nb }(K(A,S)) }(K(B,S));
+    [p3] S -> A : senc{ A . B . Nb }(K(A,S));
+    [p4] B -> A : senc{ Nb }(K(A,S));
+
+end

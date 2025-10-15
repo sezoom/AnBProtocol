@@ -1,0 +1,19 @@
+Protocol Twelve:
+
+Knowledge:
+    A: B, C, Ka;
+    B: A, C, Kb;
+    C: A, B, Ka, Kb;
+
+Actions:
+    [m1] A -> C : A . B;
+    [m2] C -> A (Kf): senc{Kf}Ka . senc{Kf}Kb ;
+    [m3] A -> B : senc{Kf}Kb;
+    [m4] B -> A (N2): senc{N2}Kf;
+    [m5] A -> B (N1): senc{N1}Kf;
+    [m6] B -> A : senc{h(N1)}Kf;
+end
+
+
+
+

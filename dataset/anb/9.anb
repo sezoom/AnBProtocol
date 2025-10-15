@@ -1,0 +1,14 @@
+Protocol nine:
+
+Knowledge:
+    A : B, S, pk(A), sk(A);
+    B : A, S, pk(S);
+    S : A, B, sk(S), pk(S), pk(A);
+
+Actions:
+    [msg1] A -> S : aenc{ A . pk(A) }sk(A);
+    [msg2] B -> S (Kb): aenc{ A . Kb }pk(S);
+    [msg3] S -> B : senc{ pk(A) }Kb;
+    [msg4] B -> A (M): aenc{ M }pk(A);
+
+end

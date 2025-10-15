@@ -1,0 +1,3 @@
+
+[1]Ivana Kojovic,An Automatic Protocol Composition Checker
+[2]Michel Keller, Converting Alice&Bob Protocol Specifications to Tamarin

@@ -1,0 +1,12 @@
+Protocol one:
+
+Knowledge:
+    A: Ks, M;
+    B: Ks;
+
+Actions:
+    [m1] A -> B (Na): Na;
+    [m2] B -> A : senc{Na}Ks;
+    [m3] A -> B : senc{M}Ks;
+end
+    
