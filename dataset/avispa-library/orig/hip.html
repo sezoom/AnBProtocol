@@ -1,0 +1,237 @@
+<BR><DT><B>PROTOCOL:</B> <DD> HIP: Host Identity Protocol<BR>
+<BR><DT><B>PURPOSE:</B> <DD> <BR>
+  4-way hand-shake protocol that provides mobility enhanced with security,
+  in particular authentication and authorisation.
+&nbsp;<BR><BR><DT><B>REFERENCE:</B> <DD> <BR>
+ <UL>
+ <LI> <A HREF="http://homebase.htt-consult.com/&nbsp;hip/">http://homebase.htt-consult.com/&nbsp;hip/</A>
+ <LI> <A HREF="http://www.ietf.org/internet-drafts/draft-ietf-hip-base-03.txt">http://www.ietf.org/internet-drafts/draft-ietf-hip-base-03.txt</A> [moskowitz-hip]
+ </UL>
+&nbsp;<BR><BR><DT><B>MODELER:</B> <DD> <BR>
+ <UL>
+ <LI> Murugaraj Shanmugam for Siemens CT IC 3, January 2005
+ <LI> David von Oheimb, Siemens CT IC 3, January 2005
+ </UL>
+&nbsp;<BR><BR><DT><B>ALICE_BOB:</B> <DD> <BR>
+ <TT>S</TT> chooses <TT>HIP_Trans</TT> and <TT>PUZZLE</TT>
+<PRE>
+ 0. C -> S: Hash(HI_S).Hash(HI_C)
+ 1. S -> C: {PUZZLE.HI_S.DH_S.HIP_Trans.ESP_Trans}_Sig(S)
+ 2. C -> S: {Soln.LSI_C.SPI_C.HIP_Trans.ESP_Trans.DH_C.{HI_C}_key}_Sig(C)
+ 3. S -> C: {LSI_S.SPI_S.HMAC}_Sig(S)
+</PRE>
+ where<BR>
+	<TT>HI</TT>        -- Host Identity/Public key<BR> 
+ 	<TT>DH</TT>	 -- Diffie-Hellman<BR>
+   	<TT>HIP_Trans</TT> -- Algorithms for HIP key Generation<BR> 
+ 	<TT>ESP_Trans</TT> -- Algorithms for ESP key Generation<BR> 
+      <TT>Soln</TT>      -- function to solve puzzle<BR> 
+      <TT>key</TT>       -- generated using the <TT>HIP_Trans</TT> and DH<BR> 
+	<TT>SPI</TT>       --  Security Parameter Index Value<BR> 
+	<TT>LSI</TT>       --  Local Index Value<BR> 
+	<TT>HMAC</TT>      -- one of the hash chains derived from DH<BR> 
+<P>
+&nbsp;<BR><BR><DT><B>LIMITATIONS:</B> <DD> <BR>
+<UL>
+<LI> We assume that there is a Certificate Authority for verifying the 
+ certificates.
+<LI> Generation of hash chains to protect the further Base Exchange is
+ not shown in the model.
+<LI> The key for hashing cannot be specified directly; we gave it as an
+ extra field to <TT>Hash</TT>.
+<LI> Since HLPSL does not support arithmetic, we are unable to use 
+ the counter mechanism on puzzles, which prevents the replay attack. 
+ We incorporated the puzzle and the counter mechanism 
+ into a single fresh <TT>PUZZLE</TT> variable.
+</UL>
+<P>
+&nbsp;<BR><BR><DT><B>PROBLEMS:</B> <DD> 2<BR>
+<UL>
+<LI>secrecy of <TT>hash_dh</TT>
+<LI> strong authentication on <TT>initiator_responder_hash_dh</TT>
+</UL>
+&nbsp;<BR><BR><DT><B>CLASSIFICATION:</B> <DD> G1, G3, G9, G10<BR>
+&nbsp;<BR><BR><DT><B>ATTACKS:</B> <DD> None<BR>
+<P>
+&nbsp;<BR><BR><DT><B>NOTES:</B> <DD> <BR>
+ This protocol does not guarantee client authentication for the server,
+ because there is no DNS lookup for the responder to verify the identity 
+ of the claimer.
+<P>
+ Since the Certificate packet follows the I2 Packet, we just combined I2 and 
+ Certificate into a single packet. This does not pose a new attack, except for
+ potential Denial of Service attacks, which we do not consider (yet).
+<P>
+
+&nbsp;<BR><HR>
+<BR><DT><B>HLPSL:</B> <DD> <BR>
+<PRE>
+
+role initiator (
+        J,R     : agent,        % Initiator and Responder
+        SND,RCV : channel(dy),  % Send, Receive Channel
+        Hash    : hash_func,    % Hash Function
+        Soln    : hash_func,    % Solution 
+        HI_I,HI_R:public_key,   % Public key of the Initiator and Responder
+        G:nat)                  % Diffie Hellman's public G value
+        played_by J def=
+
+        local 
+        State   : nat,
+        X       : text,         % Initiator's Diffie Hellman Value
+        SPI_I   : text,         % Initiator's Security Parameter Index Value
+        LSI_I   : text,         % Initiator's Local Scope Index Value
+        SPI_R   : text,         % Responder's Security Parameter Index Value
+        LSI_R   : text,         % Responder's Local Scope Index Value
+        PUZZLE  : text,         % Puzzle
+        HIP_Trans:text,         % HIP Transform sent by the Responder
+        ESP_Trans:text,         % ESP Transform of the Responder
+        EGY     : message,      % Responder's Diffie Hellman Value
+        R2      : hash(message) % R2 Packet
+                                
+        const
+        hit_r     : text,       % HIT of the Responder (Hash of HI_R)
+        cert      : text,       % Certificate Packet
+        choose    : hash_func
+                                   
+        init State := 0
+                
+transition
+                
+ 0.     State = 0 /\ RCV (start)=|>
+                  State':= 1 /\ SND (Hash(HI_R).Hash(HI_I))
+        
+ 1.     State = 1 /\ RCV((PUZZLE'.HI_R.EGY'.HIP_Trans'.ESP_Trans').
+                    {Hash(PUZZLE'.HI_R.EGY'.HIP_Trans'.ESP_Trans')
+                    }_inv(HI_R)) =|>
+        State':= 3 /\ X':=new() /\ SPI_I':=new()
+                  /\ R2':=Hash(exp(EGY',X'))
+                  /\ SND(Soln(PUZZLE').SPI_I'.LSI_I.choose(HIP_Trans').
+                              choose(ESP_Trans').exp(G,X').{HI_I}_R2'.
+                        {Hash(Soln(PUZZLE').SPI_I'.LSI_I.choose(HIP_Trans').
+                              choose(ESP_Trans').exp(G,X').{HI_I}_R2')
+                        }_inv(HI_I).
+                         cert.{Hash(cert)}_inv(HI_I))
+                  
+3.      State = 3 /\ RCV(Hash(SPI_R'.LSI_R'.Hash(R2))
+                            .{SPI_R'.LSI_R'.Hash(R2)}_inv(HI_R)) =|>
+        State':=5 /\ request(J,R,initiator_responder_hash_dh,R2) 
+                  /\ secret(Hash(exp(EGY,X)),hash_dh,{J,R})
+            
+end role     
+            
+<HR>
+            
+role responder (
+                J,R     :agent,         % Initiator and Responder
+                SND,RCV :channel(dy),   % Send, Receive Channel
+                Hash    :hash_func,     % Hash Function
+                Soln    :hash_func,     % Solution 
+                HI_R    :public_key,    % Public key of the Responder
+                G:nat)                  % Diffie Hellman's public G value
+        played_by R def=
+
+        local 
+        State:nat,
+        Y       :text,          % Responder's Diffie Hellman parameter
+        SPI_R   :text,          % Responder's Security Parameter Index Value
+        LSI_R   :text,          % Responder's Local Scope Index Value
+        SPI_I   :text,          % Initiator's Security Parameter Index Value
+        LSI_I   :text,          % Initiator's Local Scope Index Value
+        Puzzle  :text,          % Responder's Puzzle
+        HI_I    :public_key,    % Public key of the Initiator
+        Hj_I    :hash(public_key),      % Hash (Public key)  of the Initiator
+        Chosen_HIP_Trans :hash(text),   % chosen HIP Transform
+        Chosen_ESP_Trans :hash(text),   % chosen HIP Transform
+        I1      :text,          % I1 Packet
+        CERT    :text,          % Certificate Packet
+        EGX     :message,       % Initiator's Diffie-Hellman value
+        R2      :hash(message)  % R2 Packet
+                        
+        const
+        hIP_Trans : text,  % HIP Transform of the Responder
+        eSP_Trans : text   % HIP Transform of the Responder
+                  
+        init State := 2
+                
+        transition
+
+2.       State = 2 /\ RCV (Hash(HI_R).Hj_I') =|>
+         State':=4 /\ Y':=new() /\ Puzzle':=new() /\
+                      SND ((Puzzle'.HI_R.exp(G,Y').hIP_Trans.eSP_Trans).
+                     {Hash((Puzzle'.HI_R.exp(G,Y').hIP_Trans.eSP_Trans))
+                     }_inv(HI_R))
+        
+4.       State = 4 /\ RCV((Soln(Puzzle).SPI_I'.LSI_I'.Chosen_HIP_Trans'.
+                            Chosen_ESP_Trans'.EGX'.{HI_I'}_Hash(exp(EGX',Y))).
+                     {Hash(Soln(Puzzle).SPI_I'.LSI_I'.Chosen_HIP_Trans'.
+                            Chosen_ESP_Trans'.EGX'.{HI_I'}_Hash(exp(EGX',Y)))
+                     }_inv(HI_I').
+                        CERT'.{Hash(CERT')}_inv(HI_I'))
+                   /\ (Hash(HI_I')= Hj_I) =|>
+         State':=6 /\ R2':=Hash(exp(EGX',Y)) /\ SPI_R':=new()
+                   /\ SND(Hash(SPI_R'.LSI_R.Hash(R2')).
+                              {SPI_R'.LSI_R.Hash(R2')}_inv(HI_R))
+                   /\ witness(R,J,initiator_responder_hash_dh,R2') 
+            
+end role                                   
+            
+<HR>
+           
+role session (
+        J,R      : agent,       % Initiator and Responder
+        IR,RI    : channel(dy), % Send, Receive Channel
+        Hash     : hash_func,   % Hash Function
+        Soln     : hash_func,   % Solution 
+        HI_I,HI_R: public_key,  % Public key of the Initiator,Responder
+        G        :nat)          % Diffie Hellman's public G value
+def=
+
+       composition
+                initiator(J,R,IR,RI,Hash,Soln,HI_I,HI_R,G)
+             /\ responder(J,R,RI,IR,Hash,Soln,HI_R,G)
+
+end role
+
+<HR>
+
+role environment() def=
+            
+        local SND,RCV :channel(dy)
+
+        const
+          j,r     : agent,      % Initiator and Responder
+          hash_   : hash_func,  % Hash Function
+          soln_   : hash_func,  % Solution
+          hi_j,hi_r:public_key, % Public key of the Initiator,Responder
+          hi_i    :public_key,  % Public key of the intruder
+          g       : nat,        % Diffie Hellman's public G value
+          hash_dh, initiator_responder_hash_dh : protocol_id    % Protocol ID
+
+        intruder_knowledge = {j,r,hash_,soln_,hi_j,hi_r,g,hi_i,inv(hi_i)}
+        % in the first session, intruder should not solve puzzles.
+              
+        composition
+
+        session(j,r,SND,RCV,hash_,soln_,hi_j,hi_r,g)
+% /\    session(i,r,SND,RCV,hash_,soln_,hi_i,hi_r,g)
+%       Adding this session yields a spurious authentication failure because
+%       the client of the first session talks to the server of the second,
+%       but in exactly the same way as he would do within the first session.
+  /\    session(j,i,SND,RCV,hash_,soln_,hi_j,hi_i,g)     
+              
+end role 
+
+<HR>
+
+goal
+            
+        secrecy_of hash_dh                            % addresses G9 and G10
+        authentication_on initiator_responder_hash_dh % addresses G1 and G3
+        
+end goal
+
+<HR>
+
+environment()
+</PRE>

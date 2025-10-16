@@ -1,0 +1,34 @@
+
+ Let S/Ks/Ns denote id/public-key/nonce respectively of the server.
+ Similarly, P/Kp/Np for the Peer. Furthermore, let Kca denote the public
+ key of a certification authority. Then set
+
+ Client_hello              : Vers.SessionID.Np.CipherSuite
+ Server_hello              : Vers.SessionID.Ns.Cipher
+ Client_certificate        : {P.Kp}_inv(Kca)
+ Server_certificate        : {S.Ks}_inv(Kca)
+ Server_key_exchange       : 
+ Client_key_exchange       : {PMS}_Ks with pre-master-secret PMS (nonce of P)
+ Client_certificate_verify : {H(Np.Ns.S.PMS)}_inv(Kp)
+ Change_cipher_spec        : text
+ Server_hello_done         : text
+ Finished                  : encrypted hash of all previous messages with
+                             master secret PRF(PMS,Np,Ns) 
+
+ S -> P: request_id
+ P -> S: respond_id.UserId
+ S -> P: start_tls
+ P -> S: Client_hello 
+ S -> P: Server_hello,
+         Server_certificate,
+         Server_key_exchange,
+         Server_certificate_request,   % only if authentication of P required
+         Server_hello_done
+ P -> S: Client_certificate,           % only if authentication of P required
+         Client_key_exchange, 
+         Client_certificate_verify,    % only if authentication of P required
+         Change_cipher_spec,
+         Finished
+ S -> P: Change_cipher_spec,
+         Finished
+ 

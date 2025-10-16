@@ -1,0 +1,401 @@
+
+<BR><DT><B>VARIANT:</B> <DD> With TTLS authentication via Tunneled CHAP<BR>
+<BR><DT><B>PURPOSE:</B> <DD> Mutual authentication, key establishment<BR>
+<P>
+ EAP-TTLS has been defined as an authentication protocol. It extends EAP-TLS
+ to improve some weak points. This protocol makes use of the handshake phase
+ in TLS to establish a secure tunnel in order to pass the identity of the
+ user and perform the authentication protocol between client and server.
+ The information in the tunnel is exchanged through the use of encrypted
+ attribute-value-pairs (AVPs). In EAP-TLS, the TLS handshake may achieve
+ mutual authentication, or it may be one-way where the server is
+ authenticated to the client. After the secure connection is established,
+ the server can authenticate the client by using the existing authentication
+ infrastructure such as a back-end authentication server accessible through
+ RADIUS. The protocol may be EAP, or any other authentication protocol,
+ e.g. PAP, CHAP, MS-CHAP or MS-CHAP-V2. Therefore, EAP-TTLS supports the
+ legacy password-based authentication protocols while protecting the
+ security of these legacy protocols against eavesdropping, dictionary attack
+ and other cryptographic attacks.
+<P>
+ Unlike other methods, EAP-TTLS is the only method that offers the
+ Data-Cipher-suite negotiation of the client and the TTLS Server (inside
+ the method), to secure the link layer between the client and the
+ authenticator while, typically, the link layer security uses the keying
+ material derived from EAP methods.
+<P>
+&nbsp;<BR><BR><DT><B>REFERENCE:</B> <DD> <BR>
+ <UL>
+ <LI> <A HREF="http://www.ietf.org/internet-drafts/draft-ietf-pppext-eap-ttls-05.txt">http://www.ietf.org/internet-drafts/draft-ietf-pppext-eap-ttls-05.txt</A>
+ </UL>
+&nbsp;<BR><BR><DT><B>MODELER:</B> <DD> <BR>
+ <UL>
+ <LI> Jing Zhang and Peter Warkentin for Siemens CT IC 3
+ <LI> Vishal Sankhla (University of Southern California), 2004
+ </UL>
+<P>
+&nbsp;<BR><BR><DT><B>ALICE_BOB:</B> <DD> <BR>
+ <PRE>
+ The protocol involves 4 (logically) different agents: the client (here 
+ called peer P in acc. to previous EAP-modelling), the access point NAS,
+ the TTLS server and the AAA/H server (in user's home domain). Here, we
+ join the last 3 agents into the role of server S.
+<P>
+ P <- S : request_id
+ P -> S : respond_id.UserId
+<P>
+ 1st phase: TLS
+ P <- S : start_ttls
+ P -> S : Version.SessionID.Np.CipherSuite   % client_hello
+ P <- S : Version.SessionID.Ns.Cipher        % server_hello
+          {S.Ks}_inv(Kca)                    % certificate
+          Ske                                % server_key_exchange, not needed
+                                             % for public key encryption
+          Shd                                % server_hello_done  (text)
+ P -> S : {PMS}_Ks                           % client_key_exchange
+          Ccs                                % change_cipher_spec (text)
+          {Finished}_ClientK                 % finished
+ P <- S : Ccs                                % change_cipher_spec (text)
+          {Finished}_ServerK                 % finished
+<P>
+ 2nd phase: using tunneling to authenticate peer
+ P -> S : {UserName,
+           CHAP_challenge,
+           CHAP_Password 
+          }_ClientK
+ P <- S : success
+<P>
+ with
+ CipherSuite:    set of cipher suites supplied by P (for EAP-TLS)
+ Cipher:         cipher suite selected by S (from CipherSuite)
+ Np:             nonce created by P
+ Ns:             nonce created by S
+ Ks:             public key of S
+ Kca:            public key of certification authority
+ PMS:            pre-master-secret created by P (nonce)
+ MS:             master-secret ( =PRF(PMS,Np,Ns) )
+ Finished:       hash(MS,<all previous messages>)
+ ClientK:        session key for client =KeyGen(P.Np.Ns.MS)
+ ServerK:        session key for server =KeyGen(S.Np.Ns.MS)
+ CHAP_challenge: Tranc(CHAP_PRF(M.Txt.Np.Ns).1.16)
+ ChapId:         Tranc(CHAP_PRF(M.Txt.Np.Ns).17.17)
+ CHAPRs:         Chap response
+ CHAP_Password:  ChapId + ChapRs
+ </PRE>
+<P>
+&nbsp;<BR><BR><DT><B>LIMITATIONS:</B> <DD> <BR>
+<UL>
+ <LI> The server S combines the (logically) different roles of the access
+ point NAS, TTLS server and the AAA/H server (in user's home domain).
+ <LI> No authentication of client in TLS.
+ <LI> Only public key encryption in TLS.
+ <LI> Selection of cipher suites only abstractly modelled.
+</UL>
+&nbsp;<BR><BR><DT><B>PROBLEMS:</B> <DD> 3<BR>
+<UL>
+<LI>secrecy of <TT>sec_clientK, sec_serverK, sec_uname</TT>
+<LI> strong authentication on <TT>ns</TT>
+<LI> strong authentication on <TT>np</TT>
+</UL>
+&nbsp;<BR><BR><DT><B>ATTACKS:</B> <DD> None<BR>
+<P>
+&nbsp;<BR><BR><DT><B>NOTES:</B> <DD> <BR>
+ <UL>
+ <LI> The role of the NAS is redundant since it mostly only forwards
+  received messages. There are only two situations where the NAS
+  deviates from forwarding messages: it takes part in the negotiation
+  of a ciphersuite (which is only abstractly modelled anyway) and finally
+  receives keying material for deriving keys to be used at some later time
+  (which does not concern the security aspects of this protocol). <BR>
+  Note: In a model which only uses Dolev-Yao channels forwarding transitions
+  may be skipped:
+  All messages come from and go to the intruder. The intruder
+  does not gain new knowledge from forwarding transitions!
+  Furthermore, the intruder can receive and send on all channels
+  and thus he can bridge any forwarding transition.
+  Therefore, the NAS role is redundant.
+ </UL>
+&nbsp;<BR><HR>
+<BR><DT><B>HLPSL:</B> <DD> <BR>
+<PRE>
+
+role peer(P, S                            : agent,
+          Kca                             : public_key,
+          H : hash_func,
+          PRF : hash_func,
+          CHAP_PRF : hash_func,
+          Tranc : hash_func,
+          KeyGen : hash_func,
+          SND, RCV                        : channel (dy))
+played_by P def=
+
+  local
+    UserId       : text,          % should not reveal user
+    Version      : text,          % version of TLS protocol, presently v1.0
+    SeID         : text,          % session id
+    Np           : text,          % nonce from client
+    Ns           : text,          % nonce from server
+    CipherSuite  : text,          % TLS ciphersuites supplied by the peer
+    Cipher       : text,          % TLS ciphersuite selected by server
+
+    Ks           : public_key,    % from server
+
+    Shd          : text,          % server-hello-done 
+    Ccs          : text,          % change-cipher-spec 
+ 
+    PMS          : text,          % pre-master-secret
+    MS : hash(text.text.text),    % master-secret
+
+    Finished : hash(hash(text.text.text).agent.agent.text.text.text),
+    ClientK : hash(agent.text.text.hash(text.text.text)),  % client session key for encryption
+    ServerK : hash(agent.text.text.hash(text.text.text)),  % server session key for encryption
+
+    Txt          : text,          % string init. with "ttls challenge"
+
+    UName        : text,          % NAI of client e.g. andy@realm
+
+    ChapRs       : text,          % CHAP response
+
+    State        : nat
+
+  const
+    request_id   : text,
+    respond_id   : text,
+    start_ttls   : text,
+    success      : text,
+    sec_clientK,
+    sec_serverK,
+    sec_uname,
+    np, ns       : protocol_id
+
+  init State := 0
+
+  transition
+
+  0. State   = 0
+       /\ RCV(request_id)
+     =|>
+     State' := 1
+       /\ UserId':= new()
+       /\ SND(respond_id.UserId')
+        
+  1. State   = 1
+       /\ RCV(start_ttls)
+     =|>
+     State' := 2
+       /\ Np' := new()
+       /\ CipherSuite' := new()
+       /\ SeID' := new()
+       /\ Version' := new()
+       /\ SND(Version'.SeID'.Np'.CipherSuite') % client_hello
+       /\ witness(P,S,np,Np')
+
+
+  2. State   = 2
+       /\ RCV(Version.SeID'.Ns'.Cipher'.       % server_hello
+              {S.Ks'}_inv(Kca).                % server_certificate
+              Shd')                            % server_hello_done
+     =|>
+     State' := 3
+       /\ PMS' := new() 
+       /\ Ccs' := new()
+       /\ MS'  := PRF(PMS'.Np.Ns')             % master secret
+       /\ Finished' := H(MS'.P.S.Np.Cipher'.SeID)
+       /\ ClientK'  := KeyGen(P.Np.Ns'.MS')
+       /\ ServerK'  := KeyGen(S.Np.Ns'.MS')
+       /\ SND({PMS'}_Ks'.                      % client_key_exchange
+                 Ccs'.                         % client_change_cipher_spec
+                 {Finished'}_ClientK')         % finished
+       /\ secret(ClientK',sec_clientK,{P,S})
+       /\ secret(ServerK',sec_serverK,{P,S})
+
+  3. State   = 3
+       /\ RCV(Ccs.{Finished}_ServerK)
+     =|>
+     State' := 4
+       /\ Txt' := new()
+       /\ ChapRs' := new()
+       /\ UName' := new()
+       /\ SND({UName'.
+               Tranc(CHAP_PRF(MS.Txt'.Np.Ns).1.16).
+               Tranc(CHAP_PRF(MS.Txt'.Np.Ns).17.17).
+               ChapRs'
+              }_ClientK)
+ YB: What is this variable UName???
+ YB: Why do you declare it as secret since this data does not appear in the protocol messages.
+&nbsp;<BR>       /\ secret(UName',sec_uname,{P,S})
+       /\ request(P,S,ns,Ns)
+
+  4. State   = 4
+       /\ RCV(success)
+     =|>
+     State' := 5
+
+end role
+
+<HR>
+
+role server (P, S                            : agent,
+             Ks, Kca                         : public_key,
+             H : hash_func,
+             PRF : hash_func,
+             CHAP_PRF : hash_func,
+             Tranc : hash_func,
+             KeyGen : hash_func,
+             SND, RCV                        : channel (dy)) 
+played_by S def=
+
+  local
+    UserId       : text,          % should not reveal user
+    Version      : text,          % version of TLS protocol, presently v1.0
+    SeID         : text,          % session id
+    Np           : text,          % nonce from client
+    Ns           : text,          % nonce from server
+    CipherSuite  : text,          % TLS ciphersuites supplied by the peer
+    Cipher       : text,          % TLS ciphersuite selected by server
+
+    Shd          : text,          % server-hello-done 
+    Ccs          : text,          % change-cipher-spec 
+ 
+    PMS          : text,          % pre-master-secret
+    MS : hash(text.text.text),    % master-secret
+
+    Finished : hash(hash(text.text.text).agent.agent.text.text.text),
+    ClientK : hash(agent.text.text.hash(text.text.text)),  % client session key for encryption
+    ServerK : hash(agent.text.text.hash(text.text.text)),  % server session key for encryption
+
+    Txt          : text,          % string init. with "ttls challenge"
+
+    UName        : text,          % NAI of client e.g. andy@realm
+
+    ChapRs       : text,          % CHAP response
+
+    State        : nat
+
+  const
+    request_id   : text,
+    respond_id   : text,
+    start_ttls   : text,
+    success      : text,
+    np, ns       : protocol_id
+
+  init State := 0
+
+  transition
+
+  0. State   = 0
+       /\ RCV(start)
+     =|>
+     State' := 1
+       /\ SND(request_id)
+
+  1. State   = 1
+       /\ RCV(respond_id.UserId')
+     =|>
+     State' := 2
+       /\ SND(start_ttls)
+
+  2. State   = 2
+       /\ RCV(Version'.SeID'.Np'.CipherSuite')  % client_hello
+     =|>
+     State' := 3
+       /\ Ns' := new()
+       /\ Shd' := new()
+       /\ Cipher' := new()
+       /\ SND(Version'.SeID'.Ns'.Cipher'.       % server_hello
+              {S.Ks}_inv(Kca).                  % server_certificate
+              Shd')                             % server_hello_done
+       /\ witness(S,P,ns,Ns')
+        
+  3. State    = 3
+       /\ RCV({PMS'}_Ks.                        % client_key_exchange
+              Ccs'.                             % client_change_cipher_spec
+              {Finished'}_ClientK')             % finished
+       /\ MS' = PRF(PMS'.Np.Ns)                 % master secret
+       /\ Finished' = H(MS'.P.S.Np.Cipher'.SeID)
+       /\ ClientK'  = KeyGen(P.Np.Ns.MS')
+     =|>
+     State' := 4
+       /\ ServerK'  := KeyGen(S.Np.Ns.MS')
+       /\ SND(Ccs'.                             % server_change_cipher_spec
+              {Finished'}_ServerK')             % finished
+
+
+
+
+
+  4. State  = 4
+       /\ RCV({UName'.
+               Tranc(CHAP_PRF(MS.Txt'.Np.Ns).1.16).
+               Tranc(CHAP_PRF(MS.Txt'.Np.Ns).17.17).
+               ChapRs'
+              }_ClientK)
+     =|>
+     State':= 5
+       /\ SND(success)
+       /\ request(S,P,np,Np)
+
+end role
+
+<HR>
+
+role session(P, S                            : agent,
+             Ks, Kca                         : public_key,
+             H : hash_func,
+             PRF : hash_func,
+             CHAP_PRF : hash_func,
+             Tranc : hash_func,
+             KeyGen : hash_func)
+def=
+
+  local
+    SNDP, RCVP, SNDS, RCVS  : channel (dy)
+
+  composition
+           peer(  P,S,   Kca,H,PRF,CHAP_PRF,Tranc,KeyGen,SNDP,RCVP)
+        /\ server(P,S,Ks,Kca,H,PRF,CHAP_PRF,Tranc,KeyGen,SNDS,RCVS)
+
+end role
+
+<HR>
+
+role environment() def=
+
+   const p, s                           : agent,
+         ks, kca                        : public_key,
+         h : hash_func,
+         prf : hash_func,
+         chapprf : hash_func,
+         tranc : hash_func,
+         keygen : hash_func
+
+   intruder_knowledge = {p,s, ks,kca,
+                         h,prf,chapprf,tranc,keygen,
+                         kca    
+                        }
+
+   composition
+        session(p,s,ks,kca,h,prf,chapprf,tranc,keygen)
+%    /\ session(p,s,ks,kca,h,prf,chapprf,tranc,keygen)
+     /\ session(i,s,ks,kca,h,prf,chapprf,tranc,keygen)
+
+end role
+
+<HR>
+
+goal
+
+        %secrecy_of ClientK, ServerK, UName
+        secrecy_of sec_clientK, sec_serverK, sec_uname
+
+        %Peer authenticates Server on ns
+        authentication_on ns
+        %Server authenticates Peer on np
+        authentication_on np
+
+end goal
+
+<HR>
+
+environment()
+</PRE>

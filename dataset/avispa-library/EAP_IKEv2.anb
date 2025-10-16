@@ -1,0 +1,28 @@
+
+ P     : Peer
+ S     : server (Network Access Server NAS + Authentication Server AS)
+
+ SAi1  : cryptographic algorithms (from S)
+ DHi   : S's Diffie-Hellman exponent (nonce of S)
+ KEi   : exp(g,DHi), i.e. S's Diffie-Hellman value
+ Ni    : nonce of S
+
+ SAr1  : P's selected cryptographic algorithms, here SAr1 = SAi1
+ DHr   : P's Diffie-Hellman exponent (nonce of P)
+ KEr   : exp(g,DHr), i.e. P's Diffie-Hellman value
+ Nr    : nonce of P
+
+ SK    : PRF(Ni.Nr.exp(KEr,DHi))
+         Note: SK == PRF(Ni.Nr.exp(KEi,DHr))
+
+ AUTHi : SAi1.KEi.Ni.Nr
+ AUTHr : SAi1.KEr.Nr.Ni
+
+ P <- S: request_id
+ P -> S: respond_id.ID
+ P <- S: SAi1, KEi, Ni
+ P -> S: SAr1, KEr, Nr
+ P <- S: {S, {AUTHi}_inv(Ks)}_SK
+ P -> S: {P, {AUTHr}_inv(Kp)}_SK
+ P <- S: success
+ 

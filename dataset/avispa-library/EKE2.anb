@@ -1,0 +1,17 @@
+
+ 1. A -> B : A.{exp(g,X)}_K(A,B)
+
+     B computes master key MK
+     MK = H(A,B,exp(g,X),exp(g,Y),exp(g,XY))
+
+ 2. B -> A : {exp(g,Y)}_K(A,B), H(MK,1)
+
+      A computes master key MK
+
+ 3. A -> B : H(MK,2)
+
+      Session key K = H(MK,0)
+
+ H : hash function
+ K(A,B): password (shared key)
+ 

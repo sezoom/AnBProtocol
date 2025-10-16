@@ -1,0 +1,242 @@
+
+<BR><DT><B>VARIANT:</B> <DD> With IKEv2 method<BR>
+<BR><DT><B>PURPOSE:</B> <DD> Mutual authentication, key establishment, replay protection,<BR>
+ confidentiality
+<P>
+ EAP-IKEv2 is an EAP method which reuses the cryptography and the payloads of
+ IKEv2, creating a flexible EAP method that supports both symmetric and 
+ asymmetric authentication, as well as a combination of both. This EAP method
+ offers the security benefits of IKEv2 authentication and key agreement
+ without the goal of establishing IPsec security associations.
+<P>
+&nbsp;<BR><BR><DT><B>REFERENCE:</B> <DD> <BR>
+ <UL>
+ <LI> <A HREF="http://www.ietf.org/internet-drafts/draft-tschofenig-eap-ikev2-05.txt">http://www.ietf.org/internet-drafts/draft-tschofenig-eap-ikev2-05.txt</A>
+ <LI> <A HREF="http://www.ietf.org/internet-drafts/draft-ietf-ipsec-ikev2-17.txt">http://www.ietf.org/internet-drafts/draft-ietf-ipsec-ikev2-17.txt</A>
+ </UL>
+&nbsp;<BR><BR><DT><B>MODELER:</B> <DD> <BR>
+ <UL>
+ <LI>  Wolfgang B&uuml;cker, Siemens CT IC 3, 2004
+ <LI>  Jing Zhang for Siemens CT IC 3
+ <LI>  Vishal Sankhla, University of Southern California
+ </UL>
+<P>
+&nbsp;<BR><BR><DT><B>ALICE_BOB:</B> <DD> <BR>
+ <PRE>
+ P     : Peer
+ S     : server (Network Access Server NAS + Authentication Server AS)
+<P>
+ SAi1  : cryptographic algorithms (from S)
+ DHi   : S's Diffie-Hellman exponent (nonce of S)
+ KEi   : exp(g,DHi), i.e. S's Diffie-Hellman value
+ Ni    : nonce of S
+<P>
+ SAr1  : P's selected cryptographic algorithms, here SAr1 = SAi1
+ DHr   : P's Diffie-Hellman exponent (nonce of P)
+ KEr   : exp(g,DHr), i.e. P's Diffie-Hellman value
+ Nr    : nonce of P
+<P>
+ SK    : PRF(Ni.Nr.exp(KEr,DHi))
+         Note: SK == PRF(Ni.Nr.exp(KEi,DHr))
+<P>
+ AUTHi : SAi1.KEi.Ni.Nr
+ AUTHr : SAi1.KEr.Nr.Ni
+<P>
+ P <- S: request_id
+ P -> S: respond_id.ID
+ P <- S: SAi1, KEi, Ni
+ P -> S: SAr1, KEr, Nr
+ P <- S: {S, {AUTHi}_inv(Ks)}_SK
+ P -> S: {P, {AUTHr}_inv(Kp)}_SK
+ P <- S: success
+ </PRE>
+&nbsp;<BR><BR><DT><B>LIMITATIONS:</B> <DD> <BR>
+ <UL>
+ <LI> The server S combines the (logically) different roles of the
+ network access server NAS and the authentication server AS.
+ </UL>
+<P>
+&nbsp;<BR><BR><DT><B>PROBLEMS:</B> <DD> 3<BR>
+<UL>
+<LI>secrecy of <TT>sec_sk1, sec_sk2</TT>
+<LI> strong authentication on <TT>nr</TT>
+<LI> strong authentication on <TT>ni</TT>
+</UL>
+&nbsp;<BR><BR><DT><B>ATTACKS:</B> <DD> None<BR>
+<P>
+&nbsp;<BR><HR>
+<BR><DT><B>HLPSL:</B> <DD> <BR>
+<PRE>
+role peer(P,S      : agent,
+          G        : text,
+          PRF      : hash_func,
+          Kp, Ks   : public_key,
+          SND, RCV : channel (dy))
+played_by P def=
+     
+  local
+    Ni, SAi1 : text,
+    KEi      : message,
+    Nr, DHr  : text,
+    SK       : hash(text.text.message),
+    State    : nat
+
+  const
+    request_id : text,
+    respond_id : text,
+    success    : text,
+    sec_sk1,
+    ni, nr     : protocol_id
+
+  init
+    State := 0
+
+  transition
+
+  0. State   = 0
+       /\ RCV(request_id)
+     =|>
+     State' := 2
+       /\ SND(respond_id.P)
+
+  2. State   = 2
+       /\ RCV(SAi1'.KEi'.Ni')
+     =|>
+     State' := 4
+       /\ DHr' := new()
+       /\ Nr'  := new()
+       /\ SND(SAi1'.exp(G,DHr').Nr')
+       /\ SK' := PRF(Ni'.Nr'.exp(KEi',DHr'))
+       /\ secret(SK',sec_sk1,{S,P})
+       /\ witness(P,S,nr,Nr')
+
+  % As opposed to IKEv2, in EAP-IKEv2 there is no negotiation of a 
+  % CHILD_SA => no second SA payload and no traffic selector payload
+  4. State   = 4
+       /\ RCV({S.{SAi1.KEi.Ni.Nr}_inv(Ks)}_SK)
+     =|>
+     State' := 6
+       /\ SND({P.{SAi1.exp(G,DHr).Nr.Ni}_inv(Kp)}_SK)
+       /\ request(P,S,ni,Ni)
+ 
+end role
+ 
+<HR>
+
+role server(
+          P,S      : agent,
+          G        : text,
+          PRF      : hash_func,
+          Kp, Ks   : public_key,
+          SND, RCV : channel (dy))
+played_by S def=
+
+  local
+    Nr            : text,
+    SAi1, DHi, Ni : text,
+    KEr           : message,
+    SK            : hash(text.text.message),
+    State         : nat
+
+  const
+    request_id : text,
+    respond_id : text,
+    success    : text,
+    sec_sk2,
+    ni, nr     : protocol_id
+
+  init
+    State := 0
+
+  transition
+
+  0. State   = 0
+       /\ RCV(start)
+     =|>
+     State' := 1
+       /\ SND(request_id)
+
+  1. State   = 1
+       /\ RCV(respond_id.P)
+     =|>
+     State' := 2
+       /\ SAi1' := new()
+       /\ DHi'  := new()
+       /\ Ni'   := new()
+       /\ SND(SAi1'.exp(G,DHi').Ni')
+       /\ witness(S,P,ni,Ni')
+
+  % As opposed to IKEv2, in EAP-IKEv2 there is no negotiation of a 
+  % CHILD_SA => no second SA payload and no traffic selector payload
+  2. State   = 2
+       /\ RCV(SAi1.KEr'.Nr')
+     =|>
+     State' := 3
+       /\ SK' := PRF(Ni.Nr'.exp(KEr', DHi))
+       /\ SND({S.{SAi1.exp(G,DHi).Ni.Nr'}_inv(Ks)}_SK')
+       /\ secret(SK',sec_sk2,{S,P})
+
+  3. State   = 3
+       /\ RCV({P.{SAi1.KEr'.Nr.Ni}_inv(Kp)}_SK)
+     =|>
+     State' := 4 
+       /\ SND(success)
+       /\ request(S,P,nr,Nr)
+
+end role 
+
+<HR>
+
+role session(
+       P, S   : agent,
+       G      : text,
+       PRF    : hash_func,
+       Kp, Ks : public_key)
+def=
+       
+  local 
+    S1,R1,S2,R2 : channel (dy)
+
+  composition
+       peer(  P,S, G, PRF, Kp, Ks, S1, R1)
+    /\ server(P,S, G, PRF, Kp, Ks, S2, R2)
+
+end role
+
+<HR>
+
+role environment() def=
+
+  const
+    p, s        : agent,
+    g           : text,
+    f           : hash_func,
+    kp, ks      : public_key
+
+  intruder_knowledge = {p,s,f}
+
+  composition
+     session(p,s,g,f,kp,ks)
+  /\ session(p,s,g,f,kp,ks)
+
+end role
+
+<HR>
+
+goal
+
+   %secrecy_of SK
+   secrecy_of sec_sk1, sec_sk2
+
+   %Server authenticates Peer on nr
+   authentication_on nr
+   %Peer authenticates Server on ni
+   authentication_on ni
+
+end goal
+
+<HR>
+
+environment()
+
+</PRE>

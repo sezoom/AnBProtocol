@@ -1,0 +1,217 @@
+<BR><DT><B>PROTOCOL:</B> <DD> SPKM-LIPKEY<BR>
+<BR><DT><B>VARIANT:</B> <DD> Known initiator<BR>
+<BR><DT><B>PURPOSE:</B> <DD> <BR>
+ Provide a secure channel between a client and server,
+ authenticating the client with a password, and a server with a public key
+ certificate.
+<P>
+&nbsp;<BR><BR><DT><B>REFERENCE:</B> <DD> [RFC2847,RFC2025]<BR>
+&nbsp;<BR><BR><DT><B>MODELER:</B> <DD> <BR>
+ <UL>
+  <LI> Boichut Yohan, LIFC-INRIA Besancon, May 2004 
+  <LI> Sebastian M&ouml;dersheim, ETH Z&uuml;rich, January 2005
+ </UL>
+<P>
+&nbsp;<BR><BR><DT><B>ALICE_BOB:</B> <DD> <BR>
+   <TT>1. A -> S:  A.S.Na.exp(G,X).{A.S.Na.exp(G,X)}_inv(Ka)</TT><BR>
+   <TT>2. S -> A:  A.S.Na.Nb.exp(G,Y).{A.S.Na.Nb.exp(G,Y)}_inv(Ks)</TT><BR>
+   <TT>3. A -> S: {login.pwd}_K where K= exp(exp(G,Y),X) = exp(exp(G,X),Y)</TT><BR>
+<P>
+&nbsp;<BR><BR><DT><B>LIMITATIONS:</B> <DD> <BR>
+<P>
+ In reality, the messages 1 and 2 contain respectively the two following items lists.
+ <UL>
+	<LI> the initiator and target names,
+      <LI> a fresh random number,
+      <LI> a list of available confidentiality algorithms,
+      <LI> a list of available integrity algorithms,
+      <LI> a list of available key establishment algorithms,
+      <LI> a context key (or half key) corresponding to the first key establishment algorithm given in the previous list,
+      <LI> GSS context options/choices (such as unilateral or mutual authentication, use of sequencing and replay detection, and so on).
+ </UL>
+<P>
+ and
+ <UL>
+	<LI> the initiator and target names,
+      <LI> the random number sent by the initiator,
+      <LI> a fresh random number,
+      <LI> the subset of offered confidentiality algorithms which are supported by the target,
+      <LI> the subset of offered integrity algorithms which are supported by the target,
+	<LI> an alternative key establishment algorithm (chosen from the offered list) if the first one offered is unsuitable,
+      <LI> the half key corresponding to the initiator's key establishment algorithm (if necessary), or a context key (or half key) corresponding to the 
+	key establishment algorithm above,
+      <LI> GSS context options/choices (such as unilateral or mutual authentication, use of sequencing and replay detection, and so on).
+ </UL>
+<P>
+<P>
+ The sets of algorithms agreed are not used by LIPKEY, indeed LIPKEY only uses SPKM
+ for key establishment. Thus they are not modelled. Furthermore, the key
+ establishment modelled is \`a la Diffie-Hellman and GSS context options are not modelled.
+<P>
+&nbsp;<BR><BR><DT><B>PROBLEMS:</B> <DD> 6<BR>
+<UL>
+<LI> strong authentication on <TT>k</TT>
+<LI> strong authentication on <TT>ktrgtint</TT>
+<LI>secrecy of <TT>sec_i_Log, sec_i_Pwd,</TT>
+</UL>
+&nbsp;<BR><BR><DT><B>CLASSIFICATION:</B> <DD> G1, G2, G3, G7, G10<BR>
+&nbsp;<BR><BR><DT><B>ATTACKS:</B> <DD> None<BR>
+<P>
+&nbsp;<BR><BR><DT><B>NOTES:</B> <DD> <BR>
+
+
+<P>
+&nbsp;<BR><HR>
+<BR><DT><B>HLPSL:</B> <DD> <BR>
+<PRE>
+
+role initiator (
+        A: agent,
+        S: agent,             
+        G: nat,
+        H: hash_func,
+        Ka: public_key,
+        Ks: public_key,
+        Login_A_S: hash(agent.agent), 
+        Pwd_A_S: hash(agent.agent), 
+                            
+        SND, RCV: channel (dy))
+played_by A
+def=
+
+  local 
+        State        : nat,
+        Na,Nb        : text,
+        Rnumber1     : text,
+        X            : message,
+        Keycompleted : message,
+        W            : nat,
+        K            : text.text
+
+  const sec_i_Log, sec_i_Pwd: protocol_id
+
+  init  State := 0
+
+  transition     
+
+  1.  State  = 0 /\ RCV(start) =|>
+      State':= 1 /\ Na' := new()
+                 /\ Rnumber1' := new()
+                 /\ SND(A.S.Na'.exp(G,Rnumber1').
+                       {A.S.Na'.exp(G,Rnumber1')}_inv(Ka))
+
+  2.  State  = 1 /\ RCV(A.S.Na.Nb'.X'.{A.S.Na.Nb'.X'}_inv(Ks)) =|>
+      State':= 2 /\ Keycompleted' := exp(X',Rnumber1)
+                 /\ SND({Login_A_S.Pwd_A_S}_Keycompleted' ) 
+                 /\ secret(Login_A_S,sec_i_Log,{S}) 
+                 /\ secret(Pwd_A_S,  sec_i_Pwd,{S})  
+                 /\ K' := Login_A_S.Pwd_A_S
+                 /\ request(A,S,ktrgtint,Keycompleted') 
+                 /\ witness(A,S,k,Keycompleted') 
+
+end role
+
+<HR>
+
+role target( 
+        A,S           : agent,      
+        G             : nat,
+        H             : hash_func,
+        Ka,Ks         : public_key,
+        Login, Pwd    : hash_func,
+        SND, RCV      : channel (dy))
+played_by S def=
+
+  local State        : nat,
+        Na,Nb        : text,
+        Rnumber2     : text,
+        Y            : message,
+        Keycompleted : message,
+        W            : nat,
+        K            : text.text
+
+  const sec_t_Log, sec_t_Pwd: protocol_id
+
+  init  State := 0
+
+  transition 
+
+  1. State  = 0 /\ RCV(A.S.Na'.Y'.{A.S.Na'.Y'}_inv(Ka)) =|>
+     State':= 1 /\ Nb' := new()
+                /\ Rnumber2' := new()
+                /\ SND(A.S.Na'.Nb'.exp(G,Rnumber2').
+                      {A.S.Na'.Nb'.exp(G,Rnumber2')}_inv(Ks))
+                /\ Keycompleted':=exp(Y',Rnumber2')
+                /\ secret(Login(A.S),sec_t_Log,{A}) 
+                /\ secret(Pwd(A.S),  sec_t_Pwd,{A}) 
+                /\ witness(S,A,ktrgtint,Keycompleted')
+
+  2. State  = 1 /\ RCV({Login(A.S).Pwd(A.S)}_Keycompleted) =|>
+     State':= 2 /\ K':=Login(A.S).Pwd(A.S)
+                /\ request(S,A,k,Keycompleted) 
+
+end role
+
+<HR>
+
+role session(
+          A,S : agent,
+          Login, Pwd: hash_func,
+          Ka: public_key,
+          Ks: public_key,
+          H: hash_func,
+          G: nat)
+def=  
+
+  local   SndI, RcvI,
+          SndT, RcvT : channel (dy) 
+  composition 
+
+     initiator(A,S,G,H,Ka,Ks,Login(A.S),Pwd(A.S),SndI,RcvI)
+  /\ target(   A,S,G,H,Ka,Ks,Login,Pwd,SndT,RcvT)
+
+end role
+
+<HR>
+
+role environment()
+def=
+
+  const a,s,i,b: agent,
+        ka, ki, kb, ks: public_key,
+        login, pwd : hash_func,
+        h: hash_func,
+        g: nat,
+        k,ktrgtint: protocol_id
+
+  intruder_knowledge = {ki,i, inv(ki),a,b,s,h,g,ks,login(i.s),pwd(i.s),ka
+
+                       } 
+
+  composition
+            session(a,s,login,pwd,ka,ks,h,g)
+        /\  session(b,s,login,pwd,kb,ks,h,g)
+        /\  session(i,s,login,pwd,ki,ks,h,g)
+
+end role
+
+<HR>
+
+goal 
+
+  %Target authenticates Initiator on k
+  authentication_on k % addresses G1, G2, G3
+  %Initiator authenticates Target on ktrgtint
+  authentication_on ktrgtint % addresses G1, G2, G3
+
+  %secrecy_of Login, Pwd
+  secrecy_of sec_i_Log, sec_i_Pwd, % adresses G7, G10
+             sec_t_Log, sec_t_Pwd  % adresses G7, G10
+
+
+end goal
+
+<HR>
+
+environment()
+</PRE>

@@ -1,0 +1,5 @@
+
+  1. A -> B : A
+  2. B -> A : Nb
+  3. A -> B : Na,H(k(A,B),(Na,Nb,A))
+  4. B -> A : H(k(A,B),Na)

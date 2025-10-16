@@ -1,0 +1,169 @@
+<BR><DT><B>PROTOCOL:</B> <DD> TSP: Time Stamp Protocol<BR>
+<BR><DT><B>PURPOSE:</B> <DD> <BR>
+ Assertion of proof that a datum existed before a particular time.
+<P>
+&nbsp;<BR><BR><DT><B>REFERENCE:</B> <DD> <BR>
+ <UL>
+ <LI> RFC 3161 : <A HREF="http://www.faqs.org/rfcs/rfc3161.html">http://www.faqs.org/rfcs/rfc3161.html</A>
+ </UL>
+&nbsp;<BR><BR><DT><B>MODELER:</B> <DD> <BR>
+ <UL>
+ <LI> Daniel Plasto for Siemens CT IC 3, 2004
+ </UL>
+<P>
+&nbsp;<BR><BR><DT><B>ALICE_BOB:</B> <DD> <BR>
+<PRE>
+ C   -> TSA: Hash(Data).NonceC
+ TSA -> C:   {Hash(Data).Time.NonceC}_inv(PK_TSA)
+</PRE>
+<P>
+
+&nbsp;<BR><BR><DT><B>PROBLEMS:</B> <DD> 1<BR>
+<UL>
+<LI> strong authentication on <TT>authdata</TT>
+</UL>
+&nbsp;<BR><BR><DT><B>ATTACKS:</B> <DD> None<BR>
+<P>
+&nbsp;<BR><BR><DT><B>NOTES:</B> <DD> <BR>
+The purpose of this protocol is to assert that a given datum existed before
+a particular time. For this a trusted time stamping authority (TSA) is used
+which supplies a unique time stamp.
+To prove this property the client checks if his datum has really been time stamped
+by the TSA.  This is achieved by the witness/request-pair
+<PRE>
+  witness(TSA_,TSA_,authdata,Authdata')
+  request(TSA_,TSA_,authdata,Authdata')
+</PRE>
+Note that we need not authenticate an agent and therefore use TSA as 1st and 2nd
+argument in witness/request.
+Actually, using instead the pair
+<PRE>
+  witness(TSA_,C,authdata,Authdata')
+  request(C,TSA_,authdata,Authdata')
+</PRE>
+will yield an attack where the intruder
+takes a normal role and simply replays received messages.
+<PRE>
+  i -> (c,3):    start
+  (c,3) -> i:    hash_(Data(1)),NonceC(1)
+  i -> (tsa,10): hash_(Data(1)),NonceC(1)
+  (tsa,10) -> i: {hash_(Data(1)),Time(2),NonceC(1)}inv(pk_tsa)
+  i -> (c,3):    {hash_(Data(1)),Time(2),NonceC(1)}inv(pk_tsa)
+<P>
+  Witness tsa i authdata hash_(Data(1)),Time(2)
+  Request c tsa authdata hash_(Data(1)),Time(2)
+</PRE>
+This attack does not contradict the intended property since the datum
+is correctly time-stamped.
+<P>
+&nbsp;<BR><HR>
+<BR><DT><B>HLPSL:</B> <DD> <BR>
+<PRE>
+role client (
+    C,TSA_  : agent,
+    Hash    : hash_func,
+    PK_TSA  : public_key,
+    SND,RCV : channel)
+played_by C def=
+
+  local
+    State    : nat,
+    Data     : text,
+    NonceC   : text,
+    Time     : text
+
+  init
+    State := 0
+
+  transition
+
+ 1. State   = 0 /\ RCV(start) =|>
+    State' := 2 /\ Data' := new()
+                /\ NonceC' := new()
+                /\ SND(Hash(Data').NonceC')
+
+ 2. State   = 2 /\ RCV({Hash(Data).Time'.NonceC}_inv(PK_TSA)) =|>
+    State' := 4
+
+                /\ request(TSA_,TSA_,authdata,Hash(Data).Time')
+
+end role
+
+<HR>
+
+role tsa (
+    C,TSA_     : agent,
+    PK_TSA     : public_key,
+    SND,RCV    : channel)
+played_by TSA_ def=
+
+  local
+    State      : nat,
+    HashedData : hash(text),
+    NonceC     : text,
+    Time       : text
+
+  init
+    State := 1
+
+  transition
+
+ 1. State   = 1 /\ RCV(HashedData'.NonceC') =|>
+    State' := 3 /\ Time' := new()
+                /\ SND({HashedData'.Time'.NonceC'}_inv(PK_TSA))
+
+                /\ witness(TSA_,TSA_,authdata,HashedData'.Time')
+
+end role
+
+<HR>
+
+role session (
+    C,T     : agent,
+    Hash    : hash_func,
+    PK_TSA  : public_key)
+def=
+
+  local
+     S1, S2 : channel (dy),
+     R1, R2 : channel (dy)
+
+  composition
+     client(C,T,Hash,PK_TSA,S1,R1)
+  /\ tsa(   C,T,     PK_TSA,S2,R2)
+
+end role
+
+<HR>
+
+role environment() def=
+
+  const
+    c,tsa       : agent,
+    hash_       : hash_func,
+    pk_tsa      : public_key,
+    authdata    : protocol_id
+
+  intruder_knowledge = {c,tsa,hash_,pk_tsa}
+
+  composition
+     session(c,tsa,hash_,pk_tsa)
+  /\ session(c,tsa,hash_,pk_tsa)
+  /\ session(i,tsa,hash_,pk_tsa)
+
+end role
+
+<HR>
+
+goal
+
+
+  %TSA authenticates TSA on authdata
+  authentication_on authdata
+
+end goal
+
+<HR>
+
+environment()
+</PRE>

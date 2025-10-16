@@ -1,0 +1,7 @@
+
+ S -> P: request_id
+ P -> S: respond_id.P
+ S -> P: S.SessionID
+ P -> S: SessionID.P.{nonceP}_KEK.Bind.MAC1
+ S -> P: SessionID.{nonceA}_KEK.Bind.MAC2
+ P -> S: SessionID.MAC3

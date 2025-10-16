@@ -1,0 +1,171 @@
+<BR><DT><B>PROTOCOL:</B> <DD> SAML SSO <BR>
+<BR><DT><B>VARIANT:</B> <DD> Google safe variant; SSL channels modeled using symmetric keys<BR>
+<BR><DT><B>PURPOSE:</B> <DD> Client authentication in a confidential enviroment<BR>
+&nbsp;<BR><BR><DT><B>REFERENCE:</B> <DD> <BR>
+ <A HREF="http:www.ai-lab.it/armando/GoogleSSOVulnerability.html">http:www.ai-lab.it/armando/GoogleSSOVulnerability.html</A>
+&nbsp;<BR><BR><DT><B>MODELER:</B> <DD> <BR>
+ <UL>
+   <LI> Riccardo Di Stasi, 2008<BR>
+         <I>distasi dot riccardo at spes dot uniud dot it</I>
+   <LI> Marino Miculan, Università degli Studi di Udine, 2008<BR>
+         <I>marino dot miculan at dimi dot uniud dot it</I>
+ </UL>
+<P>
+&nbsp;<BR><BR><DT><B>ALICE_BOB:</B> <DD> <BR>
+ <PRE>
+ C->SP:({C.SP.URI}_kcsp)				| Request of a resource
+ SP->C:({C.IDP.AuthReq(ID.SP).URI}_kcsp)
+ C->IDP:({C.IDP.AuthReq(ID.SP).URI}_kcidp)		| Authentication through an identity provider
+ IDP->C:({{C.IDP.SP}_kidp-1.URI}_kcidp)
+ C->SP:({{C.IDP.SP}_kidp-1.URI}_kcsp)			| Identity confirmation
+ SP->C:({Resource}_kcsp)
+ </PRE>
+<P>
+&nbsp;<BR><BR><DT><B>LIMITATIONS:</B> <DD> The SSL channels are modeled using symmetric keys.<BR>
+<P>
+&nbsp;<BR><BR><DT><B>PROBLEMS:</B> <DD> 2<BR>
+<UL>
+<LI>secrecy of <TT>c_sp_resource</TT>
+<LI> strong authentication on <TT>c_sp_aa</TT>
+</UL>
+<P>
+&nbsp;<BR><BR><DT><B>CLASSIFICATION:</B> <DD> G2 G12<BR>
+<P>
+&nbsp;<BR><BR><DT><B>ATTACKS:</B> <DD> None<BR>
+<P>
+&nbsp;<BR><HR>
+<BR><DT><B>HLPSL:</B> <DD> <BR>
+<PRE>
+
+role client (C,IDP,SP:  agent,
+                   KCSP,KCIDP:  symmetric_key,
+                                 KIDP:  public_key,
+        SSP,RSP,SIDP,RIDP:      channel(dy),
+                         Resource:      hash_func)
+played_by C
+def=
+        local   State   : nat,
+                        AA              :(agent.agent.agent),
+                        URI,ID  :text
+                        
+        init State:=0
+        
+        transition
+                1.State=0
+                /\ RSP(start) =|>
+                State':=2
+                /\ URI':=new()
+                /\ SSP({C.SP.URI'}_KCSP)
+                2.State=2
+                /\ RSP({C.IDP.(ID'.SP).URI}_KCSP) =|>
+                State':=4
+                /\ SIDP({C.IDP.(ID'.SP).URI}_KCIDP)
+                3.State=4
+                /\ RIDP({SP.{AA'}_inv(KIDP).URI}_KCIDP) =|>
+                State':=6
+                /\ SSP({SP.{AA'}_inv(KIDP).URI}_KCSP)
+                /\ witness(C,SP,c_sp_aa,URI)
+                4.State=6
+                /\ RSP({Resource(URI)}_KCSP) =|>
+                State':=8       
+end role
+
+<HR>
+
+role serviceProvider (IDP,SP:   agent,
+                                                KCSP:   symmetric_key,
+                                                KIDP:   public_key,
+                                        SND, RCV:       channel(dy),
+                                        Resource:       hash_func)
+played_by SP
+def=
+        local   State:  nat,
+                                C:      agent,
+                           ID:  text,
+                          URI:  text
+                          
+        init State:=1
+        
+        transition
+                1.State=1
+                /\ RCV({C'.SP.URI'}_KCSP) =|>
+                State':=3
+                /\ ID':=new()
+                /\ SND({C'.IDP.(ID'.SP).URI'}_KCSP)
+                2.State=3
+                /\ RCV({SP.{(C.IDP.SP)}_inv(KIDP).URI}_KCSP) =|>
+                State':=5
+                /\ SND({Resource(URI)}_KCSP)
+                /\ request(SP,C,c_sp_aa,URI)
+                /\ secret(Resource(URI),c_sp_resource,{C,SP})
+end role
+
+<HR>
+
+role identityProvider (C,IDP,SP:        agent,
+                                                  KCIDP:        symmetric_key,
+                                                   KIDP:        public_key,
+                                                SND,RCV:        channel(dy))
+played_by IDP
+def=
+        local ID,URI:text,
+                   State:nat
+                   
+        init State:=7
+        
+        transition
+                1.State=7
+                /\ RCV({C.IDP.(ID'.SP).URI'}_KCIDP) =|>
+                State':=9
+                /\ SND({SP.{(C.IDP.SP)}_inv(KIDP).URI'}_KCIDP)
+end role
+
+<HR>
+
+role session (C,IDP,SP: agent,
+                        KCSP,KCIDP: symmetric_key,
+                                  KIDP: public_key,
+                          Resource:     hash_func)
+def=
+        local SCSP,RCSP,SCIDP,RCIDP: channel(dy)
+        
+        composition
+                client(C,IDP,SP,KCSP,KCIDP,KIDP,SCSP,RCSP,SCIDP,RCIDP,Resource) /\ 
+                serviceProvider(IDP,SP,KCSP,KIDP,SCSP,RCSP,Resource) /\
+                identityProvider(C,IDP,SP,KCIDP,KIDP,SCIDP,RCIDP)
+end role
+
+<HR>
+
+
+role enviroment()
+def=
+        const c_sp_resource,c_sp_aa,id: protocol_id,
+                                                  c,idp,sp:     agent,
+                 kcsp,kcidp,kci,kisp,kiidp:     symmetric_key,
+                                                          kidp: public_key,
+                                                  resource:     hash_func
+        intruder_knowledge={c,idp,sp,kci,kisp,kidp}
+        
+        composition     
+                session(c,idp,i,kci,kcidp,kidp,resource)
+                /\session(c,idp,sp,kcsp,kcidp,kidp,resource)
+                /\session(i,idp,sp,kisp,kiidp,kidp,resource)
+end role
+
+<HR>
+
+goal
+
+ % Confidentiality (G12)
+ secrecy_of c_sp_resource
+
+ % Message authentication (G2)
+ authentication_on c_sp_aa
+        
+end goal
+
+<HR>
+
+enviroment()
+</PRE>

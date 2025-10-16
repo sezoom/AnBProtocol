@@ -1,0 +1,7 @@
+
+ A -> B : {Ea}_Kab        |    Key exchange part
+ B -> A : {{K}_Ea}_Kab    |
+ A -> B : {Ca}_K          |
+ B -> A : {Ca,Cb}_K       |    Challenge/Response
+ A -> B : {Cb}_K          |    Authentication part
+ 

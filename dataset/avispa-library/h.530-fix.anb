@@ -1,0 +1,18 @@
+
+  Macros
+  M1 = MT,VGK,NIL,CH1,exp(G,X)
+  M2 = M1,F(ZZ,M1),VGK,exp(G,X) XOR exp(G,Y)
+  M3 = VGK,MT,F(ZZ,VGK),F(ZZ,exp(G,X) XOR exp(G,Y)),
+       exp(G,X) XOR exp(G,Y)  %%% this is the very term added 
+                              %%% to fix the protocol
+  M4 = VGK,MT,CH1,CH2,exp(G,Y),F(ZZ,exp(G,X) XOR exp(G,Y)),F(ZZ,VGK)
+  M5 = MT,VGK,CH2,CH3
+  M6 = VGK,MT,CH3,CH4
+-------------------------------------------------------------------
+  1. MT  -> VGK : M1,F(ZZ,M1)
+  2. VGK -> AuF : M2,F(ZZ_VA,M2) 
+  3. AuF -> VGK : M3,F(ZZ_VA,M3) 
+  4. VGK -> MT  : M4,F(exp(exp(G,X),Y),M4) 
+  5. MT  -> VGK : M5,F(exp(exp(G,X),Y),M5)
+  6. VGK -> MT  : M6,F(exp(exp(G,X),Y),M6)
+ 

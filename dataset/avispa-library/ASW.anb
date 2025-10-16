@@ -1,0 +1,14 @@
+
+  The Exchange Subprotocol
+  1. O -> R : me1 = {Vo.Vr.T.Text1.h(No)}_inv(Vo)
+  2. R -> O : me2 = {me1.h(Nr)}_inv(Vr)
+  3. O -> R : No
+  4. R -> O : Nr
+  The Abort Subprotocol
+  1. O -> T: ma1 = {aborted.me1}_inv(Vo)
+  2. T -> O: ma2 = if Resolved(me1) then {me1.me2}_inv(Vt)
+                   else {aborted.ma1}_inv(Vt); Aborted(ma1) := true
+  Resolve Subprotocol
+  1. O -> T: mr1 = me1.me2
+  2. T -> O: mr2 = if Aborted(me1) then {aborted.me1}_inv(Vt)
+                   else {me1.me2}_inv(Vt) ; Resolved(me1) := true

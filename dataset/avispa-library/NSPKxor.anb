@@ -1,0 +1,4 @@
+
+ A --> B: {Na,A}_Kb
+ B --> A: {Nb,xor(Na,B)}_Ka
+ A --> B: {Nb}_Kb

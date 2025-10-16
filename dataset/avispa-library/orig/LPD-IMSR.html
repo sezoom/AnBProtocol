@@ -1,0 +1,203 @@
+
+<BR><DT><B>VARIANT:</B> <DD> IMSR: Improved Modulo Square Root<BR>
+ LPD (Low-Powered Devices) Improved MSR (Modulo Square Root) protocol
+ is a key establishment protocol for secure mobile communications. It
+ has been designed by Beller, Chang, and Yacobi in 1990s as an
+ improvement of MSR. Namely IMSR overcomes a major weakness of MSR by
+ including a certificate of the base station in the first
+ message. Apart from this feature it is identical to the basic MSR
+ protocol, and therefore does not address the problem of replay
+<P>
+&nbsp;<BR><BR><DT><B>PURPOSE:</B> <DD> <BR>
+ Key establishment protocol for secure mobile communications.
+<P>
+&nbsp;<BR><BR><DT><B>REFERENCE:</B> <DD> <BR>
+ <UL>
+ <LI> \cite[pages 5-6]{MutAuthLPD}
+ </UL>
+<P>
+&nbsp;<BR><BR><DT><B>MODELER:</B> <DD> <BR>
+   <UL>
+   <LI> Graham Steel, University of Edinburgh, July 2004
+   <LI> Luca Compagna, AI-Lab DIST University of Genova, November 2004
+   </UL>
+<P>
+&nbsp;<BR><BR><DT><B>ALICE_BOB:</B> <DD> <BR>
+ <PRE>
+ B, M    : agent
+ PKb     : public key
+ SCm     : text
+ Nb      : text (fresh)
+ Cert(B) : message
+ X       : symmetric key (fresh)
+<P>
+ 1. B -> M : B, Nb, PKb, Cert(B)
+ 2. M -> B : {X}PKb
+ 3. M -> B : {Nb, M, SCm}X
+ </PRE>
+ The object {\texttt{SCm}} denotes the secret certificate of the mobile
+ {\texttt{M}} which is issued by a trusted central
+ authority. {\texttt{Cert(B)}} is the public certificate previously
+ issued by some server for {\texttt{B}}.  
+ We assume <TT>Cert(B) = {B.PKb}inv(PKs)</TT>.
+<P>
+ Notice that wrt MSR there is a
+ twofold increase in the complexity of this protocol as compared to the
+ basic MSR protocol. The mobile now calculates an additional modulo
+ square to verify the base's certificate on receiving message 1. Upon
+ receiving the final message, {\texttt{B}} decrypts it using the
+ session key {\texttt{X}}, and checks that the value {\texttt{Nb}} is
+ the same as the random challenge sent in message 1.
+<P>
+&nbsp;<BR><BR><DT><B>LIMITATIONS:</B> <DD> <BR>
+ The protocol would require the mobile {\texttt{M}} to send two
+ sequential messages to the base station {\texttt{B}} in a row. We
+ model such a situation by sending in one single transition the pair of
+ the two messages.
+<P>
+&nbsp;<BR><BR><DT><B>PROBLEMS:</B> <DD> 2<BR>
+<UL>
+<LI>secrecy of <TT>secx</TT>
+<LI> weak authentication on <TT>x</TT>
+</UL>
+<P>
+&nbsp;<BR><BR><DT><B>CLASSIFICATION:</B> <DD> G1, G2, G12<BR>
+<P>
+&nbsp;<BR><BR><DT><B>ATTACKS:</B> <DD> None<BR>
+<P>
+&nbsp;<BR><BR><DT><B>NOTES:</B> <DD> <BR>
+<P>
+ The added public certificate and nonce exchange give some more
+ protection. Boyd et al.&nbsp;[MutAuthLPD] recommend moving the nonce
+ and {\texttt{M}} into message 2. <BR>
+
+
+
+
+
+
+&nbsp;<BR>
+<HR>
+<BR><DT><B>HLPSL:</B> <DD> <BR>
+<PRE>
+
+role imsr_Base(B, M     : agent,
+               SCm      : text,
+               PKb      : public_key, 
+               PKs      : public_key, 
+               Snd, Rcv : channel (dy))
+played_by B
+def=
+
+  local State   : nat,
+        X       : symmetric_key,
+        Nb      : text,
+        Package : message       
+
+  const  x : protocol_id
+
+  init   State := 0
+
+  transition
+
+   1. State = 0
+      /\ Rcv(start)
+      =|> 
+      State' := 1
+      /\ Nb' := new()
+      /\ Snd(B.Nb'.PKb.{B.PKb}_inv(PKs))
+
+   2. State = 1
+      /\ Rcv({X'}_PKb.{Nb.M.SCm}_X')
+      =|> 
+      State' := 2 
+      /\ wrequest(B,M,x,X')
+
+end role
+
+<HR>
+
+role imsr_Mobile(B, M     : agent,
+                 SCm      : text, 
+                 PKs      : public_key,
+                 Snd, Rcv : channel (dy))
+played_by M
+def=
+
+  local State  : nat,
+        PKb    : public_key,
+        X      : symmetric_key,
+        Nb     : text,
+        Cert   : message
+
+  const secx   : protocol_id
+
+  init   State := 0
+
+  transition
+
+   1. State = 0
+      /\ Rcv(B.Nb'.PKb'.Cert')
+      /\ Cert' = {B.PKb'}_inv(PKs)  
+      =|> 
+      State':=1
+      /\ X' := new()
+      /\ Snd({X'}_PKb'.{Nb'.M.SCm}_X')
+      /\ secret(X',secx,{B,M})
+      /\ witness(M,B,x,X')      
+
+end role
+
+<HR>
+
+role session(B, M           : agent,
+             SCm            : text,     
+             PKb, PKs       : public_key) def=
+
+  local SA, RA, SB, RB : channel (dy)
+
+
+  composition
+        
+       imsr_Base(B,M,SCm,PKb,PKs,SA,RA)
+    /\ imsr_Mobile(B,M,SCm,PKs,SB,RB)
+
+end role
+
+<HR>
+
+role environment() def=
+ 
+  const b, m                                   : agent,
+        kb, ki, ks                             : public_key,
+        scm1, scm2, scm3                       : text
+
+  intruder_knowledge = {b,m,scm2,scm3,i,ki,ks,inv(ki),
+                        m,{i.ki}_inv(ks)         
+                       }
+
+  composition
+
+        session(b,m,scm1,kb,ks) 
+    /\  session(b,i,scm2,kb,ks) 
+    /\  session(i,m,scm3,ki,ks) 
+
+end role
+
+<HR>
+
+goal
+
+  % The established key X must be a secret between the base and the mobile
+  secrecy_of secx % addresses G12
+
+  % Authentication: base station authenticates mobile 
+  %IMSR_Base weakly authenticates IMSR_Mobile on x
+  weak_authentication_on x % addresses G1, G2 
+
+end goal
+
+<HR>
+
+environment()
+</PRE>

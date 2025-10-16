@@ -1,0 +1,28 @@
+
+	Phase 1 Payment Initialization:
+	Payer -> Payee: R.TIDReq.PayeeIDReq
+	Payee -> Payer: {IDPayee.TID.IDMNO}_K2
+
+	Phase 2 Payment Subtraction Request:
+	Payer -> Payer's MNO: {IDPayee.IDMNO.R.TID.AMOUNT.DATE.NONCE.H(IDPayee.IDMNO.R.TID.AMOUNT.DATE.NONCE).{R.DESC}_K2}_Xi.i.IDpayer
+	Payer's MNO -> TSC: H[ {IDPayee.IDMNO.R.TID.AMOUNT.DATE.NONCE.H(IDPayee.IDMNO.R.TID.AMOUNT.DATE.NONCE).{R.DESC}_K2}_Xi.i.IDpayer ]
+	TSC -> Payer's MNO: TimeStamp1
+
+	Phase 3 Payment Authorization Request:
+	Payer's MNO -> Payee's MNO: R.IDPayee.TID.AMOUNT.DATE.{R.DESC}_K2
+
+	Phase 4 Payment Confirmation Request:
+	Payee's MNO -> Payee: {R.TID.AMOUNT.DATE.{R.DESC}_K2.NONCE.H(R.TID.AMOUNT.DATE {R.DESC}_K2.NONCE).H(KP-P )}_Yi.i
+
+	Phase 5 Payment Confirmation Response:
+	Payee -> Payee's MNO: {Yes_No.NONCE.H(KP-P ).H(R.TID.AMOUNT.DATE.{R.DESC}_K2.NONCE).{Yes_No.TID.AMOUNT.DATE}_K2}_Yi+1
+
+	Phase 6 Payment Authorization Response:
+	Payee's MNO -> TSC: H({Yes_No.NONCE.H(KP-P ).H(R.TID.AMOUNT.DATE.{R.DESC}_K2.NONCE).{Yes_No.TID.AMOUNT.DATE}_K2}_Yi+1 )
+	TSC -> Payee's MNO: TimeStamp2
+	Payee's MNO -> Payer's MNO: Yes_No.TID.AMOUNT.DATE.{Yes_No.TID.AMOUNT.DATE}_K2
+
+	Phase 7 Payment Subtraction Response:
+	Payer's MNO -> Payer: {Yes_No.NONCE.H(KP-P).H(IDPayee.IDMNO.R.TID.AMOUNT.DATE.NONCE).{Yes_No.TID.AMOUNT.DATE}_K2}_Xi+1
+	Payee's MNO -> Payee: {Received.NONCE.H(KP-P).H(R.TID.AMOUNT.DATE.{R.DESC}_K2.NONCE)}_Yi+1       
+ 

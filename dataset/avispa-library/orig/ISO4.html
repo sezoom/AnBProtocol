@@ -1,0 +1,163 @@
+
+<BR><DT><B>VARIANT:</B> <DD> three-pass mutual authentication<BR>
+<BR><DT><B>PURPOSE:</B> <DD> Two parties authenticate each other. Aim of the Mutual authentication<BR>
+ is to make sure to each of the parties of the other's identity. In this protocol
+ a confirmation of the successful authentication is sent by the initiator.
+&nbsp;<BR><BR><DT><B>REFERENCE:</B> <DD> <BR>
+ <UL>
+ <LI> [clark97survey, ISO-IEC-9798-3]
+ </UL>
+&nbsp;<BR><BR><DT><B>MODELER:</B> <DD> <BR>
+ <UL>
+ <LI> Haykal Tej, Siemens CT IC 3, 2003 and
+ <LI> Luca Compagna et al, AI-Lab DIST University of Genova, November 2004
+ </UL>
+&nbsp;<BR><BR><DT><B>ALICE_BOB:</B> <DD> <BR>
+ <PRE>
+ 1. B -> A : Nb, Text1
+ 2. A -> B : PKa,A,{PKa,A}inv(PKs),Na,Nb,B,Text3,{Na,Nb,B,Text2}inv(PKa)
+ 3. B -> A : PKb,B,{PKb,B}inv(PKs),Nb,Na,A,Text5,{Nb,Na,A,Text4}inv(PKb)
+ </PRE>
+&nbsp;<BR><BR><DT><B>PROBLEMS:</B> <DD> 2<BR>
+<UL>
+<LI> strong authentication on <TT>nb</TT>
+<LI> strong authentication on <TT>na</TT>
+</UL>
+&nbsp;<BR><BR><DT><B>CLASSIFICATION:</B> <DD> G1, G2<BR>
+&nbsp;<BR><BR><DT><B>ATTACKS:</B> <DD> None<BR>
+&nbsp;<BR><BR><DT><B>NOTES:</B> <DD> <BR>
+ <TT>inv(PKs)</TT> is the private key of the server <TT>C</TT>;
+ <TT>{PKa,A}inv(PKs)</TT> is the certificate of agent <TT>A</TT>, and<BR>
+ <TT>{PKb,B}inv(PKs)</TT> is the certificate of agent <TT>B</TT>.<BR>
+<P>
+&nbsp;<BR><HR>
+<BR><DT><B>HLPSL:</B> <DD> <BR>
+<PRE>
+role iso4_Init ( A,B: agent,
+                 Pkb,Pks: public_key, 
+                 Snd,Rec: channel(dy))
+played_by B
+def=
+
+  local  State         : nat,
+         Pka           : public_key,
+         Nb            : text,
+         Na,Text2,Text3: text
+
+  const ctext1,ctext4,ctext5: text
+
+  init State := 0 
+
+
+
+  transition
+
+   1. State = 0
+      /\ Rec(start) 
+      =|> 
+      State' := 1
+      /\ Nb' := new() 
+      /\ Snd(Nb'.ctext1) 
+      /\ witness(B,A,nb,Nb')
+
+   2. State = 1
+      /\ Rec(Pka'.A.{Pka'.A}_inv(Pks).Na'.Nb.B.Text3'.
+             {Na'.Nb.B.Text2'}_inv(Pka'))
+      =|> 
+      State' := 2
+      /\ Snd(Pkb.B.{Pkb.B}_inv(Pks).Nb.Na'.A.ctext5.{Nb.Na'.A.ctext4}_inv(Pkb))
+
+      /\ request(B,A,na,Na')
+
+end role
+
+<HR>
+
+role iso4_Resp ( B,A: agent,
+                 Pka,Pks: public_key, 
+                 Snd,Rec: channel(dy))
+played_by A
+def=
+
+  local  State               : nat,
+         Pkb                 : public_key,
+         Na                  : text,
+         Nb,Text1,Text4,Text5: text
+
+  const ctext2,ctext3: text
+
+  init State := 0
+
+
+
+  transition
+
+   1. State = 0
+      /\ Rec(Nb'.Text1') 
+      =|>
+      State' := 1
+      /\ Na' := new()
+      /\ Snd(Pka.A.{Pka.A}_inv(Pks).
+             Na'.Nb'.B.ctext3.{Na'.Nb'.B.ctext2}_inv(Pka))
+      /\ witness(A,B,na,Na')
+
+   2. State = 1
+      /\ Rec(Pkb'.B.{Pkb'.B}_inv(Pks).
+             Nb.Na.A.Text5'.{Nb.Na.A.Text4'}_inv(Pkb'))
+      =|> 
+      State' := 2
+      /\ request(A,B,nb,Nb)
+
+end role
+
+<HR>
+
+role session (A,B:agent,
+              Pka,Pkb,Pks: public_key) def=       
+
+  local SA,RA,SB,RB: channel (dy)
+
+  composition
+
+          iso4_Init(A,B,Pkb,Pks,SA,RA)
+       /\ iso4_Resp(B,A,Pka,Pks,SB,RB)
+
+end role
+
+<HR>
+
+role environment() def=
+
+ const na, nb             : protocol_id,
+       a, b, i            : agent,
+       pka, pkb, pks, pki : public_key
+
+ intruder_knowledge={a,b,pki,inv(pki),pks,
+                     ctext1,ctext4,ctext5,{pki.i}_inv(pks),  
+                     ctext2,ctext3,{pki.i}_inv(pks)}         
+
+ composition
+
+        session(a,b,pka,pkb,pks)
+     /\ session(a,i,pka,pki,pks)
+     /\ session(i,b,pki,pkb,pks)
+
+
+end role
+
+<HR>
+
+goal
+
+   %ISO4_Resp authenticates ISO4_Init on nb
+   authentication_on nb % addressess G1 and G2
+
+   %ISO4_Init authenticates ISO4_Resp on na
+   authentication_on na % addressess G1 and G2
+
+end goal
+
+<HR>
+
+environment()
+</PRE>

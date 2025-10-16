@@ -1,0 +1,11 @@
+
+ T	: Target
+ LoSi	: Location Sighter
+ LBS	: Pervasive-Location Beacon Server (or P-LBS)
+ 1. T    --------------  {P1_T.Loc}_K_LoSi ----------------------> LoSi
+ 2. LoSi --------------- {P1_T.Loc}_K_LL ------------------------> LBS
+ 3. T    <---------- {LBS.N_LBS.Loc}_P1_T ------------------------ LBS
+ 4. T    ------- P1_T.Psi_T.K_T.Cert_Psi_T.N_LBS.
+                {P1_T.Psi_T.K_T.Cert_Psi_T.N_LBS}_inv(K_T) ------> LBS
+ %5. T   <----------------  {LBS}_K_T  ----------------------------LBS
+ Cert_Psi_T = {Psi_T.Dom_T.K_T}_inv(K_CA)

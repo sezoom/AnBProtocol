@@ -1,0 +1,8 @@
+
+1. Client -> Server : Access-Request   
+     where Access-Request = NAS_ID, NAS_PORT, {Secret_Key}MD5
+2. Server -> Client : Access-Accept | Access-Reject | Access-Challenge 
+3. Client -> Server : Access-Chall-Request   
+     where Access-Chall-Request = {Message}Secret_Key
+4. Server -> Client : Access-Accept
+5. Client -> Server : Success

@@ -1,0 +1,6 @@
+
+   1. A -> B: {Na}_Kb
+   2. B -> A: {Nb}_Ka
+   3. A -> B: {zero,Msg}_(Na,Nb)
+   4. B -> A: {one,Msg}_(Na,Nb)
+ 

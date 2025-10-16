@@ -1,0 +1,38 @@
+
+ The protocol exchanges messages between a peer P, e.g. an UMTS subscriber
+ identity module, and an authentication (EAP-)server S. Before the protocol
+ starts, S has obtained an authentication vector 
+    AV = (AT_RAND,AT_AUTN,AT_RES,IK,CK)
+ from the home environment (HE) of the peer P.
+ For constructing AV, HE/S and P share the following data/functions:
+    SK         : symmetric key   (long term secret)
+    SQN        : sequence number (unique to a session)
+    F1, F2     : authentication functions
+    F3, F4, F5 : key generation functions
+ The AV-components are computed by
+    AT_RAND    : a unique random number
+    CK         : F3(SK,AT_RAND)
+    IK         : F4(SK,AT_RAND)
+    AK         : F5(SK,AT_RAND)
+    MAC        : F1(SK,SQN,AT_RAND)
+    AT_AUTN    : {SQN}_AK . MAC
+    AT_RES     : F2(SK,AT_RAND)
+
+ S -> P: request_id
+ P -> S: respond_id.NAI
+         % NAI is Network Address Identifier.
+         % S uses authentication vector AV = (AT_RAND,AT_AUTN,AT_RES,IK,CK)
+         % S computes message authentication code for next message:
+         %    AT_MAC = HMAC(PRF_SHA1(NAI,IK,CK),AT_RAND.AT_AUTN)
+ S -> P: AT_RAND.AT_AUTN.AT_MAC
+         % P checks validity of AT_MAC,AT_AUTN and SQN
+         % P computes AT_RES = F2(SK,AT_RAND), IK, CK
+         % P computes message authentication code for next message:
+         %    AT_MAC = HMAC(PRF_SHA1(NAI,IK,CK),AT_RES)
+ P -> S: AT_RES.AT_MAC
+         % S checks validity of AT_MAC,AT_RES
+ S -> P: success
+         % S,P agree on
+         %   session key for encryption      CK = F3(SK,AT_RAND)
+         %   session key for integrity check IK = F4(SK,AT_RAND)
+ 

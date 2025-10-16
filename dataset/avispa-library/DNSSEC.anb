@@ -1,0 +1,23 @@
+
+  1. Res -> RecServ: 
+         RecServ.Res.Ident1.zero.Req.h(Ident.zero.Req.Kcres)
+  2. RecServ -> RootServ: 
+         RecServ.RootServ.Ident2.zero.Req
+  3-a. RootServ -> RecServ: RootServ.RecServ.
+        Ident2.one.Req.PKint.IntServer.
+        {MD5(one.Req.PKint.IntServer)}_inv(PKroot)
+  3-b. RootServ -> RecServ: 
+        RootServ.RecServ.Ident2.one.Req.PKerror.
+        {MD5(one.Req.PKerror)}_inv(PKroot)
+  4-a. RecServ -> IntServer: RecServ.IntServer.Ident3.zero.Req
+  4-b. RecServ -> Res: RecServ.Res.
+         Ident1.one.Req.PKerror.h(Ident.one.Req.PKerror.Kcres)
+  5-a. IntServer -> RecServ: RecServ.IntServer.
+         Ident3.one.Req.Resp.{MD5(one.Req.Resp)}_inv(PKint)
+  5-b. IntServer -> RecServ: RecServ.IntServer.
+         Ident3.one.Req.PKerror.{MD5(one.Req.PKerror)}_inv(PKint)
+  6-a. RecServ -> Res: RecServ.Res.
+         Ident1.one.Req.Resp.h(Ident.one.Req.Resp.Kcres)
+  6-b. RecServ -> Res: RecServ.Res.
+         Ident1.one.Req.PKerror.h(Ident.one.Req.PKerror.Kcres)
+ 

@@ -1,0 +1,28 @@
+
+  C -> A: U,G,N1,{Kca,T0,N1,hash(U,G,N1)}inv(Kca)   
+
+    In PKINIT, the first message contains additional 
+    information in the pre-authentication field:
+    The public key of U, a timestamp, the nonce repeated,
+    and a checksum of the message body.  This is all signed
+    with the private key of U.
+
+  A -> C: U,Tcg,{G,Kcg,T1start,T1expire,N1}Ktemp,{{Ktemp}Kca}inv(Pka)
+
+  where Tcg := {U,C,G,Kcg,T1start,T1expire}Kag
+
+    A replies as usual, except the reply is encrypted 
+    with a random key, and this key is included in the 
+    pre-authentication field and encrypted with the U's
+    public key and signed with the A's private key.
+
+  C -> G: S,N2,Tcg,Acg
+  G -> C: U,Tcs,{S,Kcs,T2start,T2expire,N2}Kcg
+
+  where Acg := {C,T1}Kcg  (T1 is a timestamp)
+        Tcs := {U,C,S,Kcs,T2start,T2expire}Kgs
+
+  C -> S: Tcs,Acs
+  S -> C: {T2'}Kcs
+
+  where Acs := {C,T2'}Kcs  (T2 is a timestamp)

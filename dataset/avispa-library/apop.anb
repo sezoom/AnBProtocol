@@ -1,0 +1,4 @@
+
+ S -> C : Hello.Timestamp
+ C -> S : C.MD5(Timestamp.K_CS)
+ S -> C : Success

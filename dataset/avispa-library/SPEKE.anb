@@ -1,0 +1,13 @@
+
+ A -> B : exp(S(A,B), Na)     |    key exchange part
+ B -> A : exp(S(A,B), Nb)     |
+
+               both A and B compute
+               K = exp(exp(S(A,B),Na), Nb) = exp(exp(S(A,B),Nb), Na)
+
+ A -> B : {Ca}_K              |
+ B -> A : {Cb,Ca}_K           |    challenge/response
+ A -> B : {Cb}_K              |    authentication part
+
+ S(A,B): password (shared key)
+ 

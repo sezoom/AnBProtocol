@@ -1,0 +1,20 @@
+
+1. C -> ASlocal  : C, TGSlocal, N1
+2. ASlocal -> C  : C, Ticket1,
+                   {TGSlocal, KC_TGSlocal, Tstart1, Texpire1, N1
+                   }_KC_ASlocal
+   where Ticket1 : {C, TGSlocal, KC_TGSlocal, Tstart1, Texpire1
+                   }_KASlocal_TGSlocal
+3. C -> TGSlocal : TGSremote, N2, Ticket1, {C, T1}_KC_TGSlocal
+4. TGSlocal -> C : C, Ticket2b,
+                   {TGSremote, KC_TGSremote, Tstart2b, Texpire2, N2
+                   }_KC_TGSlocal
+   where Ticket2b: {C,TGSremote,KC_TGSremote,Tstart2b,Texpire2
+                   }_KTGSlocal_TGSremote
+5. C -> TGSremote: S,N3,Ticket2b, {C, T2B}_KC_TGSremote
+6. TGSremote -> C: C, Ticket3,
+                   {Sremote, KC_Sremote, Tstart3,Texpire3}_KC_TGSremote
+   where Ticket3 : {C, Sremote, KC_Sremote, Tstart3, Texpire3
+                   }_KTGSremote_Sremote
+7. C -> Sremote  : Ticket3, {C,T3}_KC_Sremote
+8. Sremote -> C  : {T3}_KC_Sremote

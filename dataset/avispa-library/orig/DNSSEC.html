@@ -1,0 +1,449 @@
+<BR><DT><B>PROTOCOL:</B> <DD> DNSSEC<BR>
+<BR><DT><B>PURPOSE:</B> <DD> Securing DNS, the Domain Name System<BR>
+&nbsp;<BR><BR><DT><B>REFERENCE:</B> <DD> <BR>
+<UL>
+ <LI> <A HREF="http://www.hactrn.net/ietf/dns/dnssec-editors/">http://www.hactrn.net/ietf/dns/dnssec-editors/</A>
+ <LI> <A HREF="http://www.nlnetlabs.nl/dnssec/history.html">http://www.nlnetlabs.nl/dnssec/history.html</A>
+</UL>
+&nbsp;<BR><BR><DT><B>MODELER:</B> <DD> <BR>
+ <UL>
+   <LI> Yohan Boichut, Universit\'e de Franche-Comt\'e
+   <LI> David G&uuml;mbel, Universit&auml;t T&uuml;bingen (Germany), January 2005
+ </UL>
+&nbsp;<BR><BR><DT><B>ALICE_BOB:</B> <DD> <BR>
+ <PRE>
+  1. Res -> RecServ: 
+         RecServ.Res.Ident1.zero.Req.h(Ident.zero.Req.Kcres)
+  2. RecServ -> RootServ: 
+         RecServ.RootServ.Ident2.zero.Req
+  3-a. RootServ -> RecServ: RootServ.RecServ.
+        Ident2.one.Req.PKint.IntServer.
+        {MD5(one.Req.PKint.IntServer)}_inv(PKroot)
+  3-b. RootServ -> RecServ: 
+        RootServ.RecServ.Ident2.one.Req.PKerror.
+        {MD5(one.Req.PKerror)}_inv(PKroot)
+  4-a. RecServ -> IntServer: RecServ.IntServer.Ident3.zero.Req
+  4-b. RecServ -> Res: RecServ.Res.
+         Ident1.one.Req.PKerror.h(Ident.one.Req.PKerror.Kcres)
+  5-a. IntServer -> RecServ: RecServ.IntServer.
+         Ident3.one.Req.Resp.{MD5(one.Req.Resp)}_inv(PKint)
+  5-b. IntServer -> RecServ: RecServ.IntServer.
+         Ident3.one.Req.PKerror.{MD5(one.Req.PKerror)}_inv(PKint)
+  6-a. RecServ -> Res: RecServ.Res.
+         Ident1.one.Req.Resp.h(Ident.one.Req.Resp.Kcres)
+  6-b. RecServ -> Res: RecServ.Res.
+         Ident1.one.Req.PKerror.h(Ident.one.Req.PKerror.Kcres)
+ </PRE>
+ Where:
+ <UL>
+    <LI> Res is the resolver.
+    <LI> RecServ is the recursive server.
+    <LI> RootServ is the root server.
+    <LI> IntServ is the intermediate server.
+    <LI> Ident\{1 \ldots 3\} are nonces used as identifier for a message. 
+    <LI> one means that the DNS message is a response.
+    <LI> zero means that the DNS message is a request.
+    <LI> MD5 is a hash function.
+    <LI> h is a hash function.
+    <LI> Kcres is a shared key between the resolver 
+                 and the recursive server.
+    <LI> PKerror is a kind of flag meaning that there is no response for
+                 the request.
+    <LI> PKroot is the root server public key.
+    <LI> PKint is the intermediate server public key.
+    <LI> Req is the question asked by the resolver.
+    <LI> Resp is the response corresponding to the question.
+ </UL>
+<P>
+<P>
+&nbsp;<BR><BR><DT><B>LIMITATIONS:</B> <DD> <BR>
+<P>
+ DNS is a very old (but complex) protocol, and a very basic one for 
+ the Internet as well. Being a technological dinosaur, it is rather full 
+ of legacies and details that don't correspond to today's requirements of 
+ the Internet. DNSSEC is trying to remain backwards compatible to DNS,
+ while DNS does not provide security mechanisms at all and thus 
+ is attackable in several ways.
+<P>
+ This specification is a kind of "perfect world" model, in which all 
+ participants use the mechanisms provided by DNSSEC to their full extent. 
+ It consists of:
+<P>
+ <UL>
+  <LI> A resolver which wants to know a IP address for a DNS name. 
+   Most common example would be a home PC.
+  <LI> A recursive server which carries out the necessary steps in 
+   order to provide a response to the resolver.
+   Most common example is the DNS server of your ISP.
+  <LI> A root server, which knows the authoritative intermediate server for 
+   a given domain, i.e. .com, .fr, etc.
+  <LI> An intermediate server, which knows the authoritative answer for 
+   any request.
+ </UL>
+<P>
+ In reality, there are several functionally identical root servers, and a 
+ number of intermediate servers that can authoritatively answer responses 
+ for different parts of the DNS namespace. As this unbound
+ recursion cannot be cleanly modelled, and communication between the 
+ intermediate servers is supposed to be safe (off-band), we only model one 
+ intermediate server level which can answer authoritatively
+ all responses. Other limitations are:
+<P>
+<UL>
+ <LI> TTL. There is a Time To Live attached to DNS messages, which for instance
+  specified a validity period for DNS responses.
+  This hasn't been modelled.
+ <LI> Cache. A recursive server is allowed to cache requests while
+  they are valid, but this has not been modelled.
+ <LI> TSIG. The last step of the protocol when the recursive server sends 
+  to the resolver the IP address can be implemented in different ways
+  (using different protocols TSIG, SIG0...). In this case, TSIG was used,
+   and it was assumed that the shared secret between resolver and 
+  recursive server has already been exchanged
+   (maybe off-band).
+ <LI> Root Key. The key of the root server is considered as already 
+ known to the recursive server, i.e. it has been exchanged in a safe way.
+</UL>
+<P>
+&nbsp;<BR><BR><DT><B>PROBLEMS:</B> <DD> 4<BR>
+<UL>
+<LI> strong authentication on <TT>resolver_recursiveserver</TT>
+<LI> strong authentication on <TT>recursiveserver_resolver</TT>
+<LI> strong authentication on <TT>recursiveserver_rootserver</TT>
+<LI> strong authentication on <TT>recursiveserver_intermediateserver</TT>
+</UL>
+<P>
+&nbsp;<BR><BR><DT><B>ATTACKS:</B> <DD> <BR>
+  <PRE>
+  i -> (recs,7): recs,i,x96,zero,request1,h(x96,zero,request1,kires)
+ (recs,7) -> i: root,recs,Identifier1(1),zero,request1
+  i -> (root,7): root,x51,x52,zero,request1
+ (root,7) -> i: 
+      x51,root,x52,one,request1,kis,intermed,
+      {md5(one,request1,kis,intermed)}inv(kroot)
+  i -> (intermed,7): intermed,x66,x67,zero,request1
+ (intermed,7) -> i: x66,intermed,x67,one,request1,response,
+      {md5(one,request1,response)}inv(kis)
+  i -> (recs,7): recs,root,Identifier1(1),one,request1,kis,intermed,
+      {md5(one,request1,kis,intermed)}inv(kroot)
+ (recs,7) -> i: intermed,recs,Identifier2(4),zero,request1
+  i -> (recs,7): recs,intermed,Identifier2(4),one,request1,response,
+      {md5(one,request1,response)}inv(kis)
+  (recs,7) -> i: i,recs,x96,one,request1,response,
+      h(x96,one,request1,response,kires)
+ </PRE>
+<P>
+ To summarise this attack, the intruder manages to anticipate 
+ next actions of the recursive server. He masquerades the recursive server 
+ by asking to the root server, and then to the intermediate server, the 
+ questions that the recursive server will ask. Thus, the root server 
+ and the intermediate server answer the response corresponding 
+ to the request. When the intruder finishes this process, 
+ he will send the root server response.
+ Then the recursive server will ask the next question to the 
+ intermediate server.
+ But since the intruder has already done it, he sends the response of the 
+ intermediate server. 
+ This attack does not lead to dramatic consequences, since the question 
+ and the response are signed together by an honest server. 
+ Thus, the recursive server is sure to obtain the response corresponding 
+ to its request.
+<P>
+<P>
+&nbsp;<BR><BR><DT><B>NOTES:</B> <DD> In general, the pattern followed here is:<BR>
+<P>
+<UL>
+ <LI> 1. Resolver <TT>\rightarrow</TT> Recursiveserver : <BR>
+      What is the IP address of www.data.name.services.sec ?
+ <LI> 2. RecursiveServer <TT>\rightarrow</TT> RootServer : <BR>
+      What is the IP address of the authoritative intermediate server for<BR>
+      www.data.name.services.sec ?
+ <LI> 3. RootServer <TT>\rightarrow</TT> RecursiveServer : <BR>
+  It is xxx.xxx.xxxx.xxx and its public key is yyyy + signature
+  using private key of the root server + hash function.
+ <LI> 4. RecursiveServer <TT>\rightarrow</TT> IntermediateServer : <BR>
+ what is the IP address of www.data.name.services.sec?
+ <LI> 5. IntermediateServer <TT>\rightarrow</TT> RecursiveServer: <BR>
+ IP address of www.data.name.services.sec + signature of this data
+<P>
+ Note that in reality, the root server is asked for the authoritative 
+ intermediate server for the .sec zone, which is asked for the authoritative 
+ intermediate server for the .services.sec zone etc. pp. 
+ This recursion process has been simplified here, with the rationale 
+ given in the  "limitations" paragraph.
+<P>
+ <LI> 6. RecursiveServer <TT>\rightarrow</TT> Resolver : <BR>
+ "secured" transaction using TSIG containing the response of his request.
+ </UL>
+<P>
+ Notice that the protocol description given below takes into account the 
+ case when a client asks a bad question (leads to a failed result). 
+ A good run of a protocol follows the steps 1, 2, 3-a, 4-a, 5-a and 6-a.
+<P>
+&nbsp;<BR><BR><DT><B>HLPSL:</B> <DD> <BR>
+<PRE>
+role resolver (Res,Recs: agent,
+               Kares: symmetric_key,
+               Kerror: public_key,
+               H: hash_func,
+               Request: text,
+               SND,RCV: channel(dy)) played_by Res def=
+  local State: nat, Identifier: text, Ipaddress: agent
+  const zero,one: text
+  init State:=0
+  transition
+% Start a resolution:
+    step1. State=0 
+       /\  RCV(start)
+           =|>
+           State':=1 
+       /\  Identifier':=new()
+       /\  SND(Recs.Res.Identifier'.zero.Request.
+               H(Identifier'.zero.Request.Kares)) 
+       /\  witness(Res,Recs,recursiveserver_resolver,
+                   H(Identifier'.zero.Request.Kares))
+
+% Receive a response containing an address
+    step2. State=1 
+        /\ RCV(Res.Recs.Identifier.one.Request.Ipaddress'
+               .H(Identifier.one.Request.Ipaddress'.Kares)) 
+           =|>
+           State':=2 
+        /\ request(Res,Recs,resolver_recursiveserver,
+                   H(Identifier.one.Request.Ipaddress'.Kares))
+% Receive a response containing an error
+    step3. State=1 
+        /\ RCV(Res.Recs.Identifier.one.Request.Kerror.
+               H(Identifier.one.Request.Kerror.Kares))
+           =|>
+           State':=3 
+        /\ request(Res,Recs,resolver_recursiveserver,
+                   H(Identifier.one.Request.Kerror.Kares))
+end role
+
+
+role recursiveServer(Recs,Res,Root: agent,
+              Kares: symmetric_key,
+              Kroot: public_key,
+              Kerror: public_key,
+              MD5,H: hash_func,
+              SND,RCV: channel(dy)) played_by Recs def=
+
+        local   State: nat,
+                Identifier: text,
+                Request: text,
+                Response: agent,
+                Ipaddress: agent,
+                Nkey: public_key,
+                Identifier1,Identifier2: text
+        const  zero,one: text
+        init State:=0
+
+        transition
+
+% The recursive server receives the request of the resolver and 
+% sends the request to RootServer
+        step1.  State=0 
+             /\ RCV(Recs.Res.Identifier'.zero.Request'.
+                    H(Identifier'.zero.Request'.Kares)) 
+                =|>
+                State':=1
+             /\ Identifier1':=new()
+             /\ SND(Root.Recs.Identifier1'.zero.Request') 
+             /\ request(Recs,Res,recursiveserver_resolver,
+                        H(Identifier'.zero.Request'.Kares))
+
+% Here, the recursive server receives from the root server the IP address 
+% of the intermediate server to question, together with its public key.
+
+        step2a. State=1 
+             /\ RCV(Recs.Root.Identifier1.one.Request.Nkey'.Ipaddress'.
+                    {MD5(one.Request.Nkey'.Ipaddress')}_inv(Kroot))
+                =|> State':=2 
+             /\ Identifier2':=new()
+             /\ SND(Ipaddress'.Recs.Identifier2'.zero.Request)
+
+        step2b. State=1 
+             /\ RCV(Recs.Root.Identifier1.one.Request.Kerror.
+                    {MD5(one.Request.Kerror)}_inv(Kroot))
+                =|> State':= 4 
+             /\ SND(Res.Recs.Identifier.one.Request.Kerror.
+                    H(Identifier.one.Request.Kerror.Kares)) 
+             /\ witness(Recs,Res,resolver_recursiveserver,
+                        H(Identifier.one.Request.Kerror.Kares))
+             /\ request(Recs,Root,recursiveserver_rootserver,
+                        Identifier1.one.Request.Kerror.{MD5(one.Request.Kerror)}_inv(Kroot))
+
+% The intermediate server tells the recursive server that the IP address 
+% for the request is Ipaddress
+        step3a. State=2 
+             /\ RCV(Recs.Ipaddress.Identifier2.one.Request.Response'.
+                    {MD5(one.Request.Response')}_inv(Nkey))
+                =|> State':=3 
+             /\ SND(Res.Recs.Identifier.one.Request.Response'.
+                    H(Identifier.one.Request.Response'.Kares)) 
+             /\ request(Recs,Ipaddress,recursiveserver_intermediateserver,
+                        Identifier2.one.Request.Response'.{MD5(one.Request.Response')}_inv(Nkey)) 
+             /\ witness(Recs,Res,resolver_recursiveserver,
+                        H(Identifier.one.Request.Response'.Kares)) 
+             /\ request(Recs,Root,recursiveserver_rootserver,
+                        Identifier1.one.Request.Nkey.Ipaddress.{MD5(one.Request.Nkey.Ipaddress)}_inv(Kroot))
+
+% It is the case where the address required is not resolvable. 
+% Thus the result is sent to A.
+        step3b. State=2 
+             /\ RCV(Recs.Ipaddress.Identifier2.one.Request.Kerror.
+                    {MD5(one.Request.Kerror)}_inv(Nkey))
+                =|> State':=4 
+             /\ SND(Res.Recs.Identifier.one.Request.Kerror.
+                     H(Identifier.one.Request.Kerror.Kares)) 
+             /\ witness(Recs,Res,resolver_recursiveserver,
+                        H(Identifier.one.Request.Kerror.Kares))
+             /\ request(Recs,Ipaddress,recursiveserver_intermediateserver,
+                        Identifier2.one.Request.Kerror.{MD5(one.Request.Kerror)}_inv(Nkey)) 
+             /\ request(Recs,Root,recursiveserver_rootserver,
+                        Identifier1.one.Request.Nkey.Ipaddress.{MD5(one.Request.Nkey.Ipaddress)}_inv(Kroot))
+end role
+
+
+role intermediateServer(
+        S: agent,
+        Pk: public_key,
+        Kerror: public_key,
+        MD5: hash_func,
+        DatabaseI: (text.agent) set ,
+        SND,RCV: channel(dy)) played_by S def=
+
+        local
+                Recs: agent,
+                Identifier,Request: text,
+                Ipaddress: agent,
+                State: nat
+        const zero,one: text
+        init State:=0
+        transition
+
+% Receiving a request and responding with the corresponding IP address
+% (i.e. successful resolution)
+        step1a. State=0 
+             /\ RCV(S.Recs'.Identifier'.zero.Request')
+             /\ in(Request'.Ipaddress',DatabaseI)
+                =|> State':=0 
+             /\ SND(Recs'.S.Identifier'.one.Request'.Ipaddress'.
+                    {MD5(one.Request'.Ipaddress')}_inv(Pk)) 
+             /\ witness(S,Recs',recursiveserver_intermediateserver,
+                        Identifier'.one.Request'.Ipaddress'.{MD5(one.Request'.Ipaddress')}_inv(Pk))
+
+% Receiving a request and responding with an error (i.e. failed resolution)
+        step1b. State=0 
+             /\ RCV(S.Recs'.Identifier'.zero.Request')
+             /\ not(in(Request'.Ipaddress',DatabaseI) )
+                =|> State':=0 
+             /\ SND(Recs'.S.Identifier'.one.Request'.Kerror.
+                    {MD5(one.Request'.Kerror)}_inv(Pk)) 
+             /\ witness(S,Recs',recursiveserver_intermediateserver,
+                        Identifier'.one.Request'.Kerror.{MD5(one.Request'.Kerror)}_inv(Pk))
+end role
+
+
+role rootServer(
+        S: agent,
+        Kroot: public_key,
+        Kerror: public_key,
+        MD5: hash_func,
+        DatabaseR: (text.agent.public_key) set ,
+        SND,RCV: channel(dy)) played_by S def=
+
+        local
+                Recs: agent,
+                Identifier,Request: text,
+                Ipaddress: agent,
+                Ki: public_key,
+                State: nat
+        const zero,one: text
+        init State:=0
+        transition
+
+% Receiving a request and responding with the corresponding IP address of
+% an intermediate server, plus its public key
+% (i.e. successful resolution)
+        step1a. State=0 
+             /\ RCV(S.Recs'.Identifier'.zero.Request')
+             /\ in(Request'.Ipaddress'.Ki',DatabaseR)
+                =|> State':=0 
+             /\ SND(Recs'.S.Identifier'.one.Request'.Ki'.Ipaddress'.
+                    {MD5(one.Request'.Ki'.Ipaddress')}_inv(Kroot))
+             /\ witness(S,Recs',recursiveserver_rootserver,
+                        Identifier'.one.Request'.Ki'.Ipaddress'.{MD5(one.Request'.Ki'.Ipaddress')}_inv(Kroot))
+
+% Receiving a request and responding with an error (i.e. failed resolution)
+        step1b. State=0 
+             /\ RCV(S.Recs'.Identifier'.zero.Request')
+             /\ not(in(Request'.Ipaddress'.Ki',DatabaseR) )
+                =|> State':=0
+             /\ SND(Recs'.S.Identifier'.one.Request'.Kerror.
+                     {MD5(one.Request'.Kerror)}_inv(Kroot))
+             /\ witness(S,Recs',recursiveserver_rootserver,
+                        Identifier'.one.Request'.Kerror.{MD5(one.Request'.Kerror)}_inv(Kroot))
+
+end role
+
+
+role session(
+        Root,Res,Recs: agent,
+        Kares: symmetric_key,
+        Request: text,
+        Kerror,Kroot: public_key,
+        MD5,H: hash_func,
+        Snd,Rcv: channel(dy))
+        def=
+
+  composition
+           resolver(Res,Recs,Kares,Kerror,H,Request,Snd,Rcv)
+        /\ recursiveServer(Recs,Res,Root,Kares,Kroot,Kerror,MD5,H,Snd,Rcv)
+end role
+
+role environment() def=
+        local
+                DbRoot: (text.agent.public_key) set,
+                DbIntermed: (text.agent) set,
+                Snd,Rcv: channel(dy)
+
+        const
+                resolver_recursiveserver,
+                  recursiveserver_resolver,
+                  recursiveserver_rootserver,
+                  recursiveserver_intermediateserver: protocol_id,
+                md5, h: hash_func,
+                res, recs, root, intermed, response: agent,
+                kroot, kis, kerror: public_key,
+                kares, kires: symmetric_key,
+                request1, request2: text
+
+        init
+                DbRoot:={request1.intermed.kis} /\
+                DbIntermed:={request1.response}
+        intruder_knowledge = { md5, h, recs, res ,root, kroot, kis, kerror, 
+                               kires, request2, request1 }
+
+        composition
+% A resolver asking a valid question (which leads to successful resolution
+            session(root,res,recs,kares,request1,kerror,kroot,md5,h,Snd,Rcv)
+% The same resolver asking a bad question (which leads to failed resolution)
+         /\ session(root,res,recs,kares,request2,kerror,kroot,md5,h,Snd,Rcv)
+% A session with a malicious client (intruder)
+         /\ session(root,i,recs,kires,request1,kerror,kroot,md5,h,Snd,Rcv)
+         /\ session(root,i,recs,kires,request2,kerror,kroot,md5,h,Snd,Rcv)
+         /\ rootServer(root,kroot,kerror,md5,DbRoot,Snd,Rcv)
+         /\ intermediateServer(intermed,kis,kerror,md5,DbIntermed,Snd,Rcv)
+end role
+
+goal
+  authentication_on resolver_recursiveserver
+  authentication_on recursiveserver_resolver
+  authentication_on recursiveserver_rootserver
+  authentication_on recursiveserver_intermediateserver
+end goal
+
+environment()
+</PRE>

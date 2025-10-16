@@ -1,0 +1,5 @@
+
+ 1. R --- {Service.C.R}_K_CR ------------> C
+ 2. R <-- {{Service.C.S}_K_CS.C.R}_K_CR -- C
+ 3. R --------- {{Service.C.S}_K_CS.C.S.R}_inv(K_R) --> S
+ 4. R <-------- {C.R.S}_inv(K_S) ---------------------- S

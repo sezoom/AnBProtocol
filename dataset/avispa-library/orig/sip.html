@@ -1,0 +1,312 @@
+<BR><DT><B>PROTOCOL:</B> <DD> SIP, Diameter Session Initiation Protocol<BR>
+<P>
+&nbsp;<BR><BR><DT><B>PURPOSE:</B> <DD> <BR>
+<P>
+ This is a Diameter application that allows a
+ Diameter client to request authentication and authorization
+ information to a Diameter server for Session Initiation Protocol
+ (SIP) based IP multimedia services.  
+<P>
+<P>
+&nbsp;<BR><BR><DT><B>REFERENCE:</B> <DD> <BR>
+   <UL>
+   <LI> draft-ietf-aaa-diameter-sip-app-07, IETF Memo available at 
+         www.ietf.org/internet-drafts/ draft-ietf-aaa-diameter-sip-app-07.txt.
+   <LI> IETF RFC 2617, available at www.ietf.org/rfc/rfc2617.txt.
+   </UL>
+<P>
+&nbsp;<BR><BR><DT><B>MODELER:</B> <DD> <BR>
+   <UL>
+   <LI> Jacopo Mantovani, AI-Lab, DIST, University of Genova
+   <LI> Luca Compagna, AI-Lab, DIST, University of Genova
+   </UL>
+<P>
+&nbsp;<BR><BR><DT><B>ALICE_BOB:</B> <DD> <BR>
+ <PRE>
+<P>
+ UAC   : User Agent Client
+ SSn   : n-th SIP Server
+ DS    : Diameter Server
+ Dest  : Models the requested service
+ sip401: http unauthorized response 
+ sip200: http authorized response
+<P>
+ 1.  UAC -> SS1	: sipregister.UAC.Dest
+ 2.  SS1 -> DS	: UAC.Dest
+ 3.  DS  -> SS1	: UAC.SS2
+ 4.  SS1 -> SS2	: sipregister.UAC.Dest
+ 5.  SS2 -> DS	: Dest.UAC
+ 6.  DS  -> SS2	: Nonce.UAC
+ 7.  SS2 -> SS1	: sip401.Nonce
+ 8.  SS1 -> UAC	: sip401.Nonce
+ 9.  UAC -> SS1	: sipregister.UAC.dest.Nonce.H(Nonce.H(UAC.PWD).H(dest))
+ 10. SS1 -> DS	: UAC.Dest
+ 11. DS  -> SS1	: UAC.SS2
+ 12. SS1 -> SS2	: sipregister.UAC.Dest.Nonce.H(Nonce.H(UAC.PWD).H(dest))
+ 13. SS2 -> DS	: Dest.UAC.Nonce.H(Nonce.H(UAC.PWD).H(dest))
+ 14. DS  -> SS2	: UAC.success
+ 15. SS2 -> SS1	: sip200
+ 16. SS1 -> UAC	: sip200
+ </PRE>
+<P>
+&nbsp;<BR><BR><DT><B>LIMITATIONS:</B> <DD> <BR>
+<P>
+ We model here only one successfull run of the protocol, that is,
+ a first attempt where the authentication fails and the credentials
+ of the User Agent Client are requested (together with a challenge)
+ by the Diameter Server, and a second part where the Client sends 
+ his credentials to the Server, for authorization and authentication.
+ The credentials are sent via the HTTP Digest schema, which can safely
+ be modeled in HLPSL by using a hash function.
+ Lastly, we assume that the SIP server and the Diameter client are located in
+ the same node, so that the SIP server is able to receive and process
+ SIP requests and responses which in turn relies on the AAA
+ infrastructure for authenticating the SIP request and authorizing the
+ usage of particular SIP services.
+<P>
+&nbsp;<BR><BR><DT><B>PROBLEMS:</B> <DD> 1<BR>
+<UL>
+<LI> strong authentication on <TT>y</TT>
+</UL>
+<P>
+&nbsp;<BR><BR><DT><B>CLASSIFICATION:</B> <DD> G1, G2, G3<BR>
+<P>
+&nbsp;<BR><BR><DT><B>ATTACKS:</B> <DD> None<BR>
+<P>
+<P>
+<P>
+&nbsp;<BR><HR>
+<BR><DT><B>HLPSL:</B> <DD> <BR>
+<PRE>
+
+
+<HR>
+
+role sip_server_1(
+                SS1,DS : agent,
+                CH_UAC_SS1,CH_SS1_UAC,CH_DS_SS1,CH_SS1_DS,
+                CH_SS2_SS1,CH_SS1_SS2 : channel(dy)) 
+
+        played_by SS1 def=
+
+        local   State   : nat, 
+                Dest    : protocol_id,
+                SS2,UAC : agent,
+                X       : protocol_id,
+                Y       : hash(text.hash(agent.text).hash(protocol_id)),
+                Nonce   : text
+
+        init State := 1 
+        
+        transition
+        
+        0. State = 1 
+        /\ CH_UAC_SS1(sipregister.UAC'.Dest')
+        =|>
+        State' := 2
+        /\ CH_SS1_DS(UAC'.Dest')
+        
+        1. State = 2 
+        /\ CH_DS_SS1(UAC.SS2')
+        =|>
+        State' := 3
+        /\ CH_SS1_SS2(sipregister.UAC.Dest) 
+
+        2. State = 3 
+        /\ CH_SS2_SS1(sip401.Nonce')
+        =|>
+        State' := 4
+        /\ CH_SS1_UAC(sip401.Nonce')
+
+        3. State = 4 
+        /\ CH_UAC_SS1(sipregister.UAC.Dest.Nonce.Y')
+        =|>
+        State':= 5
+        /\ CH_SS1_DS(UAC.Dest)
+
+        4. State = 5 
+        /\ CH_DS_SS1(UAC.SS2')
+        =|>
+        State':= 6
+        /\ CH_SS1_SS2(sipregister.UAC.Dest.Nonce.Y)
+
+        5. State = 6
+        /\ CH_SS2_SS1(X')
+        =|>
+        State':= 7
+        /\ CH_SS1_UAC(X')
+        
+end role
+
+<HR>
+role sip_server_2(
+                SS2,DS : agent,
+                CH_DS_SS2,CH_SS2_DS,CH_SS1_SS2,CH_SS2_SS1 : channel(dy)) 
+        
+        played_by SS2 def=
+
+        local State: nat,
+              Dest : protocol_id,
+              UAC  : agent,
+              Nonce: text,
+              Y    : hash(text.hash(agent.text).hash(protocol_id))
+
+        init State := 1
+        
+        transition
+        
+        6. State = 1
+        /\ CH_SS1_SS2(sipregister.UAC'.Dest')
+        =|>
+        State':= 2
+        /\ CH_SS2_DS(Dest'.UAC')
+
+        7. State = 2 
+        /\ CH_DS_SS2(Nonce'.UAC)
+        =|>
+        State':= 3
+        /\ CH_SS2_SS1(sip401.Nonce')
+
+        8. State = 3 
+        /\ CH_SS1_SS2(sipregister.UAC.Dest.Nonce.Y')
+        =|>
+        State':= 4
+        /\ CH_SS2_DS(Dest.UAC.Nonce.Y')
+
+        9. State = 4
+        /\ CH_DS_SS2(UAC.success)
+        =|>
+        State':= 5
+        /\ CH_SS2_SS1(sip200)
+
+end role
+
+<HR>
+role diameter_server(
+                DS,SS1,SS2 : agent,
+                PWD : text,
+                H : hash_func,
+                CH_SS1_DS,CH_DS_SS1,CH_SS2_DS,CH_DS_SS2 : channel(dy)) 
+
+        played_by DS def=
+
+        local   State   : nat,
+                UAC     : agent,
+                Nonce   : text
+
+        init State := 1
+        
+        transition
+        
+        10. State = 1
+        /\ CH_SS1_DS(UAC'.dest)
+        =|>
+        State' := 2
+        /\ CH_DS_SS1(UAC'.SS2)
+
+        11. State = 2
+        /\ CH_SS2_DS(dest.UAC)
+        =|>
+        State':= 3
+        /\ Nonce' := new()
+        /\ CH_DS_SS2(Nonce'.UAC)
+
+        12. State = 3
+        /\ CH_SS1_DS(UAC.dest)
+        =|>
+        State':= 4
+        /\ CH_DS_SS1(UAC.SS2)
+
+        13. State = 4 
+        /\ CH_SS2_DS(dest.UAC.Nonce.H(Nonce.H(UAC.PWD).H(dest)))
+        =|>
+        State':= 5
+        /\ CH_DS_SS2(UAC.success)
+        /\ request(UAC,UAC,y,H(Nonce.H(UAC.PWD).H(dest)))
+        
+end role
+
+<HR>
+role user_agent_client( 
+                UAC,SS1 : agent, 
+                PWD : text,
+                H : hash_func,
+                CH_SS1_UAC,CH_UAC_SS1:channel(dy)) 
+        
+        played_by UAC 
+        
+        def=
+
+        local   State : nat,
+                Nonce : text
+
+        init State := 1
+        
+        transition
+        
+        14. State = 1
+        /\ CH_SS1_UAC(start)
+        =|> 
+        State':=2
+        /\ CH_UAC_SS1(sipregister.UAC.dest)
+
+        15. State = 2 
+        /\ CH_SS1_UAC(sip401.Nonce')
+        =|>
+        State':= 3
+        /\ CH_UAC_SS1(sipregister.UAC.dest.Nonce'.H(Nonce'.H(UAC.PWD).H(dest)))
+        /\ witness(UAC,UAC,y,H(Nonce'.H(UAC.PWD).H(dest)))
+        
+        16. State = 3
+        /\ CH_SS1_UAC(sip200)
+        =|>  
+        State':= 4
+
+end role
+
+
+role session(UAC,SS1,SS2,DS:agent, H:hash_func, PWD:text) def=
+
+        local   SND_SS1A, RCV_SS1A, SND_SS1B, RCV_SS1B, SND_SS1C, RCV_SS1C: channel(dy),
+                SND_SS2A, RCV_SS2A, SND_SS2B, RCV_SS2B : channel(dy),
+                SND_DSA, RCV_DSA, SND_DSB, RCV_DSB : channel(dy),
+                SND_UACA, RCV_UACA  : channel(dy)
+
+        composition
+
+     sip_server_1(SS1,DS,SND_SS1A,RCV_SS1A,SND_SS1B,RCV_SS1B,SND_SS1C,RCV_SS1C)
+  /\ sip_server_2(SS2,DS,SND_SS2A, RCV_SS2A, SND_SS2B, RCV_SS2B)
+  /\ diameter_server(DS,SS1,SS2,PWD,H,SND_DSA, RCV_DSA, SND_DSB, RCV_DSB)
+  /\ user_agent_client(UAC,SS1,PWD,H,SND_UACA, RCV_UACA) 
+
+end role
+
+<HR>
+role environment() def=
+
+        const   uac,ss1,ss2,ds          : agent,
+                h                       : hash_func,
+                y                       : protocol_id,
+                sipregister,success     : protocol_id,
+                sip401,sip200           : protocol_id,
+                dest                    : protocol_id,
+                pwd                     : text
+
+        intruder_knowledge = {uac,ss1,ss2,ds,sipregister,sip401,sip200,success,h,i}
+
+        composition
+
+           session(uac,ss1,ss2,ds,h,pwd)
+
+ end role
+
+<HR>
+goal
+
+authentication_on y % addresses G1, G2, G3
+
+end goal
+
+<HR>
+environment()
+</PRE>

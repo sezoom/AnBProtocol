@@ -1,0 +1,284 @@
+<BR><DT><B>PROTOCOL:</B> <DD> EAP: Extensible Authentication Protocol<BR>
+<BR><DT><B>VARIANT:</B> <DD> With AKA method (Authentication and Key Agreement)<BR>
+<BR><DT><B>PURPOSE:</B> <DD> Mutual Authentication, replay protection, confidentiality, Key Derivation. <BR><BR>
+   EAP-AKA is developed from the UMTS AKA authentication and key agreement protocol.
+<P>
+&nbsp;<BR><BR><DT><B>REFERENCE:</B> <DD> <BR>
+ <UL>
+ <LI> <A HREF="http://www.ietf.org/internet-drafts/draft-arkko-pppext-eap-aka-15.txt">http://www.ietf.org/internet-drafts/draft-arkko-pppext-eap-aka-15.txt</A>
+ </UL>
+&nbsp;<BR><BR><DT><B>MODELER:</B> <DD> <BR>
+ <UL>
+ <LI> Jing Zhang for Siemens CT IC 3, 2004
+ <LI> Peter Warkentin, Siemens CT IC 3
+ <LI> Vishal Sankhla, University of Southern California
+ </UL>
+&nbsp;<BR><BR><DT><B>ALICE_BOB:</B> <DD> <BR>
+ <PRE>
+ The protocol exchanges messages between a peer P, e.g. an UMTS subscriber
+ identity module, and an authentication (EAP-)server S. Before the protocol
+ starts, S has obtained an authentication vector 
+    AV = (AT_RAND,AT_AUTN,AT_RES,IK,CK)
+ from the home environment (HE) of the peer P.
+ For constructing AV, HE/S and P share the following data/functions:
+    SK         : symmetric key   (long term secret)
+    SQN        : sequence number (unique to a session)
+    F1, F2     : authentication functions
+    F3, F4, F5 : key generation functions
+ The AV-components are computed by
+    AT_RAND    : a unique random number
+    CK         : F3(SK,AT_RAND)
+    IK         : F4(SK,AT_RAND)
+    AK         : F5(SK,AT_RAND)
+    MAC        : F1(SK,SQN,AT_RAND)
+    AT_AUTN    : {SQN}_AK . MAC
+    AT_RES     : F2(SK,AT_RAND)
+<P>
+ S -> P: request_id
+ P -> S: respond_id.NAI
+         % NAI is Network Address Identifier.
+         % S uses authentication vector AV = (AT_RAND,AT_AUTN,AT_RES,IK,CK)
+         % S computes message authentication code for next message:
+         %    AT_MAC = HMAC(PRF_SHA1(NAI,IK,CK),AT_RAND.AT_AUTN)
+ S -> P: AT_RAND.AT_AUTN.AT_MAC
+         % P checks validity of AT_MAC,AT_AUTN and SQN
+         % P computes AT_RES = F2(SK,AT_RAND), IK, CK
+         % P computes message authentication code for next message:
+         %    AT_MAC = HMAC(PRF_SHA1(NAI,IK,CK),AT_RES)
+ P -> S: AT_RES.AT_MAC
+         % S checks validity of AT_MAC,AT_RES
+ S -> P: success
+         % S,P agree on
+         %   session key for encryption      CK = F3(SK,AT_RAND)
+         %   session key for integrity check IK = F4(SK,AT_RAND)
+ </PRE>
+&nbsp;<BR><BR><DT><B>LIMITATIONS:</B> <DD> <BR>
+ <UL>
+ <LI> The server S combines the (logically) different roles of the home
+ environment HE, the network access server NAS and the EAP server.
+ <LI> The modeller has to take care that each session gets a unique
+ sequence number SQN
+ <LI> No synchronization of SQN (in case the peer decides SQN is invalid).
+ <LI> No resumption of a previous session.
+ </UL>
+<P>
+&nbsp;<BR><BR><DT><B>PROBLEMS:</B> <DD> 3<BR>
+<UL>
+<LI>secrecy of <TT>sec_ck1, sec_ck2, sec_ik1, sec_ik2</TT>
+<LI> strong authentication on <TT>at_rand</TT>
+<LI> strong authentication on <TT>at_rand2</TT>
+</UL>
+&nbsp;<BR><BR><DT><B>ATTACKS:</B> <DD> None<BR>
+<P>
+&nbsp;<BR><BR><DT><B>NOTES:</B> <DD> <BR>
+ The mechanism is based on challenge-response and uses symmetric cryptography.
+ AKA typically runs in a UMTS Subscriber Identity Module (USIM).
+ In AKA, the pre-shared credential is stored in the USIM and in the user's
+ home server. The authentication process starts when the user attaches to
+ the home environment where an authentication vector from the secret key and
+ a sequence number is generated. The authentication vector contains a random
+ number (RAND), an authenticator part (AUTN) for authenticating the network,
+ the expected result (XRES) for authenticating the peer, a session key for
+ integrity (IK), and a session key for encryption (CK). After the
+ authentication vector is delivered, the authentication starts the protocol
+ by sending a challenge (RAND) and authentication data (AUTN) to USIM.
+ USIM verifies the AUTN based on the
+ secret key and the sequence number to authenticate the network. If the AUTN
+ is valid, the USIM generates the authentication result RES itself and sends
+ this to the authentication server. The authentication server verifies the
+ RES from the USIM. If it is valid, the user is authenticated and IK and CK
+ will be used in key derivation of both peers.
+&nbsp;<BR><HR>
+<BR><DT><B>HLPSL:</B> <DD> <BR>
+<PRE>
+role peer (
+    P,S              : agent,
+    F1,F2,F3,F4,F5   : hash_func,
+    PRF_SHA1         : hash_func,
+    HMAC             : hash_func,
+    SK               : symmetric_key, 
+    SQN              : text,
+    SND,RCV          : channel (dy))
+played_by P def=
+
+  local
+    AT_RAND          : text,
+    NAI              : text,
+    AT_MAC1 : hash(hash(text.hash(symmetric_key.text).hash(symmetric_key.text)).text.message),
+    AT_MAC2 : hash(hash(text.hash(symmetric_key.text).hash(symmetric_key.text)).hash(symmetric_key.text)),
+    AT_AUTN : message,
+    AT_RES, IK, CK   : hash(symmetric_key.text),
+    State            : nat 
+
+  const
+    request_id,
+    respond_id,
+    success     : text,
+    sec_ck1, sec_ik1,
+    at_rand,
+    at_rand2    : protocol_id
+ 
+  init 
+    State := 0 
+  
+  transition
+
+  1. State   = 0
+       /\ RCV(request_id)
+     =|>
+     State' := 2
+       /\ NAI' := new()
+       /\ SND(respond_id.NAI')
+
+  2. State   = 2
+       /\ RCV(AT_RAND'.AT_AUTN'.AT_MAC1')
+       /\ AT_AUTN'  = {SQN}_F5(SK.AT_RAND').F1(SK.SQN.AT_RAND')
+       /\ CK'       = F3(SK.AT_RAND')
+       /\ IK'       = F4(SK.AT_RAND')
+       /\ AT_MAC1'  = HMAC(PRF_SHA1(NAI.IK'.CK').AT_RAND'.AT_AUTN')
+     =|>
+     State' := 4
+       /\ AT_RES'  := F2(SK.AT_RAND')
+       /\ AT_MAC2' := HMAC(PRF_SHA1(NAI.IK'.CK').AT_RES')
+       /\ SND(AT_RES'.AT_MAC2')
+       /\ request(P,S,at_rand,AT_RAND')
+       /\ witness(P,S,at_rand2,AT_RAND')
+       /\ secret(CK',sec_ck1,{S,P})
+       /\ secret(IK',sec_ik1,{S,P})
+
+  3. State   = 4 /\ RCV(success) =|>
+     State' := 6 
+
+end role
+
+<HR>
+
+role server (
+    P,S              : agent,
+    F1,F2,F3,F4,F5   : hash_func,
+    PRF_SHA1         : hash_func,
+    HMAC             : hash_func,
+    SK               : symmetric_key, 
+    SQN              : text,
+    SND,RCV          : channel (dy))
+played_by S def=
+
+  local
+    AT_RAND          : text,
+    NAI              : text, 
+    AT_MAC1 : hash(hash(text.hash(symmetric_key.text).hash(symmetric_key.text)).text.message),
+    AT_MAC2 : hash(hash(text.hash(symmetric_key.text).hash(symmetric_key.text)).hash(symmetric_key.text)),
+    AT_AUTN : message,
+    AT_RES, IK, CK   : hash(symmetric_key.text),
+    State            : nat
+
+  const
+    request_id,
+    respond_id,
+    success     : text,
+    sec_ck2, sec_ik2,
+    at_rand,
+    at_rand2    : protocol_id
+ 
+
+  init 
+    State := 1 
+
+  transition
+
+  1. State   = 1
+       /\ RCV(start)
+     =|>
+     State' := 3
+       /\ SND(request_id)
+
+  2. State   = 3
+       /\ RCV(respond_id.NAI')
+     =|>
+     State' := 5
+       /\ AT_RAND' := new()
+       /\ AT_AUTN' := {SQN}_F5(SK.AT_RAND').F1(SK.SQN.AT_RAND')
+       /\ CK'      := F3(SK.AT_RAND')
+       /\ IK'      := F4(SK.AT_RAND')
+       /\ AT_MAC1' := HMAC(PRF_SHA1(NAI'.IK'.CK').AT_RAND'.AT_AUTN')
+       /\ SND(AT_RAND'.AT_AUTN'.AT_MAC1')
+       /\ witness(S,P,at_rand,AT_RAND')
+       /\ secret(CK',sec_ck2,{S,P})
+       /\ secret(IK',sec_ik2,{S,P})
+
+  3. State   = 5
+       /\ RCV(AT_RES'.AT_MAC2')
+       /\ AT_RES'  = F2(SK.AT_RAND)
+       /\ AT_MAC2' = HMAC(PRF_SHA1(NAI.IK.CK).AT_RES')
+     =|>
+     State' := 7
+       /\ SND(success)
+       /\ request(S,P,at_rand2,AT_RAND)
+
+end role
+
+<HR>
+
+role session(
+    P,S              : agent,
+    F1,F2,F3,F4,F5   : hash_func,
+    PRF_SHA1         : hash_func,
+    HMAC             : hash_func,
+    SK               : symmetric_key,
+    SQN              : text)
+def=
+
+local
+    SNDP, RCVP, SNDS, RCVS : channel (dy)
+
+const 
+    at_rand,at_rand2       : protocol_id
+
+  composition
+     peer(  P,S,F1,F2,F3,F4,F5,PRF_SHA1,HMAC,SK,SQN,SNDP,RCVP)
+  /\ server(P,S,F1,F2,F3,F4,F5,PRF_SHA1,HMAC,SK,SQN,SNDS,RCVS)
+
+end role
+
+<HR>
+
+role environment() def=
+
+  const 
+    p,s                     : agent,
+    kps,kis                 : symmetric_key, % !!one per user   !!
+    sqnp1, sqnp2, sqni      : text,          % !!one per session!!
+    f1,f2,f3,f4,f5          : hash_func,
+    prf_sha1                : hash_func,
+    hmac                    : hash_func
+
+  intruder_knowledge = {p,s,i,f1,f2,f3,f4,f5,prf_sha1,hmac
+
+                       }
+ 
+  composition
+     session(p,s,f1,f2,f3,f4,f5,prf_sha1,hmac,kps,sqnp1)
+%  /\ session(p,s,f1,f2,f3,f4,f5,prf_sha1,hmac,kps,sqnp2)
+% /\ session(i,s,f1,f2,f3,f4,f5,prf_sha1,hmac,kis,sqni)
+
+end role
+
+<HR>
+
+goal
+
+  %secrecy_of CK, IK
+  secrecy_of sec_ck1, sec_ck2, sec_ik1, sec_ik2
+
+  %Peer authenticates Server on at_rand
+  authentication_on at_rand
+  %Server authenticates Peer on at_rand2
+  authentication_on at_rand2
+
+end goal
+
+<HR>
+
+environment()
+
+</PRE>

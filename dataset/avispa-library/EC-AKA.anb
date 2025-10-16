@@ -1,0 +1,7 @@
+
+ 	U->M: ({IMSI.PSQN}_Pkh)						| NAS Attach Request
+ 	M->H: (ImsiEnc.{SNID}_Pkh)					| Authenticatin Data Request
+    	H->M: ({RAND.Vf2.Vf3.Vf4.xor(SQN,Vf5).AMF.Vf1.EK}_Pkm)		| Authentication Data Reply
+ 	M->U: ({RAND.xor(SQN,F5(Xvf5)).AMF'.F1(Xvf1)}_EK)		| Authentication Request
+    	U->M: ({RAND.xor(SQN,F5(Xvf5)).AMF.F1(Xvf1)}_EK) 		| User Authentication Response
+ 

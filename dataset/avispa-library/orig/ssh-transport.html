@@ -1,0 +1,260 @@
+<BR><DT><B>PROTOCOL:</B> <DD> SSH Transport Layer Protocol<BR>
+<BR><DT><B>PURPOSE:</B> <DD> <BR>
+ Secure authentication mechanism (of server) and key exchange
+&nbsp;<BR><BR><DT><B>REFERENCE:</B> <DD> <BR>
+ <A HREF="http://www.ietf.org/internet-drafts/draft-ietf-secsh-transport-24.txt">http://www.ietf.org/internet-drafts/draft-ietf-secsh-transport-24.txt</A> [secsh-transport]
+
+
+
+
+
+<P>
+&nbsp;<BR><BR><DT><B>MODELER:</B> <DD> <BR>
+ David von Oheimb, Siemens CT IC 3, August 2004 
+<P>
+&nbsp;<BR><BR><DT><B>ALICE_BOB:</B> <DD> <BR>
+setting up the transport, including key exchange:
+<PRE>
+ 1. C -> S: NC
+ 2. S -> C: NS
+ 3. C -> S: exp(g,X)
+ 4. S -> C: k_S.exp(g,Y).{H}_inv(k_S) 
+ with K=exp(exp(g,X),Y), H=hash(NC.NS.k_S.exp(g,X).exp(g,Y).K)
+</PRE>
+user authentication, connections, etc: 
+<PRE>
+ 5. C -> S: {XXX}_KCS with SID=H, KCS=hash(K.H.c.SID)
+ 6. S -> C: {YYY}_KSC with SID=H, KSC=hash(K.H.d.SID)
+</PRE>
+<P>
+&nbsp;<BR><BR><DT><B>LIMITATIONS:</B> <DD> <BR>
+<P>
+Issues abstracted from:
+<UL>
+<LI> version strings and matching
+<LI> algorithm negotiation for encryption, hashing, etc.
+<LI> Binary packet protocol/format, MAC, sequence numbers
+<LI> message numbers (i.e. message type identifiers)
+<LI> <TT>first_kex_packet_follows</TT>
+<LI> alternative key exchange algorithms (other than Diffie-Hellman)
+<LI> <TT>SSH_MSG_NEWKEYS</TT>, key re-exchange
+<LI> <TT>SSH_MSG_DISCONNECT</TT>, <TT>SSH_MSG_DEBUG</TT>, <TT>SSH_MSG_IGNORE</TT>, <TT>SSH_MSG_UNIMPLEMENTED</TT>
+<LI> <TT>SSH_MSG_SERVICE_REQUEST</TT>, <TT>SSH_MSG_SERVICE_ACCEPT</TT>
+</UL>
+<P>
+&nbsp;<BR><BR><DT><B>PROBLEMS:</B> <DD> 2<BR>
+<UL>
+<LI>secrecy of <TT>sec_K, sec_KCS, sec_KSC %%</TT>
+<LI> strong authentication on <TT>k</TT>
+</UL>
+&nbsp;<BR><BR><DT><B>ATTACKS:</B> <DD> None<BR>
+<P>
+&nbsp;<BR><BR><DT><B>NOTES:</B> <DD> <BR>
+Modelling of authentication property:
+&nbsp;<BR>
+The common way (see "standard version" in the HLPSL code) is done by
+augmenting the Server role with <TT>witness(S,C,n,K')</TT> and the Client-role
+with <TT>request(C,S,n,K')</TT>
+where K' is the common (secret!) key.
+This model yields a spurious attack in which the intruder always forwards the
+current message. The intruder does not know the common key! Thus, in this
+attack the intruder plays a dummy role. The attack only results since the
+intruder is also playing an active role and thus is witness for the final
+request:
+<PRE>
+ Request c s n exp(exp(g,Y(4)),X(3))
+ Witness s i n exp(exp(g,X(3)),Y(4))
+</PRE>
+To avoid such a dummy attack a different modelling was chosen.
+&nbsp;<BR>
+The property is split into two parts.
+First, assuring that the client has communicated with the server.
+This is achieved by augmenting the Server role by <TT>witness(S,S,n,K')</TT>
+and the Client role by <TT>request(S,S,n,K')</TT>.
+Second, assuring that the common key is only(!) known to the client
+and the server and not(!) to the intruder. This is achieved by augmenting
+the Client-role by <TT>secret(K',S)</TT>.
+Using this modelling no attack results.
+&nbsp;<BR>
+The protocol only authenticates the server and not the client.
+Therefore, messages sent by the server after completion of the protocol
+may not stay secret.
+<P>
+In the IETF draft (SSH Transport Layer Protocol) it is mentioned that
+the 'exchange hash SHOULD be kept secret'. This recommendation is violated
+by the send-operation in the 2nd protocol step in the IETF draft.
+Here, the 'exchange hash' corresponds to H in role Server and the violation
+concerns the SND-operation in transition 6 of role Server.
+&nbsp;<BR><HR>
+<BR><DT><B>HLPSL:</B> <DD> <BR>
+<PRE>
+
+role client(C, S             : agent,
+            SND, RCV         : channel(dy),
+            Hash             : hash_func,
+            HostKey          : hash_func,
+            G                : nat,
+            LetterC, LetterD : text)
+
+played_by C def=
+
+  local State:    nat,
+        NC:       text,
+        NS:       text,
+        X:        text,
+        EGY,K:    message, %should be: text
+        H,SID_:   message, %should be: text
+        KCS, KSC: message, %should be: symmetric_key
+        SecretS:  text
+  
+  const secretC     : text,
+        k           : protocol_id,
+        sec_K,
+        sec_KCS,
+        sec_KSC,
+        sec_secretC : protocol_id
+
+  init   State := 1
+
+
+
+  transition
+
+   1. State  = 1 /\ RCV(start) =|> 
+      State':= 3 /\ NC' := new()
+                 /\ SND(NC')
+
+   3. State  = 3 /\ RCV(NS') =|> 
+      State':= 5 /\ X' := new()
+                 /\ SND(exp(G,X'))
+
+   5. State  = 5 /\ RCV(HostKey(S).EGY'.{H'}_inv(HostKey(S)))
+                 /\ H' = Hash(NC.NS.HostKey(S).exp(G,X).EGY'.K') 
+                 /\ K' = exp(EGY',X) =|> 
+      State':= 7 /\ SID_' := H' 
+                 /\ KCS' := Hash(K'.H'.LetterC.SID_')
+                 /\ KSC' := Hash(exp(EGY',X).H'.LetterD.H')
+                 /\ secret(K',  sec_K,  {C,S})
+                 /\ secret(KCS',sec_KCS,{C,S})
+                 /\ secret(KSC',sec_KSC,{C,S})
+                 /\ SND({secretC}_KCS')
+                 %/\ secret(secretC,sec_secretC,{C,S})
+                 %/\ request(C,S,k,K')  % standard version
+                 /\ request(S,S,k,K')
+
+   7. State  = 7 /\ RCV({SecretS'}_KSC) =|> 
+      State':= 9 
+
+end role
+
+<HR>
+
+role server(C, S             : agent,
+            SND, RCV         : channel(dy),
+            Hash             : hash_func,
+            HostKey          : hash_func,
+            G                : nat,
+            LetterC, LetterD : text)
+
+played_by S def=
+
+  local State:    nat,
+        NS:       text,
+        NC:       text,
+        Y:        text,
+        EGX,K:    message, %should be: text
+        H,SID_:   message, %should be: text
+        KCS, KSC: message, %should be: symmetric_key
+        SecretC:  text
+ 
+  const k:       protocol_id
+
+           
+  init  State := 2
+
+
+
+  transition
+   2. State  = 2 /\ RCV(NC') =|> 
+      State':= 6 /\ NS' := new()
+                 /\ SND(NS')
+
+   6. State  = 6 /\ RCV(EGX') =|> 
+      State':= 8 /\ Y' := new()
+                 /\ K' := exp(EGX',Y') 
+                 /\ H' := Hash(NC.NS.HostKey(S).EGX'.exp(G,Y').K')
+                 /\ SID_' := H' 
+                 /\ KCS' := Hash(K'.H'.LetterC.SID_')
+                 /\ KSC' := Hash(K'.H'.LetterD.SID_')
+                 /\ SND(HostKey(S).exp(G,Y').{H'}_inv(HostKey(S)))
+                 %/\ witness(S,C,k,K')  % standard version
+                 /\ witness(S,S,k,K')
+
+   8. State  = 8 /\ RCV({SecretC'}_KCS) =|> 
+      State':=10
+
+
+
+
+
+
+
+
+
+
+
+end role
+
+<HR>
+
+role session(C, S    : agent,
+             CS, SC  : channel (dy),
+             Hash    : hash_func,
+             HostKey : hash_func,
+             G       : nat,
+             LetterC, LetterD : text)
+def=
+  composition
+           client(C, S, CS, SC, Hash, HostKey, G, LetterC, LetterD)
+       /\  server(C, S, SC, CS, Hash, HostKey, G, LetterC, LetterD)
+end role
+
+<HR>
+
+role environment() def=
+
+  const
+    c,s                : agent,
+    cs,sc,is,si,ci,ic  : channel (dy),
+    hash_,host_key     : hash_func,
+    g                  : nat,
+    letter_c, letter_d : text
+
+  intruder_knowledge = {c,s,hash_,host_key,g,letter_c,letter_d,
+                        inv(host_key(i))}
+
+  composition
+        session(c,s,cs,sc,hash_,host_key,g,letter_c,letter_d) 
+     /\ session(i,s,is,si,hash_,host_key,g,letter_c,letter_d) 
+     /\ session(c,i,ci,ic,hash_,host_key,g,letter_c,letter_d)
+
+end role
+
+
+<HR>
+
+goal
+
+  %secrecy_of K, KCS, KSC, secretC 
+  secrecy_of sec_K, sec_KCS, sec_KSC 
+
+  %Client authenticates Server on k
+  authentication_on k
+   
+end goal
+  
+
+<HR>
+
+environment()
+</PRE>

@@ -1,0 +1,4 @@
+
+ CREATE_CHILD_SA
+ 1. A -> B: {SAa, Na, KEa}K
+ 2. B -> A: {SAb, Nr, KEb}K

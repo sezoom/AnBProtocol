@@ -1,0 +1,47 @@
+
+ The protocol involves 4 (logically) different agents: the client (here 
+ called peer P in acc. to previous EAP-modelling), the access point NAS,
+ the TTLS server and the AAA/H server (in user's home domain). Here, we
+ join the last 3 agents into the role of server S.
+
+ P <- S : request_id
+ P -> S : respond_id.UserId
+
+ 1st phase: TLS
+ P <- S : start_ttls
+ P -> S : Version.SessionID.Np.CipherSuite   % client_hello
+ P <- S : Version.SessionID.Ns.Cipher        % server_hello
+          {S.Ks}_inv(Kca)                    % certificate
+          Ske                                % server_key_exchange, not needed
+                                             % for public key encryption
+          Shd                                % server_hello_done  (text)
+ P -> S : {PMS}_Ks                           % client_key_exchange
+          Ccs                                % change_cipher_spec (text)
+          {Finished}_ClientK                 % finished
+ P <- S : Ccs                                % change_cipher_spec (text)
+          {Finished}_ServerK                 % finished
+
+ 2nd phase: using tunneling to authenticate peer
+ P -> S : {UserName,
+           CHAP_challenge,
+           CHAP_Password 
+          }_ClientK
+ P <- S : success
+
+ with
+ CipherSuite:    set of cipher suites supplied by P (for EAP-TLS)
+ Cipher:         cipher suite selected by S (from CipherSuite)
+ Np:             nonce created by P
+ Ns:             nonce created by S
+ Ks:             public key of S
+ Kca:            public key of certification authority
+ PMS:            pre-master-secret created by P (nonce)
+ MS:             master-secret ( =PRF(PMS,Np,Ns) )
+ Finished:       hash(MS,)
+ ClientK:        session key for client =KeyGen(P.Np.Ns.MS)
+ ServerK:        session key for server =KeyGen(S.Np.Ns.MS)
+ CHAP_challenge: Tranc(CHAP_PRF(M.Txt.Np.Ns).1.16)
+ ChapId:         Tranc(CHAP_PRF(M.Txt.Np.Ns).17.17)
+ CHAPRs:         Chap response
+ CHAP_Password:  ChapId + ChapRs
+ 

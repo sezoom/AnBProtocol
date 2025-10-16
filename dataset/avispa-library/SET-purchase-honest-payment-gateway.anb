@@ -1,0 +1,12 @@
+
+ % Purchase Initiate Request
+ 1. C->M: P_Init_Req
+ % Purchase Initiate Response
+ 2. M->C: Sign_M(P_Init_Resp).SignCert(M).EncCert(P)
+ % Purchase Request
+ 3. C->M: OI.DualSig_C(OI,PI).
+           Encrypt_P(AI,K1,DualSig_C(OI,PI).PI).
+           SignCert(C)
+ % Purchase Response
+ 4. M->C: Sign_M(Purch_Res).SignCert(M)
+ 

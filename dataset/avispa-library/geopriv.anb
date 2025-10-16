@@ -1,0 +1,12 @@
+
+ T  : Target (subsumes Mobile User and Rule Maker)
+ LR : Location Recipient
+ LS : Location Server (subsumes the Location Generator and Rule Holder)
+ LI : Location Information
+ PR : Privacy Rule
+ 1. LR --------- LR.{LR.N_LR}_K_T_LR --------------------------------------> T
+ 2. LR <- Psi_LR.{PW_LR.N_LR}_K_T_LR --------------------------------------- T
+ 3.                                    LS <- T.Psi_LR.{PW_LR.T.PR}_K_T_LS -- T
+ % some time later, LR requests the location information of T:
+ 4. LR - Psi_LR.{PW_LR.K_LR.T}_K_LS -> LS
+ 5. LR <----------- {PR(LI).T}_K_LR -- LS

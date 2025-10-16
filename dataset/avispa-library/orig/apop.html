@@ -1,0 +1,162 @@
+<BR><DT><B>PROTOCOL:</B> <DD> APOP: Authenticated Post Office Protocol<BR>
+<BR><DT><B>PURPOSE:</B> <DD> <BR>
+ Secure mechanism for origin authentication and replay protection.
+<P>
+&nbsp;<BR><BR><DT><B>REFERENCE:</B> <DD> <BR>
+ <UL>
+ <LI> RFC 1939 : <A HREF="http://www.faqs.org/rfcs/rfc1939.html">http://www.faqs.org/rfcs/rfc1939.html</A>
+ </UL>
+&nbsp;<BR><BR><DT><B>MODELER:</B> <DD> <BR>
+ <UL>
+ <LI> Daniel Plasto for Siemens CT IC 3, 2004
+ </UL>
+<P>
+&nbsp;<BR><BR><DT><B>ALICE_BOB:</B> <DD> <BR>
+<PRE>
+ S -> C : Hello.Timestamp
+ C -> S : C.MD5(Timestamp.K_CS)
+ S -> C : Success
+</PRE>
+<P>
+&nbsp;<BR><BR><DT><B>PROBLEMS:</B> <DD> 1<BR>
+<UL>
+<LI> strong authentication on <TT>timestamp</TT>
+</UL>
+&nbsp;<BR><BR><DT><B>ATTACKS:</B> <DD> None<BR>
+<P>
+&nbsp;<BR><BR><DT><B>NOTES:</B> <DD> <BR>
+ The following protocol models part of the POP3 Post Office Protocol.
+ POP3 is used to allow a workstation (client) to retrieve mail that a server
+ is holding for it. After the POP3 server has sent a greeting, the session
+ enters the AUTHORISATION state in which the client has to identify itself
+ to the server. After successful identification the session enters the
+ TRANSACTION state and the client may request actions from the server,
+ e.g. for delivering mail. When the client issues the QUIT command, the
+ session enters the UPDATE state, i.e. the server releases acquired
+ resources and says goodbye.
+ The modelled part of the POP3 protocol covers the greeting and
+ the AUTHORISATION phase. There are several ways for server identification
+ one of which is the APOP method which provides origin authentication and
+ replay protection: The APOP method assumes server and client to share a common
+ secret <TT>K_CS</TT>. The POP3 server includes a fresh timestamp in its
+ greeting message. The client answers with his identity and a digest
+ calculated by applying the MD5 algorithm to the timestamp followed by the
+ shared secret. On successful verification of the digest, the server issues a
+ positive response and the session enters the TRANSACTION state.
+&nbsp;<BR><HR>
+<BR><DT><B>HLPSL:</B> <DD> <BR>
+<PRE>
+
+role client(
+    C,S            : agent,
+    K_CS           : symmetric_key,
+    MD5            : hash_func,
+    Hello, Success : text,
+    SND,RCV        : channel(dy))
+played_by C def=
+
+  local
+    State     : nat,
+    Timestamp : text
+
+  const
+    timestamp : protocol_id
+                   
+  init 
+    State := 0
+            
+  transition
+            
+ 1. State   = 0 /\ RCV(Hello.Timestamp') =|>
+    State' := 1 /\ SND(C.MD5(Timestamp'.K_CS))
+                /\ witness(C,S,timestamp,Timestamp')
+
+ 2. State   = 1 /\ RCV(Success) =|>
+    State' := 2 
+                              
+end role
+
+<HR>
+
+role server (
+    C,S            : agent,
+    K_CS           : symmetric_key,
+    MD5            : hash_func,
+    Hello, Success : text,
+    SND,RCV        : channel(dy))
+played_by S def=
+            
+  local
+    State     : nat,
+    Timestamp : text
+
+  const
+    timestamp : protocol_id
+                   
+  init 
+    State := 10
+            
+  transition
+            
+ 1. State   = 10 /\ RCV(start) =|>
+    State' := 11 /\ Timestamp' := new()
+                 /\ SND(Hello.Timestamp')
+                   
+ 2. State   = 11 /\ RCV(C.MD5(Timestamp.K_CS)) =|>
+    State' := 12 /\ SND(Success)
+                 /\ request(S,C,timestamp,Timestamp)
+end role
+
+<HR>
+
+role session (
+    C,S            : agent,
+    K_CS           : symmetric_key,
+    MD5            : hash_func,
+    Hello, Success : text)
+def=
+
+  local
+    S1, S2: channel (dy),
+    R1, R2: channel (dy)
+              
+  composition
+              
+    client(C,S,K_CS,MD5,Hello,Success,S1,R1)
+ /\ server(C,S,K_CS,MD5,Hello,Success,S2,R2)
+
+end role
+
+<HR>
+
+role environment() def=
+
+  const 
+    c,s           : agent,
+    md5           : hash_func,
+    k_cs,k_is     : symmetric_key,
+    hello,success : text
+
+  intruder_knowledge = {c,s,i,k_is,md5,hello,success}
+
+  composition
+
+    session(c,s,k_cs,md5,hello,success)
+ /\ session(c,s,k_cs,md5,hello,success)
+ /\ session(i,s,k_is,md5,hello,success)
+ /\ session(i,s,k_is,md5,hello,success)
+           
+end role
+                  
+<HR>
+
+goal
+  %Server authenticates Client on timestamp
+  authentication_on timestamp
+end goal
+
+<HR>
+
+environment()
+
+</PRE>

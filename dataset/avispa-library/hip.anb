@@ -1,0 +1,5 @@
+
+ 0. C -> S: Hash(HI_S).Hash(HI_C)
+ 1. S -> C: {PUZZLE.HI_S.DH_S.HIP_Trans.ESP_Trans}_Sig(S)
+ 2. C -> S: {Soln.LSI_C.SPI_C.HIP_Trans.ESP_Trans.DH_C.{HI_C}_key}_Sig(C)
+ 3. S -> C: {LSI_S.SPI_S.HMAC}_Sig(S)

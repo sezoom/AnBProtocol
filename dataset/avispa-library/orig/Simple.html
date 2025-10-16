@@ -1,0 +1,223 @@
+<BR><DT><B>PROTOCOL:</B> <DD> SIMPLE<BR>
+<P>
+&nbsp;<BR><BR><DT><B>PURPOSE:</B> <DD> <BR>
+ The Session Initiation Protocol (SIP) for Instant Messaging and Presence (MP)
+<P>
+&nbsp;<BR><BR><DT><B>REFERENCE:</B> <DD> <BR>
+ <UL>
+ <LI> <A HREF="http://www.ietf.org/internet-drafts/draft-ietf-simple-presence-rules-03.txt">http://www.ietf.org/internet-drafts/draft-ietf-simple-presence-rules-03.txt</A>
+ <LI> <A HREF="http://www.ietf.org/internet-drafts/draft-ietf-sip-identity-05.txt">http://www.ietf.org/internet-drafts/draft-ietf-sip-identity-05.txt</A>
+ <LI> RFC2617 - HTTP Authentication: Basic and Digest Access Authentication
+ <LI> RFC3261 - SIP: Session Initiation Protocol
+ <LI> RFC3325 - Private Extensions to the SIP for Asserted Identity
+ </UL>
+<P>
+&nbsp;<BR><BR><DT><B>MODELER:</B> <DD> <BR>
+ Judson Santiago, LORIA Nancy, June 2005
+<P>
+&nbsp;<BR><BR><DT><B>ALICE_BOB:</B> <DD> <BR>
+ <PRE>
+  WR --> PS: SUBSCRIBE
+  PS --> WR: Challenge.realm (a nonce and id of the user domain)
+  WR --> PS: Hash(Username.Challenge.Password)
+  PS --> WR: PresenceInfo
+<P>
+  WR = Watcher
+  PS = Presence Server
+ </PRE>
+<P>
+&nbsp;<BR><BR><DT><B>LIMITATIONS:</B> <DD> <BR>
+ The protocol has two more agents, besides WR and PS, that do not
+ appear in the specification, namely PT (Presentity) and RM 
+ (Rule Maker). The Presentity is the agent about whom the watcher
+ wants to obtain informations. The Rule Maker is the agent that
+ will provide a policy document to the Presence Server, stating 
+ the watchers that can obtain the presence information and under 
+ what conditions. Both agents were abstracted, the policy document 
+ is considered to be already known by the Presence Server because
+ the document is transported using security mechanisms that prevents
+ eavesdropping and interception of the message. We also assume
+ that all watchers want to gather informations about the same
+ Presentity and that they have the rights to do so.
+<P>
+ The presence server has two ways to obtain the identity
+ of the watcher, either the watcher authenticates himself in 
+ a local proxy, that can assert the watcher identity, and the
+ proxy forwards the subscribe message to the presence server, 
+ or the watcher authenticates directly with the presence server. 
+ In the former case the local proxy will add a <TT>P-Asserted-identity</TT>
+ field to the message that is forwarded to the presence server.
+ This field can then be used to get the watcher identity and
+ decide if the presence information should or not be granted
+ to the watcher. The latter case, the one that is specified here,
+ is a simpler view of the protocol that consider the 
+ presence server can authenticate the watcher identity. 
+<P>
+ The current specification uses common digest authentication
+ and that implies no replay attack protection.
+<P>
+&nbsp;<BR><BR><DT><B>PROBLEMS:</B> <DD> 3<BR>
+<UL>
+<LI>secrecy of <TT>presenceinfo</TT>
+<LI> weak authentication on <TT>wr_ps_presenceinfo</TT>
+<LI> weak authentication on <TT>ps_wr_user</TT>
+</UL>
+<P>
+&nbsp;<BR><BR><DT><B>CLASSIFICATION:</B> <DD> G1 G2 G12<BR>
+<P>
+&nbsp;<BR><BR><DT><B>ATTACKS:</B> <DD> None <BR>
+<P>
+&nbsp;<BR><BR><DT><B>NOTES:</B> <DD> <BR>
+ The main concern with the PresenceInfo is its confidentialidy 
+ and that its receiver, the Watcher, is authenticated.
+ Here we also analyse the agreement on (and even the freshness of)
+ the PresenceInfo. <TT>wr_ps_info</TT> checks these properties, 
+ and the authentication of PS happens as a by-product.
+<P>
+ The use of transport or network layer hop-by-hop security
+ mechanisms, such as TLS or IPSec with apropriate cipher suites,
+ should be used to prevent eavesdropping and interception of
+ the final message containing the presence info. 
+ Here the message is encrypted with a symmetric key scheme.
+<P>
+ A further simplification made to the protocol was the use of 
+ the Watcher name as the user name. In the SIP protocol a user
+ can choose a username, via the <TT>P-prefered-identity</TT> field, 
+ under which he wants to be authenticated, but that feature do not add
+ any extra security concerns.
+<P>
+&nbsp;<BR><HR>
+<BR><DT><B>HLPSL:</B> <DD> <BR>
+<PRE>
+
+role watcher (WR, PS   : agent,
+              Password : text, 
+              K        : symmetric_key,
+              Hash     : hash_func,
+              Realm    : text,
+              Snd, Rcv : channel(dy)) played_by WR def=
+
+  local State        : nat,
+        Challenge,
+        PresenceInfo : text
+
+  init State := 0
+
+  transition
+
+   0.    State  = 0 /\ Rcv(start) =|>
+         State':= 2 /\ Snd(subscribe)
+
+
+   2.    State  = 2 /\ Rcv(Challenge'.Realm) =|>   
+         State':= 4 /\ Snd(Hash(WR.Challenge'.Password))
+                    /\ witness(WR,PS,ps_wr_user,WR.Password)
+
+   4.    State  = 4 /\ Rcv({WR.PresenceInfo'}_K) =|>
+         State':= 6 /\ wrequest(WR,PS,wr_ps_presenceinfo,PresenceInfo') 
+
+end role
+
+<HR>
+
+role pserver (PS       : agent,
+              UserMap  : (agent.text.symmetric_key) set,
+              Hash     : hash_func,
+              Realm    : text,
+              Snd, Rcv : channel(dy)) played_by PS def=
+
+
+  local WR           : agent,
+        State        : nat,
+        Challenge,
+        Password,
+        PresenceInfo : text,
+        K            : symmetric_key
+
+  init State := 1
+
+  transition
+
+
+   1.    State  = 1 /\ Rcv(subscribe) =|> 
+         State':= 3 /\ Challenge' := new()  
+                    /\ Snd(Challenge'.Realm) 
+
+   3.    State  = 3 /\ Rcv(Hash(WR'.Challenge.Password'))
+                    /\ in(WR'.Password'.K', UserMap) =|>
+         State':= 5 /\ PresenceInfo' := new() 
+                    /\ Snd({WR'.PresenceInfo'}_K')
+                    /\ secret(PresenceInfo',presenceinfo,{WR',PS})
+                    /\ witness(PS,WR',wr_ps_presenceinfo,PresenceInfo')
+                    /\ wrequest(PS,WR',ps_wr_user,WR'.Password')
+      
+end role
+
+<HR>
+
+role session (PS       : agent,
+              WR       : agent,
+              K        : symmetric_key,
+              Password : text,
+              Realm    : text,
+              H        : hash_func,
+              UserMap  : (agent.text.symmetric_key) set,
+              Snd,Rcv  : channel (dy)) def=
+
+  composition
+    watcher(WR,PS,Password,K,H,Realm,Snd,Rcv) /\
+    pserver(PS,UserMap,H,Realm,Snd,Rcv)
+
+
+end role
+
+<HR>
+
+role environment () def=
+
+ local UserMap: (agent.text.symmetric_key) set,
+       Snd, Rcv : channel (dy)
+
+ const wr1,wr2,ps   : agent,
+       k1,k2,ki     : symmetric_key,
+       h            : hash_func,
+       subscribe    : text,
+       pass1,pass2,
+       passi,domain : text,
+       presenceinfo,
+       wr_ps_presenceinfo,
+       ps_wr_user   : protocol_id
+ 
+ init
+       UserMap := {(wr1.pass1.k1),(wr2.pass2.k2),(i.passi.ki)} 
+
+ intruder_knowledge = {wr1,wr2,ps,ki,passi,h,subscribe}
+
+ composition
+
+          session(ps,wr1,k1,pass1,domain,h,UserMap,Snd,Rcv)
+       /\ session(ps,wr1,k1,pass1,domain,h,UserMap,Snd,Rcv)
+       /\ session(ps,wr2,k2,pass2,domain,h,UserMap,Snd,Rcv)
+       /\ session(ps,i  ,ki,passi,domain,h,UserMap,Snd,Rcv)
+
+end role
+
+<HR>
+
+goal
+
+   % Confidentiality (G12)
+   secrecy_of presenceinfo
+
+   % Message authentication (G2)
+   weak_authentication_on wr_ps_presenceinfo 
+    
+   % Entity authentication (G1)
+   weak_authentication_on ps_wr_user  
+
+end goal
+
+<HR>
+
+environment()
+</PRE>

@@ -1,0 +1,239 @@
+<BR><DT><B>PROTOCOL:</B> <DD> NSIS QoS-NSLP Authorization <BR>
+ (Next Steps In Signaling, 
+ Quality of Service NSIS Signaling Layer Application,
+ Authorization process of the QoS reservation requests)
+<P>
+&nbsp;<BR><BR><DT><B>REFERENCE:</B> <DD> <BR>
+ <A HREF="http://www.ietf.org/internet-drafts/draft-ietf-nsis-qos-nslp-06.txt">http://www.ietf.org/internet-drafts/draft-ietf-nsis-qos-nslp-06.txt</A> [nsis-qos-nslp]
+<P>
+&nbsp;<BR><BR><DT><B>PURPOSE:</B> <DD> <BR>
+ Authorization of the QoS resource requestor (Client),<BR>
+ Protection of the 3-party model against misbehavior of 
+ the Client (MITM attack), the Router and the Server
+<P>
+&nbsp;<BR><BR><DT><B>MODELER:</B> <DD> Tseno Tsenov for Siemens CT IC 3, June 2005<BR>
+<P>
+&nbsp;<BR><BR><DT><B>ALICE_BOB:</B> <DD> <BR>
+<PRE>
+ 1. R --- {Service.C.R}_K_CR ------------> C
+ 2. R <-- {{Service.C.S}_K_CS.C.R}_K_CR -- C
+ 3. R --------- {{Service.C.S}_K_CS.C.S.R}_inv(K_R) --> S
+ 4. R <-------- {C.R.S}_inv(K_S) ---------------------- S
+</PRE>
+<P>
+&nbsp;<BR><BR><DT><B>LIMITATIONS:</B> <DD> <BR>
+ <UL>
+ <LI> NSIS QoS NLPS application provides QoS signaling. The current analysis 
+ covers only the authorization aspects in its functionality.
+<P>
+ <LI> Please consider that the design of the NSIS QoS-NSLP application is ongoing
+ and several functional changes and extensions might occur. 
+ </UL>
+<P>
+&nbsp;<BR><BR><DT><B>PROBLEMS:</B> <DD> 2<BR>
+<UL>
+<LI> weak authentication on <TT>router_server_clientid</TT>
+<LI> weak authentication on <TT>server_client_service</TT>
+</UL>
+<P>
+&nbsp;<BR><BR><DT><B>CLASSIFICATION:</B> <DD> G2, G20<BR>
+<P>
+&nbsp;<BR><BR><DT><B>ATTACKS:</B> <DD> None<BR>
+<P>
+&nbsp;<BR><BR><DT><B>NOTES:</B> <DD> <BR>
+ \begin{enumerate}
+<P>
+ <LI> Sessions between the Router and the Client are based on TLS and 
+ sessions between the Router and the Server are based on any AAA protocol.
+ These protocols provide authentication, integrity and
+ replay protection of the exchanged messages. The Client and its subscriber
+ profile is known at the Server and is authenticated on the symmetric key
+ shared between the Client and Server.
+<P>
+ The main goal of the model is the authorization aspect and not
+ authentication of the involved peers. Therefore the above protocols are not 
+ modeled but services that their sessions provide are directly used. This implies:
+ <UL>
+ <LI> The Client and the Router share a session symmetric key provided by TLS
+ <LI> Considering the features of the AAA protocol, message authentication
+ is sufficient for modeling the Server-Router message exchange, which is 
+ modeled with public keys of the Server and the Router.
+ <LI> For modeling of the TLS or AAA-protocol sessions, identities of 
+ the session peers are included in the messages.
+ </UL>
+<P>
+ <LI> There are two authorization goals that are modeled:
+ <UL>
+ <LI> The Server provides to the Router an authorization decision for the 
+ Client, based on Client's authenticated identity. By matching the authenticated
+ identity of the Client with the identity of the authorized peer provided by the
+ Server in the authorization decision, the Router mitigates the vulnerability 
+ to MITM attack.
+<P>
+ <LI> The Client trusts the Server that it checks if the Router is authorized to 
+ provide the service offered to the Client. This mitigates misbehavior of the 
+ Router.
+ </UL>
+<P>
+ Since AVISPA does not provide direct proof of authorization, but
+ only proof of authentication % and secrecy, 
+ verification of the above goals is indirectly modeled by the following approach:
+ <UL>
+ <LI> proof of authentication of the Server by the Router on the identity of the 
+ Client models authorization of the Client.
+<P>
+ <LI> Authorization of the Router for provisioning of a service is modeled by a 
+ shared parameter <TT>Service</TT>, known by the Server and the Router. Proof of 
+ authentication of the Client by the Server on the value of the parameter 
+ <TT>service</TT> models authorization of the Router.
+ </UL>
+<P>
+ <LI> Due to the use of a TLS and AAA session, we can assume replay protection.
+ Moreover it is assumed that the Routers authorized to provide the service do not misbehave. 
+ Thus only <I>weak</I> authentication is specified as goals.
+ \end{enumerate}
+&nbsp;<BR><HR>
+<BR><DT><B>HLPSL:</B> <DD> <BR>
+<PRE>
+
+role client(C,R,S          : agent,
+            K_CR, K_CS     : symmetric_key,
+            SND_CR, RCV_CR : channel(dy)
+           )
+played_by C
+def=
+
+  local State   : nat,
+        Service : text
+
+  init  State := 1 
+
+  transition
+
+    1.  State   = 1 /\ RCV_CR( {Service'.C.R}_K_CR) =|> 
+        State' := 2 /\ SND_CR({{Service'.C.S}_K_CS.C.R}_K_CR)
+                    /\ witness(C,S,server_client_service,Service')
+        
+end role
+
+<HR>
+
+role router(C,R,S    : agent,
+            K_CR     : symmetric_key,
+            K_S, K_R : public_key,
+            Service  : text,
+            SND_CR, RCV_CR, SND_RS, RCV_RS: channel(dy)
+            )
+played_by R
+def=
+
+  local State     : nat,
+        MessageCS : {text.agent.agent}_symmetric_key
+
+  init  State := 1
+
+  transition
+
+    1.  State  = 1 /\ RCV_CR(start) =|> 
+        State':= 2 /\ SND_CR({Service.C.R}_K_CR)
+
+    2.  State  = 2 /\ RCV_CR({MessageCS'.C.R}_K_CR) =|>
+        State':= 3 /\ SND_RS({MessageCS'.C.S.R}_inv(K_R)) 
+
+    3.  State  = 3 /\ RCV_RS({C.S.R}_inv(K_S)) =|>  
+        State':= 4 /\ wrequest(R,S,router_server_clientid,C) 
+ 
+end role
+
+<HR>
+
+role server(R,S      : agent,
+            K_S, K_R : public_key,
+            Service  : text,
+            KeyRing  : (agent.symmetric_key) set,
+            SND_RS, RCV_RS: channel(dy)
+            )
+played_by S
+def=
+
+  local State     : nat,
+        C         : agent,
+        K_CS      : symmetric_key,
+        MessageCS : {text.agent.agent}_symmetric_key
+
+  init  State := 1
+
+  transition
+
+    1.  State = 1 /\ RCV_RS({MessageCS'.C'.S.R}_inv(K_R))
+                  /\ in(C'.K_CS', KeyRing)
+                  /\ MessageCS' = {Service.C'.S}_K_CS' =|>
+        State':= 2 /\ SND_RS({C'.S.R}_inv(K_S))
+                  /\ witness(S,R,router_server_clientid,C')
+                  /\ wrequest(S,C',server_client_service,Service)
+ 
+end role
+
+<HR>
+
+role session(C,R,S: agent,
+             K_CR,K_CS : symmetric_key,
+             K_S, K_R : public_key,
+             Service: text,
+             KeyRing: (agent.symmetric_key) set
+            ) 
+def=
+   local
+      SCR,RCR,SSR,RSR: channel(dy)
+
+   composition
+
+         client(C,R,S,K_CR,K_CS,SCR,RCR)
+      /\ router(C,R,S,K_CR,K_S,K_R,Service,SCR,RCR,SSR,RSR)
+      /\ server(R,S,K_S,K_R,Service,KeyRing,SSR,RSR)
+
+end role
+
+<HR>
+
+role environment() def=
+
+ local KeyRing                      : (agent.symmetric_key) set
+
+ const c, r, s                      : agent,
+       k_cr, k_cs, k_is, k_ic, k_ir : symmetric_key,
+       k_s, k_r, k_i                : public_key,
+       service                      : text,
+       server_client_service, 
+       router_server_clientid       : protocol_id
+ 
+ init KeyRing := {c.k_cs, i.k_is}
+
+ intruder_knowledge={c,r,s,service,k_is,k_ic,k_ir,k_s,k_r,k_i,inv(k_i)}
+
+ composition
+ 
+        session(c,r,s,k_cr,k_cs,k_s,k_r,service,KeyRing) 
+ /\     session(i,r,s,k_ir,k_is,k_s,k_r,service,KeyRing) 
+ /\     session(c,i,s,k_ic,k_cs,k_s,k_i,service,KeyRing)
+ /\     session(c,r,i,k_cr,k_ic,k_i,k_r,service,KeyRing)
+
+end role
+
+<HR>
+
+goal
+
+  %client authorization
+  weak_authentication_on router_server_clientid % addresses G2: agreeement on C
+
+  %router authorization
+  weak_authentication_on server_client_service  % addresses G2 and G20: 
+         % the router provides the service the client has asked (and payed) for
+
+end goal
+
+<HR>
+
+environment()
+</PRE>

@@ -1,0 +1,3 @@
+
+ C   -> TSA: Hash(Data).NonceC
+ TSA -> C:   {Hash(Data).Time.NonceC}_inv(PK_TSA)

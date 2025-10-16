@@ -1,0 +1,268 @@
+
+<BR><DT><B>VARIANT:</B> <DD> Protected with MS-CHAP authentication<BR>
+<BR><DT><B>PURPOSE:</B> <DD> Mutual authentication, key establishment<BR>
+<P>
+ Similar to EAP-TTLS, PEAP performs two phases of authentication. The first
+ phase is to create the TLS secure channel. The server is
+ authenticated by certificate in this phase and optionally the client can be authenticated
+ also based on a client certificate. In the second phase, within the TLS
+ secured tunnel, a complete EAP conversation is carried out. The user, which
+ is not authenticated in the first phase, will be authenticated securely
+ inside a TLS channel by EAP method. If the user is already authenticated in
+ the first phase, PEAP does not run EAP method to authenticate the user.
+ In PEAP, it runs only EAP methods, e.g. EAP-MD5, EAP-SIM, to authenticate
+ the client inside the secure tunnel but does not supports non-EAP methods
+ like PAP, CHAP.
+ In case the authentication is held through the access point, it does not
+ need to have any knowledge of the TLS master secret derived between the
+ client and back-end authentication server. The access point simply then acts
+ as the pass-through device and cannot decrypt the PEAP conversation.
+ However, the access point obtains the master session keys, derived from the
+ TLS master secret.
+<P>
+&nbsp;<BR><BR><DT><B>REFERENCE:</B> <DD> <BR>
+ <UL>
+ <LI> <A HREF="http://www.ietf.org/internet-drafts/draft-josefsson-pppext-eap-tls-eap-10.txt">http://www.ietf.org/internet-drafts/draft-josefsson-pppext-eap-tls-eap-10.txt</A>
+ </UL>
+&nbsp;<BR><BR><DT><B>MODELER:</B> <DD> <BR>
+ <UL>
+ <LI> Jing Zhang for Siemens CT IC 3
+ <LI> Vishal Sankhla (University of Southern California), 2004
+ </UL>
+<P>
+&nbsp;<BR><BR><DT><B>ALICE_BOB:</B> <DD> <BR>
+ <PRE>
+ PEAP Phase 1:
+ S -> P: id_request
+ P -> S: P
+ S -> P: start_peap
+ P -> S: client_hello
+ S -> P: server_hello, certificate
+ P -> S: certificate_verify, change_cipher_spec
+ S -> P: change_cipher_spec, finished
+<P>
+ PEAP Phase 2:
+ P -> S: {P}_ClientK
+ S -> P: {Rand_S}_ServerK       
+ P -> S: {Rand_P,Hash(k(P,S),(Rand_P,Rand_S,P)}_ClientK
+ S -> P: {Hash(k(P,S),Rand_P)}_ServerK
+ P -> S: {Ack}_ClientK
+ S -> P: {Eap_Success}_ServerK
+<P>
+ client_hello = {TlsVNo, SessionID, NonceC, CSu}
+ server_hello = {TlsVNo, SessionID, NonceS, CSu}
+ CSu:  a set of eap-tls ciphersuites supplied by the client
+     or  a eap-tls ciphersuite selected by the server
+ certificate = {S.Ks}_inv(Kca) 
+ SessionID+Rand_S is the MS challenge packet
+ </PRE>
+&nbsp;<BR><BR><DT><B>PROBLEMS:</B> <DD> 3<BR>
+<UL>
+<LI>secrecy of <TT>sec_clientK, sec_serverK</TT>
+<LI> strong authentication on <TT>np_ns</TT>
+<LI> strong authentication on <TT>ns</TT>
+</UL>
+&nbsp;<BR><BR><DT><B>ATTACKS:</B> <DD> None<BR>
+<P>
+&nbsp;<BR><HR>
+<BR><DT><B>HLPSL:</B> <DD> <BR>
+<PRE>
+role peer(P, S                : agent,
+          H1, H2 : hash_func,
+          PRF : hash_func,
+          KeyGen : hash_func,
+          Pw                  : symmetric_key,
+          Kca                 : public_key,
+          SND_S, RCV_S        : channel (dy))
+played_by P def=
+
+  local Np, PMS: text, 
+        SeID, Csu, Ns: text, 
+        Ccs: text,
+        %Ccs, change-cipher-spec, value=1 means cipher suites changed
+
+        M : hash(text.text.text),
+        Finished : hash(hash(text.text.text).agent.agent.text.text.text),
+        ClientK : hash(agent.text.text.hash(text.text.text)),
+        ServerK : hash(agent.text.text.hash(text.text.text)),
+        %M, master secret, calculated by both from PMS and nonces
+
+        Ks: public_key,
+        State: nat
+
+  const sec_clientK,
+        sec_serverK,
+        np_ns, ns                    : protocol_id,
+        id_request, start_peap       : text,
+        ack_message, eap_success     : text
+
+  init State := 0
+      
+  transition
+
+  1. State  = 0 /\ RCV_S(id_request) =|>
+     State':= 2 /\ SND_S(P)
+        
+  2. State  = 2 /\ RCV_S(start_peap) =|>
+     State':= 4 /\ Np' := new()
+                /\ Csu' := new()
+                /\ SeID' := new()
+                /\ SND_S(Np'.SeID'.Csu')
+
+  3. State  = 4 /\ RCV_S(Ns'.SeID'.Csu'.{S.Ks'}_inv(Kca)) =|>
+     State':= 6 /\ PMS' := new()
+                /\ Ccs' := new()
+                /\ SND_S({PMS'}_Ks'.Ccs')
+                /\ M'        := PRF(PMS'.Np.Ns')
+                /\ Finished' := H1(PRF(PMS'.Np.Ns').P.S.Np.Csu'.SeID')
+                /\ ClientK'  := KeyGen(P.Np.Ns'.PRF(PMS'.Np.Ns'))
+                /\ ServerK'  := KeyGen(S.Np.Ns'.PRF(PMS'.Np.Ns'))
+
+  4. State  = 6 /\ RCV_S(Ccs.{Finished}_ServerK) =|>
+     State':= 8 /\ SND_S({P}_ClientK) 
+                /\ secret(ClientK,sec_clientK,{P,S})
+                /\ secret(ServerK,sec_serverK,{P,S})
+                /\ request(P,S,np_ns,Np.Ns) 
+%here we assume both of peer and server have finished 
+%negotiation of authentication method, that is Ms-chap
+%An attacker will also not be able to determine which 
+%EAP method was negotiated.
+        
+  5. State  = 8 /\ RCV_S({Ns'}_ServerK) =|>
+     State':= 10
+                /\ Np' := new()
+YB: Np is already assigned in transition 2!!
+&nbsp;<BR>                /\ SND_S({Np'.H2(Pw.Np'.Ns'.P)}_ClientK)  
+                /\ witness(P,S,ns,Ns')
+         
+
+  6. State  = 10 /\ RCV_S({H2(Pw.Np)}_ServerK) =|>
+     State':= 12 /\ SND_S( ack_message )  
+
+% 7. State  = 10 /\ RCV_S(eap_failure) =|> 
+%    State':= 14
+
+  8. State  = 12 /\ RCV_S(eap_success) =|>
+     State':= 14
+
+end role
+
+<HR>
+
+role server (P, S                : agent,
+             H1, H2 : hash_func,
+             PRF : hash_func,
+             KeyGen : hash_func,
+             Pw                  : symmetric_key,
+             Kca, Ks             : public_key,
+             SND_P, RCV_P        : channel (dy)) 
+played_by S def=
+
+  local Ns: text, 
+        Np, SeID, Csu, PMS: text, 
+        Ccs: text,
+        M : hash(text.text.text),
+        Finished : hash(hash(text.text.text).agent.agent.text.text.text),
+        ClientK : hash(agent.text.text.hash(text.text.text)),
+        ServerK : hash(agent.text.text.hash(text.text.text)),
+
+        State: nat
+
+  const np_ns, ns                    : protocol_id,
+        id_request, start_peap       : text,
+        ack_message, eap_success     : text
+
+  init State := 1
+
+  transition
+
+  1. State  = 1 /\ RCV_P(start) =|>
+     State':= 3 /\ SND_P(id_request) 
+
+  2. State  = 3 /\ RCV_P(P) =|>
+     State':= 5 /\ SND_P(start_peap)
+
+  3. State  = 5 /\ RCV_P( Np'.SeID'.Csu' ) =|>
+     State':= 7 /\ Ns' := new()
+                /\ SND_P(Ns'.SeID'.Csu'.{S.Ks}_inv(Kca))
+                /\ witness(S,P,np_ns,Np'.Ns')        
+
+  4. State  = 7 /\ RCV_P({PMS'}_Ks.Ccs') =|>
+     State':= 9 /\ SND_P(Ccs'.{H1(PRF(PMS'.Np.Ns).P.S.Np.Csu.SeID)}_
+                                      KeyGen(S.Np.Ns.PRF(PMS'.Np.Ns)))
+                /\ M' := PRF(PMS'.Np.Ns)
+                /\ Finished' := H1(PRF(PMS'.Np.Ns).P.S.Np.Csu.SeID)
+                /\ ServerK'  := KeyGen(S.Np.Ns.PRF(PMS'.Np.Ns))
+                /\ ClientK'  := KeyGen(P.Np.Ns.PRF(PMS'.Np.Ns))
+
+  5. State  = 9  /\ RCV_P({P}_ClientK) =|>
+     State':= 11 /\ SND_P({Ns'}_ServerK) 
+
+  6. State  = 11 /\ RCV_P({Np'.H2(Pw.Np'.Ns.P)}_ClientK) =|>
+     State':= 13 /\ SND_P({H2(Pw.Np')}_ServerK) 
+                 /\ request(S,P,ns,Ns)
+
+% 7. State  = 11 /\ RCV_P({Np'.H2(Pw.Np'.Ns.P)}_ClientK) =|>
+%    State':= 15 /\ SND_P(eap_failure) 
+
+  7. State  = 13 /\ RCV_P(ack_message) =|>
+     State':= 15 /\ SND_P(eap_success)
+
+end role
+
+<HR>
+
+role session(P, S               : agent,
+             Pw                 : symmetric_key,
+             Ks, Kca            : public_key,
+             H1, H2 : hash_func,
+             PRF : hash_func,
+             KeyGen : hash_func)
+def=
+
+  local S_SP,R_SP,S_PS,R_PS : channel (dy)
+
+  composition
+           peer(  P,S,H1,H2,PRF,KeyGen,Pw,Kca,   S_SP,R_SP)
+        /\ server(P,S,H1,H2,PRF,KeyGen,Pw,Kca,Ks,S_PS,R_PS)
+
+end role
+
+<HR>
+
+role environment() def=
+
+   const p,s,i                              : agent,
+         kpi,kps,kis                        : symmetric_key,
+         ks,ki,kca                          : public_key,
+         h1,h2 : hash_func,
+         prf : hash_func,
+         keygen : hash_func
+
+   intruder_knowledge = {p,s, h1,h2,prf,keygen,
+                         kca,ks,ki,inv(ki),
+                         kpi,kis}
+   composition
+        session(p,s,kps,ks,kca,h1,h2,prf,keygen)
+    /\  session(p,i,kpi,ki,kca,h1,h2,prf,keygen)
+    /\  session(i,s,kis,ks,kca,h1,h2,prf,keygen)
+
+end role
+
+<HR>
+
+goal
+        %secrecy_of ClientK, ServerK
+        secrecy_of sec_clientK, sec_serverK
+
+        %Peer authenticates Server on np_ns     
+        authentication_on np_ns
+        %Server authenticates Peer on ns
+        authentication_on ns
+end goal
+
+<HR>
+
+environment()
+
+</PRE>

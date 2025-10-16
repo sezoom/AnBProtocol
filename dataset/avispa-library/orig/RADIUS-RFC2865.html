@@ -1,0 +1,191 @@
+<BR><DT><B>PROTOCOL:</B> <DD> RADIUS: Remote Authentication Dial In User Service<BR>
+<P>
+&nbsp;<BR><BR><DT><B>PURPOSE:</B> <DD> <BR>
+ A protocol for carrying authentication, authorisation, and configuration
+ information between a Network Access Server which desires to authenticate its
+ links and a shared Authentication Server.
+<P>
+&nbsp;<BR><BR><DT><B>REFERENCE:</B> <DD> <BR>
+ <UL>
+ <LI> RFC 2865: <A HREF="http://www.faqs.org/rfcs/rfc2865.html">http://www.faqs.org/rfcs/rfc2865.html</A>
+ </UL>
+&nbsp;<BR><BR><DT><B>MODELER:</B> <DD> <BR>
+ <UL>
+ <LI> Vishal Sankhla, University of Southern California, August 2004
+ </UL>
+<P>
+&nbsp;<BR><BR><DT><B>ALICE_BOB:</B> <DD> <BR>
+<PRE>
+1. Client -> Server : Access-Request   
+     where Access-Request = NAS_ID, NAS_PORT, {Secret_Key}MD5
+2. Server -> Client : Access-Accept | Access-Reject | Access-Challenge 
+3. Client -> Server : Access-Chall-Request   
+     where Access-Chall-Request = {Message}Secret_Key
+4. Server -> Client : Access-Accept
+5. Client -> Server : Success
+</PRE>
+<P>
+ In (<TT>2.</TT>): If Client is authorised, the connection is accepted
+ in which case a Success is returned.
+ If Client is not authorised a failure message is sent out. 
+ If Challenge-Response is required to further authenticate the Client,
+ the Server sends an access challenge to the Client.
+<P>
+&nbsp;<BR><BR><DT><B>PROBLEMS:</B> <DD> 2<BR>
+<UL>
+<LI>secrecy of <TT>sec_c_Kcs, sec_s_Kcs</TT>
+<LI> strong authentication on <TT>kcs</TT>
+</UL>
+<P>
+&nbsp;<BR><BR><DT><B>ATTACKS:</B> <DD> None<BR>
+<P>
+
+<P>
+&nbsp;<BR><HR>
+<BR><DT><B>HLPSL:</B> <DD> <BR>
+<PRE>
+role client(C,S                         : agent,
+            Kcs                         : symmetric_key,
+            Md5                         : hash_func,
+            Success, Failure            : text,
+            Access_accept,Access_reject : text,
+            SND, RCV                    : channel(dy))
+played_by C def=
+
+      local  State             : nat,
+             NAS_ID , NAS_Port : text,
+             Chall_Message     : text
+
+      const  kcs       : protocol_id,
+             sec_c_Kcs : protocol_id
+
+      init State := 0
+
+      transition
+
+      s1.   State  = 0 /\ RCV(start) =|>
+            State':= 1 /\ NAS_ID':=new() /\ NAS_Port':=new()
+                       /\ SND(NAS_ID'.NAS_Port'.Md5(Kcs))
+                       /\ secret(Kcs,sec_c_Kcs,{C,S})
+
+      s2.   State  = 1 /\ RCV(NAS_ID.Access_accept) =|>
+            State':= 2 /\ SND(NAS_ID.Success)
+
+      s3.   State  = 1 /\ RCV(NAS_ID.Access_reject) =|>
+            State':= 3 /\ SND(NAS_ID.Failure)
+
+      s4.   State  = 1 /\ RCV(NAS_ID.Chall_Message') =|>
+            State':= 4 /\ SND(NAS_ID.{Chall_Message'}_Kcs)
+                       /\ witness(C,S,kcs,Kcs)
+
+      s5.   State  = 4 /\ RCV(NAS_ID.Access_accept) =|>
+            State':= 5 /\ SND(NAS_ID.Success)
+
+end role
+
+<HR>
+
+role server(C,S                         : agent,
+            Kcs                         : symmetric_key,
+            Md5                         : hash_func,
+            Success, Failure            : text,
+            Access_accept,Access_reject : text,
+            SND, RCV                    : channel(dy))
+played_by S def=
+
+     local  State             : nat,
+            NAS_ID , NAS_Port : text,
+            Chall_Message     : text
+
+     const  kcs       : protocol_id,
+            sec_s_Kcs : protocol_id
+
+
+     init State := 11
+
+     transition
+
+     s1.    State  = 11 /\ RCV(NAS_ID'.NAS_Port'.Md5(Kcs)) =|>
+            State':= 12 /\ SND(NAS_ID'.Access_accept)
+                        /\ secret(Kcs,sec_s_Kcs,{C,S})
+
+     s2.    State  = 12 /\ RCV(NAS_ID.Success) =|>
+            State':= 13
+
+     s3.    State  = 11 /\ RCV(NAS_ID'.NAS_Port'.Md5(Kcs)) =|>
+            State':= 14 /\ SND(NAS_ID'.Access_reject)
+
+     s4.    State  = 14 /\ RCV(NAS_ID.Failure) =|>
+            State':= 15
+
+     s5.    State  = 11 /\ RCV(NAS_ID'.NAS_Port'.Md5(Kcs)) =|>
+            State':= 16 /\ Chall_Message':=new()
+                        /\ SND(NAS_ID'.Chall_Message')
+
+     s6.    State  = 16 /\ RCV(NAS_ID.{Chall_Message}_Kcs) =|>
+            State':= 17 /\ SND(NAS_ID.Access_accept)
+                        /\ request(S,C,kcs,Kcs)
+
+     s7.    State  = 17 /\ RCV(NAS_ID.Success) =|>
+            State':= 18
+
+end role
+
+<HR>
+
+role session(C,S                         : agent,
+             Kcs                         : symmetric_key,
+             Md5                         : hash_func,
+             Success, Failure            : text,
+             Access_accept,Access_reject : text)
+def=
+
+     local
+       S1, S2 : channel (dy),
+       R1, R2 : channel (dy)
+
+     composition
+
+         client(C,S,Kcs,Md5,Success,Failure,Access_accept,Access_reject,S1,R1)
+     /\  server(C,S,Kcs,Md5,Success,Failure,Access_accept,Access_reject,S2,R2)
+
+end role
+
+<HR>
+
+role environment() def=
+
+     const c1,s1             : agent,
+           md5               : hash_func,
+           succs, fails      : text,
+           acc_acp, acc_rej  : text,
+           kcsk , kisk, kcik : symmetric_key,
+           kcs               : protocol_id
+
+    intruder_knowledge = {c1,s1,md5,kisk,kcik,
+                          succs, fails,
+                          acc_acp, acc_rej
+                         }
+
+    composition
+           session(c1,s1,kcsk,md5,succs,fails,acc_acp,acc_rej)
+        /\ session(i, s1,kisk,md5,succs,fails,acc_acp,acc_rej)
+
+end role
+
+<HR>
+
+goal
+
+  %secrecy_of Kcs
+  secrecy_of sec_c_Kcs, sec_s_Kcs
+
+  %Server authenticates Client on kcs
+  authentication_on kcs
+
+end goal
+
+<HR>
+
+environment()
+</PRE>

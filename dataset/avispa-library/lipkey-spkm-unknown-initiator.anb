@@ -1,0 +1,5 @@
+
+  1. A -> S: S.Na.exp(G,X).H(S.Na.exp(G,X))
+  2. S -> A: S.Na.Nb.exp(G,Y).{S.Na.Nb.exp(G,Y)}_inv(Ks)
+  3. A -> S: {login.pwd}_K where K= exp(exp(G,Y),X) = exp(exp(G,X),Y)
+ 

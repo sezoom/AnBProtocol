@@ -1,0 +1,142 @@
+
+<BR><DT><B>VARIANT:</B> <DD> two-pass unilateral authentication<BR>
+<BR><DT><B>PURPOSE:</B> <DD> Authentication of a client to a server. This protocol models a situation<BR>
+ in which the server wants to verify the client identity and starts the session.
+ The client answers by sending his digital signature.
+&nbsp;<BR><BR><DT><B>REFERENCE:</B> <DD> <BR>
+ <UL>
+ <LI> [clark97survey,ISO-IEC-9798-3]
+ </UL>
+&nbsp;<BR><BR><DT><B>MODELER:</B> <DD> <BR>
+ <UL>
+ <LI> Haykal Tej, Siemens CT IC 3, 2003 and
+ <LI> Luca Compagna et al, AI-Lab DIST University of Genova, November 2004
+ </UL>
+&nbsp;<BR><BR><DT><B>ALICE_BOB:</B> <DD> <BR>
+ <PRE>
+ 1. B -> A : Rb, Text1
+ 2. A -> B : {PKa,A}inv(PKs), Ra,Rb, B, Text2,{Ra,Rb,B,Text1}inv(PKa)
+ </PRE>
+&nbsp;<BR><BR><DT><B>PROBLEMS:</B> <DD> 1<BR>
+<UL>
+<LI> strong authentication on <TT>ra</TT>
+</UL>
+&nbsp;<BR><BR><DT><B>CLASSIFICATION:</B> <DD> G1, G2<BR>
+&nbsp;<BR><BR><DT><B>ATTACKS:</B> <DD> None<BR>
+&nbsp;<BR><BR><DT><B>NOTES:</B> <DD> <BR>
+ <TT>inv(PKs)</TT> is the private key of the server <TT>C</TT>;
+ <TT>{PKa,A}inv(PKs)</TT> is the certificate of agent <TT>A</TT>.<BR>
+<P>
+&nbsp;<BR><HR>
+<BR><DT><B>HLPSL:</B> <DD> <BR>
+<PRE>
+role iso2_Init (B,A    : agent,
+                Pks    : public_key, 
+                Snd,Rec: channel(dy))
+played_by B
+def=
+
+  local  State     : nat,
+         Pka       : public_key,
+         Rb        : text,
+         Ra, Text2 : text
+
+  init State := 0
+
+
+
+  transition
+
+   1. State = 0
+      /\ Rec(start)
+      =|>
+      State' := 1 
+      /\ Rb' := new()
+      /\ Snd(Rb'.ctext1)
+
+   2. State = 1
+      /\ Rec(Pka'.A.{Pka'.A}_inv(Pks).Ra'.Rb.B.Text2'.
+                    {Ra'.Rb.B.ctext1}_inv(Pka'))  
+      =|> 
+      State' := 2 
+      /\ request(B,A,ra,Ra')
+
+end role
+
+<HR>
+
+role iso2_Resp (A,B    : agent,
+                Pka,Pks: public_key,
+                Snd,Rec: channel(dy))
+played_by A
+def=
+
+  local  State     : nat,
+         Ra        : text,
+         Rb, Text1 : text
+
+  init State := 0
+
+
+
+  transition
+
+   1. State = 0
+      /\ Rec(Rb'.Text1')
+      =|> 
+      State' := 2 
+      /\ Ra' := new()
+      /\ Snd(Pka.A.{Pka.A}_inv(Pks).Ra'.Rb'.B.ctext2.
+                   {Ra'.Rb'.B.Text1'}_inv(Pka))
+      /\ witness(A,B,ra,Ra')
+
+
+end role
+
+<HR>
+
+role session (B, A : agent,
+              Pka  : public_key,
+              Pks  : public_key) def=
+
+  local SA, RA, SB, RB: channel (dy)
+  composition
+
+          iso2_Init(B,A,Pks,SB,RB)
+       /\ iso2_Resp(A,B,Pka,Pks,SA,RA)
+
+end role
+
+<HR>
+
+role environment() def=
+
+  const  ctext1,ctext2 : text,
+         ra            : protocol_id,
+         a,b,i         : agent, 
+         pkb,pks,pki   : public_key
+  
+  intruder_knowledge={i,a,b,pks,pki,inv(pki),ctext1,ctext2,
+                      {pki.i}_inv(pks)}   
+
+  composition
+
+        session(a,b,pkb,pks)
+     /\ session(a,i,pki,pks)
+     /\ session(i,b,pkb,pks)
+
+end role
+
+<HR>
+
+goal
+
+   %ISO2_Init  authenticates ISO2_Resp on ra
+   authentication_on ra % addressess G1 and G2
+
+end goal
+
+<HR>
+
+environment()
+</PRE>

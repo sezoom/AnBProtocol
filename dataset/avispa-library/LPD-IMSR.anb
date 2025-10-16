@@ -1,0 +1,12 @@
+
+ B, M    : agent
+ PKb     : public key
+ SCm     : text
+ Nb      : text (fresh)
+ Cert(B) : message
+ X       : symmetric key (fresh)
+
+ 1. B -> M : B, Nb, PKb, Cert(B)
+ 2. M -> B : {X}PKb
+ 3. M -> B : {Nb, M, SCm}X
+ 

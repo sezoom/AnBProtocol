@@ -1,0 +1,6 @@
+
+  A -> B: A, PK_A, hash(PK_A)
+  A -> B: {***tag1***,Msg}inv(PK_A), hash(PK_A)
+  B -> A: Nonce
+  A -> B: {***tag2***,Nonce}inv(PK_A)
+ 

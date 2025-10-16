@@ -1,0 +1,510 @@
+<BR><DT><B>PROTOCOL:</B> <DD> Protocol proposed by Tan Soo Fun et al.<BR>
+<BR><DT><B>VARIANT:</B> <DD> <BR>
+<BR><DT><B>PURPOSE:</B> <DD> This is a security protocol addressed to the ecosystem of Mobile Payments. All the specifications are described in the reference field below.<BR>
+&nbsp;<BR>
+<BR><DT><B>REFERENCE:</B> <DD> <BR>
+ 	Tan Soo Fun, Leau Yu Beng, Jonathan Likoh, Rozaini Roslan, 2008. Privacy in New Mobile Payment Protocol.Proceeding of International Conference on Information and Communication Technologies 2008. World Academy of Science, Engineering & Technology (WASET), Paris, France, Volume 30: 2008.
+	Online version available at  <A HREF="http://www.waset.org/journals/waset/v47/v47-80.pdf">http://www.waset.org/journals/waset/v47/v47-80.pdf</A>
+&nbsp;<BR>
+<BR><DT><B>MODELER:</B> <DD>
+ <UL>
+   <LI> Matteo Ratini, University of Roma Tre
+         <I>matteo dot it at gmail dot com</I>
+         </LI>
+ </UL>
+&nbsp;<BR>
+
+<BR><DT><B>ALICE_BOB:</B> <DD>
+ <PRE>
+	Phase 1 Payment Initialization:
+	Payer -> Payee: R.TIDReq.PayeeIDReq
+	Payee -> Payer: {IDPayee.TID.IDMNO}_K2
+<P>
+	Phase 2 Payment Subtraction Request:
+	Payer -> Payer's MNO: {IDPayee.IDMNO.R.TID.AMOUNT.DATE.NONCE.H(IDPayee.IDMNO.R.TID.AMOUNT.DATE.NONCE).{R.DESC}_K2}_Xi.i.IDpayer
+	Payer's MNO -> TSC: H[ {IDPayee.IDMNO.R.TID.AMOUNT.DATE.NONCE.H(IDPayee.IDMNO.R.TID.AMOUNT.DATE.NONCE).{R.DESC}_K2}_Xi.i.IDpayer ]
+	TSC -> Payer's MNO: TimeStamp1
+<P>
+	Phase 3 Payment Authorization Request:
+	Payer's MNO -> Payee's MNO: R.IDPayee.TID.AMOUNT.DATE.{R.DESC}_K2
+<P>
+	Phase 4 Payment Confirmation Request:
+	Payee's MNO -> Payee: {R.TID.AMOUNT.DATE.{R.DESC}_K2.NONCE.H(R.TID.AMOUNT.DATE {R.DESC}_K2.NONCE).H(KP-P )}_Yi.i
+<P>
+	Phase 5 Payment Confirmation Response:
+	Payee -> Payee's MNO: {Yes_No.NONCE.H(KP-P ).H(R.TID.AMOUNT.DATE.{R.DESC}_K2.NONCE).{Yes_No.TID.AMOUNT.DATE}_K2}_Yi+1
+<P>
+	Phase 6 Payment Authorization Response:
+	Payee's MNO -> TSC: H({Yes_No.NONCE.H(KP-P ).H(R.TID.AMOUNT.DATE.{R.DESC}_K2.NONCE).{Yes_No.TID.AMOUNT.DATE}_K2}_Yi+1 )
+	TSC -> Payee's MNO: TimeStamp2
+	Payee's MNO -> Payer's MNO: Yes_No.TID.AMOUNT.DATE.{Yes_No.TID.AMOUNT.DATE}_K2
+<P>
+	Phase 7 Payment Subtraction Response:
+	Payer's MNO -> Payer: {Yes_No.NONCE.H(KP-P).H(IDPayee.IDMNO.R.TID.AMOUNT.DATE.NONCE).{Yes_No.TID.AMOUNT.DATE}_K2}_Xi+1
+	Payee's MNO -> Payee: {Received.NONCE.H(KP-P).H(R.TID.AMOUNT.DATE.{R.DESC}_K2.NONCE)}_Yi+1       
+ </PRE>
+
+&nbsp;<BR><DT><B>LIMITATIONS:</B> <DD> <BR>
+	Assumed the existence of secure (wired) channels between both MNOs.
+	OFMC return an undocumented error ("ofmc: too many negative predicates...") that, however, appears only when the protocol is deemed to be SAFE.
+	With two distinct sessions in the environment role, the Cl-AtSe backend is killed by the simulator.
+	At now, TA4SP does not support sets, so this backend in particular is unusable.
+&nbsp;<BR>
+
+<BR><DT><B>PROBLEMS:</B>
+<UL>
+<LI>10<TT></TT></LI>
+<LI>secrecy of <TT>x1, x2, y1, y2, startMsg, rcvMsg, securKey, description</TT></LI>
+<LI>Weak authentication on <TT>idPayer, idPayee</TT></LI>
+</UL>
+&nbsp;
+
+<BR><DT><B>CLASSIFICATION:</B> <DD> &nbsp;<BR>
+<BR><DT><B>ATTACKS:</B> <DD> <BR>
+	None as the protocol is at now
+	(Replay attacks on idPayer and idPayee if required strong authentication instead of weak authentication)
+&nbsp;<BR><HR>
+<BR><DT><B>HLPSL:</B> <DD>
+<PRE>
+
+role payer (
+
+        Pr, Pe, PrM: agent,
+        Hash: hash_func,
+        K11: symmetric_key,             % pre-shared key between Payer and Payer's MNO
+        K2: symmetric_key,              % pre-shared key between Payer and Payee, hidden traffic to MNOs' eyes
+        SND_Pe, RCV_Pe, SND_PrM, RCV_PrM: channel(dy)
+        )
+        
+        played_by Pr
+        
+        def=
+        
+        local
+                State: nat,
+                X1, X2: symmetric_key,          % keys locally generated and to send to Payer's MNO
+                Success_failed, StartPayment, Yes_no: text,
+                IDPr: hash(nat.nat),
+                PNPr: nat,      % Payer's Phone Number
+                PINPr: nat,     % Payer's Personal Identification Number
+                AIPr: nat,
+                R: text,        % Random Timestamp, act as Payer's pseudo-ID which uniquely identifies Payer to Payee
+                NONCE: nat,     % Random Number, ensure old communications cannot be reused in replay attacks
+                IDPe: hash(nat.nat),
+                SecuredParams: {text.text}_symmetric_key,                       % {R.DESC}_K2
+                SecuredKey: hash(symmetric_key),                        % Hash(KMM)
+                TID: text,      % The Identity of transaction
+                IDMno: text,            % ID dell'MNO
+                Timestamp: nat,         
+                AMOUNT, DATE, DESC: text,               % payment data
+                PeIDreq: text,
+                TIDreq: text,
+                SecuredPaymentParams: {text.text.text.text}_symmetric_key               % {Yes_no.TID.AMOUNT.DATE}_K2
+                
+
+        const
+                idPayer, x1, x2, description: protocol_id
+
+
+        init
+                State := 0
+                
+        transition
+        
+                        % start registration sub-protocol
+                0. State = 0 /\ RCV_Pe(start) =|>
+                   State':=2 /\ PNPr':=new()
+                             /\ PINPr':=new()
+                             /\ IDPr' := Hash(PNPr'.PINPr')     
+                             /\ AIPr':=new()
+                             /\ SND_PrM({PNPr'.IDPr'.AIPr'}_K11)
+                             /\ witness (Pr,PrM,idPayer,IDPr')
+                
+                        % generation of secret keys X1 and X2
+                6. State = 2 /\ RCV_PrM({Success_failed'}_K11) =|>
+                   State':=3 /\ X1':=new()
+                             /\ X2':=new()
+                             /\ SND_PrM({X1'.X2'}_K11)
+                             /\ secret(X1',x1,{Pr,PrM})
+                             /\ secret(X2',x2,{Pr,PrM})
+              
+                        % Phase 1 : Payment Initialization
+                        % start payment sub-protocol
+                8. State = 3 /\ RCV_PrM({StartPayment'}_K11) =|>
+                   State':=4 /\ R':= new()
+                             /\ TIDreq':=new()
+                             /\ PeIDreq':=new()
+                             /\ SND_Pe(R'.TIDreq'.PeIDreq')
+                                
+                        % Phase 2 : Payment Subtraction Request
+                        % generation and send of payment information
+                10. State = 4 /\ RCV_Pe({IDPe'.TID'.IDMno'}_K2) =|>
+                    State':=6 /\ NONCE':=new()
+                              /\ AMOUNT':=new()
+                              /\ DESC':=new()
+                              /\ DATE':=new()
+                              /\ SecuredParams':= {R.DESC'}_K2          % hidden data to MNO's eyes
+                              /\ SND_PrM({IDPe'.IDMno'.R.TID'.AMOUNT'.DATE'.NONCE'.Hash(IDPe'.IDMno'.R.TID'.AMOUNT'.DATE'.NONCE').SecuredParams'}_X1.1.IDPr)
+                              /\ secret(DESC',description,{Pr.Pe})                                      
+                                        
+                20. State = 6 /\ RCV_PrM({Yes_no'.NONCE'.SecuredKey'.Hash(IDPe.IDMno.R.TID.AMOUNT.DATE.NONCE').SecuredPaymentParams'}_X2) =|>
+                    State':=7
+
+end role                                                
+
+<HR>
+
+role payee (
+
+        Pe, Pr, PeM: agent,
+        Hash: hash_func,
+        K12: symmetric_key,             % pre-shared key between Payee and Payee's MNO
+        K2: symmetric_key,              % pre-shared key between Payee and Payer, hidden traffic to MNOs' eyes
+        SND_Pr, RCV_Pr, SND_PeM, RCV_PeM: channel(dy)
+        )
+        
+        played_by Pe
+        
+        def=
+        
+        local
+                State: nat,
+                Y1, Y2: symmetric_key,          % keys locally generated and to send to Payee's MNO
+                Success_failed, Yes_no, Received: text,
+                IDPe: hash(nat.nat),
+                PNPe: nat,                                      % Phone Number of Payee
+                PINPe: nat,                                     % Personal Identification Number of Payee
+                AIPe: nat,
+                R: text,                                        % Random Timestamp, act as Payer's pseudo-ID which uniquely identifies Payer to Payee
+                TID: text,                                      % The Identity of transaction
+                AMOUNT, DATE, DESC: text,                                                       % payment data
+                NONCE: nat,     % Random Number, ensure old communications cannot be reused in replay attacks
+                SecuredKey: hash(symmetric_key),                                        % Hash(KMM)
+                SecuredParams: {text.text}_symmetric_key,                       % {R.DESC}_K2
+                SecuredPaymentParams: {text.text.text.text}_symmetric_key,                              % {Yes_no.TID.AMOUNT.DATE}_K2
+                IDMno: text,                            % ID dell'MNO
+                PeIDreq: text,
+                TIDreq: text
+                
+        const
+                idPayee, y1, y2, rcvMsg, securKey: protocol_id
+
+
+        init
+                State := 0
+                
+        transition
+                
+                2. State = 0 /\ RCV_Pr(start) =|>
+                   State':=2 /\ PNPe':=new()
+                             /\ PINPe':=new()
+                             /\ IDPe' := Hash(PNPe'.PINPe')
+                             /\ AIPe':=new()
+                             /\ SND_PeM({PNPe'.IDPe'.AIPe'}_K12)
+                             /\ witness (Pe,PeM,idPayee,IDPe')
+                   
+                        % generation of secret keys Y1 and Y2
+                4. State = 2 /\ RCV_PeM({Success_failed'}_K12) =|>                                 
+                   State':=3 /\ Y1':=new()
+                             /\ Y2':=new()
+                             /\ SND_PeM({Y1'.Y2'}_K12)
+                             /\ secret(Y1',y1,{Pe,PeM})
+                             /\ secret(Y2',y2,{Pe,PeM})
+                                        
+                        % generation of Transaction's ID and MNO's ID   
+                9. State = 3 /\ RCV_Pr(R'.TIDreq'.PeIDreq') =|>
+                   State':=4 /\ IDMno':= new()
+                             /\ TID':= new()
+                             /\ SND_Pr({IDPe.TID'.IDMno'}_K2)
+                                         
+                        % Phase 5 : Payment Confirmation Response
+                15. State = 4 /\ RCV_PeM({R.TID.AMOUNT'.DATE'.SecuredParams'.NONCE'.Hash(R.TID.AMOUNT'.DATE'.SecuredParams'.NONCE').SecuredKey'}_Y1.1)  =|>
+                    State':=6 /\ Yes_no':=new()
+                              /\ SecuredPaymentParams':= {Yes_no'.TID.AMOUNT'.DATE'}_K2
+                              /\ SND_PeM({Yes_no'.NONCE'.SecuredKey'.Hash(R.TID.AMOUNT'.DATE'.SecuredParams'.NONCE').SecuredPaymentParams'}_Y2)
+                              /\ secret(SecuredKey',securKey,{Pe,PeM})
+                                          
+                22. State = 6 /\ RCV_PeM({Received'.NONCE'.SecuredKey.Hash(R.TID.AMOUNT.DATE.SecuredParams.NONCE')}_Y2) =|>
+                    State':=8 /\ secret(Received',rcvMsg,{Pe,PeM})
+                
+end role
+
+<HR>
+
+role payerMno (
+
+        PrM, Pr, PeM, TSC: agent, 
+        Hash: hash_func,
+        K11: symmetric_key,                     % pre-shared session key (Diffie Hellman) between Payer's MNO and Payer
+        KMM: symmetric_key,                     % pre-shared key between MNOs
+        KeyRing1: (symmetric_key) set,          % Keyring, it will contain keys generated from Payer
+        SND_Pr, RCV_Pr, SND_PeM, RCV_PeM, SND_TSC, RCV_TSC: channel(dy)
+        )
+        
+        played_by PrM
+        
+        def=
+        
+        local
+                State: nat,
+                X1, X2: symmetric_key,          % keys generated from Payer, to insert into Keyring1
+                Success_failed, Yes_no, StartPayment: text,
+                R: text,                                        % Random Timestamp, act as Payer's pseudo-ID which uniquely identifies Payer to Payee
+                NONCE: nat,                                     % Random Number, ensure old communications cannot be reused in replay attacks
+                IDPe: hash(nat.nat),
+                TID: text,                                      % The Identity of transaction
+                IDMno: text,                            % ID dell'MNO
+                AMOUNT, DATE, DESC: text,               % payment data
+                IDPr: hash(nat.nat),
+                PNPr: nat,
+                PINPr: nat,
+                AIPr: nat,
+                Timestamp1: nat,
+                SecuredParams: {text.text}_symmetric_key,                       % {R.DESC}_K2
+                SecuredPaymentParams: {text.text.text.text}_symmetric_key       % {Yes_no.TID.AMOUNT.DATE}_K2
+
+
+        const
+                idPayer, startMsg, x1, x2: protocol_id
+
+
+        init
+                State := 1
+                
+        transition
+        
+                        % invio esito fine registrazione al Payer
+                1. State = 1 /\ RCV_Pr({PNPr'.IDPr'.AIPr'}_K11) =|>
+                   State':=3 /\ Success_failed':=new()
+                             /\ SND_Pr({Success_failed'}_K11)
+                             /\ wrequest (PrM,Pr,idPayer,IDPr')
+
+                        % insert new symmetric keys in Keyring and start payment protocol
+                7. State = 3 /\ RCV_Pr({X1'.X2'}_K11)  /\  not(in(X1',KeyRing1))  /\  not(in(X2',KeyRing1))     =|>
+                   State':=4 /\ KeyRing1':= cons(X1',KeyRing1)
+                             /\ KeyRing1':= cons(X2',KeyRing1)          
+                             /\ StartPayment':=new()
+                             /\ SND_Pr({StartPayment'}_K11)                             
+                             /\ secret(StartPayment',startMsg,{PrM,Pr})
+                             /\ secret(X1',x1,{PrM,Pr})
+                             /\ secret(X2',x2,{PrM,Pr})
+
+                        % hashing to Timestamper
+                11. State = 4 /\ RCV_Pr({IDPe'.IDMno'.R'.TID'.AMOUNT'.DATE'.NONCE'.Hash(IDPe'.IDMno'.R'.TID'.AMOUNT'.DATE'.NONCE').SecuredParams'}_X1.1.IDPr)  =|>
+                    State':=5 /\ SND_TSC(Hash({IDPe'.IDMno'.R'.TID'.AMOUNT'.DATE'.NONCE'.Hash(IDPe'.IDMno'.R'.TID'.AMOUNT'.DATE'.NONCE').SecuredParams'}_X1.1.IDPr))
+
+                        % Phase 3 : Payment Authorization Request
+                                % assumed the existence of a secure channel between both MNOs
+                13. State = 5 /\ RCV_TSC(Timestamp1') =|>
+                    State':=7 /\ SND_PeM(R.IDPe.TID.AMOUNT.DATE.SecuredParams)
+
+                        % Phase 7: Payment Subtraction Response / Payment Receivable Updates
+                                % assumed the existence of a secure channel between both MNOs
+                19. State = 7 /\ RCV_PeM(Yes_no'.TID.AMOUNT.DATE.SecuredPaymentParams') =|>
+                    State':=9 /\ NONCE':=new()
+                              /\ SND_Pr({Yes_no'.NONCE'.Hash(KMM).Hash(IDPe.IDMno.R.TID.AMOUNT.DATE.NONCE').SecuredPaymentParams'}_X2)
+
+end role
+
+<HR>
+
+role payeeMno (
+
+        PeM, Pe, PrM, TSC: agent, 
+        Hash: hash_func,
+        K12: symmetric_key,
+        KMM: symmetric_key,                     % pre-shared key between MNOs
+        KeyRing2: (symmetric_key) set,          % Keyring, it will contain keys generated from Payee
+        SND_Pe, RCV_Pe, SND_PrM, RCV_PrM, SND_TSC, RCV_TSC: channel(dy)
+        )
+        
+        played_by PeM
+        
+        def=
+        
+        local
+                State: nat,
+                Y1, Y2: symmetric_key,          % keys generated from Payee, to insert into Keyring2
+                Success_failed, Yes_no, Received: text,
+                R: text,        % Random Timestamp, act as Payer's pseudo-ID which uniquely identifies Payer to Payee
+                NONCE: nat,     % Random Number, ensure old communications cannot be reused in replay attacks
+                IDPe: hash(nat.nat),
+                TID: text,      % The Identity of transaction
+                IDMno: text,            % ID dell'MNO
+                AMOUNT, DATE, DESC: text,
+                SecuredParams: {text.text}_symmetric_key,                       % {R.DESC}_K2
+                SecuredPaymentParams: {text.text.text.text}_symmetric_key,              % {Yes_no.TID.AMOUNT.DATE}_K2
+                SecuredKey: hash(symmetric_key),                        % % Hash(KMM)
+                ControlSet: (nat) set,
+                PNPe: nat,
+                PINPe: nat,
+                AIPe: nat,
+                Timestamp2: nat
+
+        const
+                idPayee, securKey, rcvMsg: protocol_id
+        
+        init
+                State := 1
+                /\ ControlSet := {}
+                
+        transition
+        
+                3. State = 1 /\ RCV_Pe({PNPe'.IDPe'.AIPe'}_K12) =|>
+                   State':=3 /\ Success_failed':=new()
+                             /\ SND_Pe({Success_failed'}_K12)                   
+                             /\ wrequest(PeM,Pe,idPayee,IDPe')
+                             
+                        % insert new symmetric keys in Keyring 
+                5. State = 3 /\ RCV_Pe({Y1'.Y2'}_K12)  /\  not(in(Y1',KeyRing2))  /\  not(in(Y2',KeyRing2))     =|>
+                   State':=4 /\ KeyRing2':= cons(Y1',KeyRing2)
+                             /\ KeyRing2':= cons(Y2',KeyRing2)
+
+                        % Phase 4 : Payment Confirmation Request
+                                % assumed the existence of a secure channel between both MNOs
+                14. State = 4 /\ RCV_PrM(R'.IDPe'.TID'.AMOUNT'.DATE'.SecuredParams')    =|>
+                    State':=5 /\ NONCE':= new()
+                              /\ SecuredKey':= Hash(KMM)
+                              /\ SND_Pe({R'.TID'.AMOUNT'.DATE'.SecuredParams'.NONCE'.Hash(R'.TID'.AMOUNT'.DATE'.SecuredParams'.NONCE').SecuredKey'}_Y1.1)
+                              /\ secret(SecuredKey',securKey,{PeM,Pe})
+
+                        % Phase 6 : Payment Authorization Response
+                16. State = 5 /\ RCV_Pe({Yes_no'.NONCE.SecuredKey.Hash(R.TID.AMOUNT.DATE.SecuredParams.NONCE).SecuredPaymentParams'}_Y2) =|>
+                    State':=7 /\ SND_TSC(Hash({Yes_no'.NONCE.SecuredKey.Hash(R.TID.AMOUNT.DATE.SecuredParams.NONCE).SecuredPaymentParams'}_Y2))
+                
+                        % assumed the existence of a secure channel between both MNOs
+                18. State = 7 /\ RCV_TSC(Timestamp2') =|>
+                    State':=8 /\ ControlSet':=cons(1,ControlSet)                % populate controlset for successive transition
+                              /\ SND_PrM(Yes_no.TID.AMOUNT.DATE.SecuredPaymentParams)
+                                
+                21. State = 8 /\ in(1,ControlSet)    --|>
+                    State':=9 /\ NONCE':=new()
+                              /\ Received':=new()
+                              /\ SND_Pe({Received'.NONCE'.Hash(KMM).Hash(R.TID.AMOUNT.DATE.SecuredParams.NONCE')}_Y2)
+                              /\ secret(Received',rcvMsg,{PeM,Pe})
+                   
+end role
+
+<HR>
+
+role timeStamper (
+        
+        TSC, PrM, PeM: agent,
+        Hash: hash_func,
+        SND_PrM, RCV_PrM, SND_PeM, RCV_PeM: channel(dy)
+        )
+        
+        played_by TSC
+        
+        def=
+        
+        local
+                State: nat,
+                SecuredParams: {text.text}_symmetric_key,                       % {R.DESC}_K2
+                SecuredPaymentParams: {text.text.text.text}_symmetric_key,              % {Yes_no.TID.AMOUNT.DATE}_K2
+                PartialPaymentParams: (text.text.text.text),                    % (R.TID.AMOUNT.DATE)
+                SecuredKey: hash(symmetric_key),                        % % Hash(KMM)
+                Yes_no: text,
+                AMOUNT, DATE, DESC: text,               
+                IDPr: hash(nat.nat),
+                X1, Y2: symmetric_key,
+                R: text,        % Random Timestamp, act as Payer's pseudo-ID which uniquely identifies Payer to Payee
+                NONCE: nat,     % Random Number, ensure old communications cannot be reused in replay attacks
+                IDPe: hash(nat.nat),
+                TID: text,      % The Identity of transaction
+                IDMno: text,            % ID dell'MNO
+                Timestamp1, Timestamp2: nat
+                
+        init
+                State := 0
+                
+        transition
+                
+
+                        % generation of first timestamp
+                12. State = 0 /\ RCV_PrM(Hash({IDPe'.IDMno'.R'.TID'.AMOUNT'.DATE'.NONCE'.Hash(IDPe'.IDMno'.R'.TID'.AMOUNT'.DATE'.NONCE').SecuredParams'}_X1'.1.IDPr')) =|>
+                    State':=2 /\ Timestamp1':= new()
+                              /\ SND_PrM(Timestamp1')
+                             
+                        % generation of second timestamp
+                17. State = 2 /\ RCV_PeM(Hash({Yes_no'.NONCE'.SecuredKey'.Hash(R.TID.AMOUNT.DATE.SecuredParams.NONCE').SecuredPaymentParams'}_Y2')) =|>
+                    State':=4 /\ Timestamp2':= new()
+                              /\ SND_PeM(Timestamp2')
+
+end role
+
+<HR>
+
+role session (
+
+        Pe, Pr, TSC, PeM, PrM: agent,
+        Hash: hash_func,
+        K11, K12, K2, KMM: symmetric_key
+        )
+        
+        def=
+        
+        local
+                SPr_Pe, RPr_Pe, SPr_PrM, RPr_PrM,
+                SPe_Pr, RPe_Pr, SPe_PeM, RPe_PeM,
+                SPrM_Pr, RPrM_Pr, SPrM_PeM, RPrM_PeM, SPrM_TSC, RPrM_TSC,
+                SPeM_Pe, RPeM_Pe, SPeM_PrM, RPeM_PrM, SPeM_TSC, RPeM_TSC, 
+                STSC_PrM, RTSC_PrM, STSC_PeM, RTSC_PeM: channel(dy),
+                KeyRing1, KeyRing2: (symmetric_key) set,
+                Success_failed: text,
+                IDPe: hash(nat.nat),
+                PNPe: nat,
+                PINPe: nat,
+                AIPe: nat,
+                IDPr: hash(nat.nat),
+                PNPr: nat,
+                PINPr: nat,
+                AIPr: nat
+                
+        init
+                KeyRing1 := {}
+                /\ KeyRing2 := {}
+        
+        composition     
+                                                
+                   payer(Pr, Pe, PrM, Hash, K11, K2, SPr_Pe, RPr_Pe, SPr_PrM, RPr_PrM)
+                /\ payerMno(PrM, Pr, PeM, TSC, Hash, K11, KMM, KeyRing1, SPrM_Pr, RPrM_Pr, SPrM_PeM, RPrM_PeM, SPrM_TSC, RPrM_TSC) 
+                /\ timeStamper(TSC, PrM, PeM, Hash, STSC_PrM, RTSC_PrM, STSC_PeM, RTSC_PeM)
+                /\ payeeMno(PeM, Pe, PrM, TSC, Hash, K12, KMM, KeyRing2, SPeM_Pe, RPeM_Pe, SPeM_PrM, RPeM_PrM, SPeM_TSC, RPeM_TSC) 
+                /\ payee(Pe, Pr, PeM, Hash, K12, K2, SPe_Pr, RPe_Pr, SPe_PeM, RPe_PeM)
+                
+end role
+
+<HR>
+
+role environment()
+        
+        def=
+        
+        const
+                pe, pr, tsc, peM, prM: agent,
+                h: hash_func,
+                k11, k12, k2, kmm: symmetric_key
+                
+        intruder_knowledge = {i, pe, pr, tsc, peM, prM}         
+                                                        
+        composition     
+                
+                   session(pe, pr, tsc, peM, prM, h, k11, k12, k2, kmm)
+         %      /\ session(pe, pr, tsc, peM, prM, h, k11, k12, k2, kmm)
+                
+end role
+
+<HR>
+
+goal
+         
+        secrecy_of x1, x2, y1, y2, startMsg, rcvMsg, securKey, description
+        weak_authentication_on idPayer, idPayee
+
+end goal
+
+<HR>
+
+environment()
+</PRE>

@@ -1,0 +1,223 @@
+
+<BR><DT><B>VARIANT:</B> <DD> authentication based on MACs<BR>
+<BR><DT><B>PURPOSE:</B> <DD> <BR>
+ IKE is designed to perform mutual authentication and key
+ exchange prior to setting up an IPsec connection.
+ IKEv2 exists in several variants, the defining difference
+ being the authentication method used.
+<P>
+ This variant, which
+ we call IKEv2-MAC, is based on exchanging the MAC of a
+ pre-shared secret that both nodes possess.
+<P>
+&nbsp;<BR><BR><DT><B>REFERENCE:</B> <DD> <BR>
+ [ipsec-ikev2]
+&nbsp;<BR><BR><DT><B>MODELER:</B> <DD> <BR>
+ <UL>
+ <LI> Sebastian M&ouml;dersheim, ETH Z&uuml;rich, December 2003
+ <LI> Paul Hankes Drielsma, ETH Z&uuml;rich, December 2003
+ </UL>
+&nbsp;<BR><BR><DT><B>ALICE_BOB:</B> <DD> <BR>
+ IKEv2-MAC proceeds in two so-called exchanges.  In the first,
+ called IKE\_SA\_INIT, the users exchange nonces and perform 
+ a Diffie-Hellman exchange, establishing an initial security 
+ association called the IKE\_SA.  The second exchange,
+ IKE\_SA\_AUTH, then authenticates the previous messages,
+ exchanges the user identities, and establishes the first 
+ so-called "child security association" or CHILD\_SA which will
+ be used to secure the subsequent IPsec tunnel.
+ A (respectively B) generates a nonce Na and a Diffie-Hellman 
+ half key KEa (respectively KEb).  In addition, SAa1 contains A's 
+ cryptosuite offers and SAb1 B's preference for the establishment
+ of the IKE\_SA.  Similarly SAa2 and SAb2 for the establishment of 
+ the CHILD\_SA.  The two parties share a secret in advance, the 
+ so-called PSK or pre-shared key.  The authenticator message is
+ built by taking a hash of the PSK and the previously exchanged
+ messages.
+<PRE>
+ IKE_SA_INIT
+ 1. A -> B: SAa1, KEa, Na
+ 2. B -> A: SAb1, KEb, Nb
+ IKE_SA_AUTH
+ 3. A -> B: {A, AUTHa, SAa2}K
+    where K = H(Na.Nb.SAa1.g^KEa^KEb) and 
+      AUTHa = F(PSK.SAa1.KEa.Na.Nb)
+ 4. B -> A: {B, AUTHb, SAb2}K
+    where 
+      AUTHb = F(PSK.SAa1.KEr.Na.Nb)
+</PRE>
+ Note that because we abstract away from the negotiation of 
+ cryptographic algorithms, we have SAa1 = SAb1 and 
+ SAa2 = SAb2.  
+<P>
+&nbsp;<BR><BR><DT><B>LIMITATIONS:</B> <DD> <BR>
+<P>
+Issues abstracted from:
+<UL>
+<LI> The parties, Alice and Bob, should negotiate mutually 
+ acceptable cryptographic algorithms.  This we abstract by
+ modelling that Alice sends only a single offer for a crypto-suite,
+ and Bob must accept this offer.  We thus assume that goal G11
+ is fulfilled.
+<LI> There are goals of IKEv2 which we do not yet consider.  For
+ instance, identity hiding.
+<LI> We do not model the exchange of traffic selectors, which
+ are specific to the IP network model and would be meaningless
+ in our abstract communication model.
+</UL>
+<P>
+&nbsp;<BR><BR><DT><B>PROBLEMS:</B> <DD> 3<BR>
+<UL>
+<LI>secrecy of <TT>sec_a_SK, sec_b_SK</TT>
+<LI> strong authentication on <TT>sk1</TT>
+<LI> strong authentication on <TT>sk2</TT>
+</UL>
+&nbsp;<BR><BR><DT><B>CLASSIFICATION:</B> <DD> G1, G2, G3, G7, G9, G10, G11<BR>
+
+&nbsp;<BR><BR><DT><B>ATTACKS:</B> <DD> None.  Note that the use of MAC-based authentication<BR>
+ precludes the man-in-the-middle attack that is possible on
+ the first variant, IKEv2-DS.  
+<P>
+&nbsp;<BR><HR>
+<BR><DT><B>HLPSL:</B> <DD> <BR>
+<PRE>
+role alice(A,B: agent,
+           G: text,
+           F: hash_func,
+           PSK: symmetric_key,
+           SND_B, RCV_B: channel (dy))
+played_by A
+def=
+
+  local Ni, SA1, SA2, DHX: text, 
+        Nr: text,
+        KEr: message, %% more spefic: exp(text,text)
+        SK: hash(text.text.text.message),
+        State: nat,
+        AUTH_B: message
+
+  const sec_a_SK : protocol_id
+
+  init  State := 0
+
+  transition
+
+  %% The IKE_SA_INIT exchange:
+  1. State = 0  /\ RCV_B(start) =|>
+     State':= 2 /\ SA1' := new()
+                /\ DHX' := new()
+                /\ Ni' := new()
+                /\ SND_B( SA1'.exp(G,DHX').Ni' )
+
+  %% Alice receives message 2 of IKE_SA_INIT, checks that Bob has
+  %% indeed sent the same nonce in SAr1, and then sends the first 
+  %% message of IKE_AUTH.
+  %% As authentication Data, she signs her first message and Bob's nonce.
+  2. State = 2  /\ RCV_B(SA1.KEr'.Nr') =|>
+     State':= 4 /\ SA2' := new()
+                /\ SK' := F(Ni.Nr'.SA1.exp(KEr',DHX))
+                /\ SND_B( {A.F(PSK.SA1.exp(G,DHX).Ni.Nr').SA2'}_SK' )
+                /\ witness(A,B,sk2,F(Ni.Nr'.SA1.exp(KEr',DHX)))
+
+  3. State = 4  /\ RCV_B({B.F(PSK.SA1.KEr.Ni.Nr).SA2}_SK) =|>
+     State':= 6 /\ AUTH_B' := F(PSK.SA1.KEr.Ni.Nr)
+                /\ secret(SK,sec_a_SK,{A,B})
+                /\ request(A,B,sk1,SK)
+
+end role
+
+<HR>
+
+role bob(B,A:agent,
+             G: text,
+             F: hash_func,
+             PSK: symmetric_key,
+             SND_A, RCV_A: channel (dy))
+played_by B
+def=
+
+  local Ni, SA1, SA2: text, 
+        Nr, DHY: text,
+        SK: hash(text.text.text.message),
+        KEi: message,
+        State: nat,
+        AUTH_A: message
+
+  const sec_b_SK : protocol_id
+
+  init  State := 1
+
+  transition
+
+  1. State = 1 /\ RCV_A( SA1'.KEi'.Ni' ) =|>
+     State':=3 /\ DHY' := new()
+               /\ Nr' := new()
+               /\ SND_A(SA1'.exp(G,DHY').Nr')
+               /\ SK' := F(Ni'.Nr'.SA1'.exp(KEi',DHY'))
+
+  2. State = 3 /\ RCV_A( {A.F(PSK.SA1.KEi.Ni.Nr).SA2'}_SK ) =|>
+     State':=5 /\ SND_A( {B.F(PSK.SA1.exp(G,DHY).Ni.Nr).SA2'}_SK )
+               /\ AUTH_A' := F(PSK.SA1.KEi.Ni.Nr)
+               /\ witness(B,A,sk1,SK)
+               /\ secret(SK,sec_b_SK,{A,B})
+               /\ request(B,A,sk2,SK)
+
+end role
+
+<HR>
+
+role session(A, B: agent,
+             PSK: symmetric_key,
+             G: text,
+             F: hash_func)
+def=
+
+  local SA, RA, SB, RB: channel (dy)
+
+  composition
+
+           alice(A,B,G,F,PSK,SA,RA)
+        /\ bob(B,A,G,F,PSK,SB,RB)
+
+end role
+
+<HR>
+
+role environment()
+def=
+ 
+  const sk1, sk2      : protocol_id,
+        a, b          : agent,
+        kab, kai, kbi : symmetric_key,
+        g             : text, 
+        f             : hash_func
+
+  intruder_knowledge = {g,f,a,b,i,kai,kbi
+
+
+                       }
+
+  composition
+
+        session(a,b,kab,g,f)
+     /\ session(a,i,kai,g,f)
+     /\ session(i,b,kbi,g,f)
+
+end role
+
+<HR>
+
+goal    
+  %secrecy_of SK
+  secrecy_of sec_a_SK, sec_b_SK % Addresses G9
+
+  %Alice authenticates Bob on sk1
+  authentication_on sk1 % Addresses G1, G2, G3, G7, G10
+  %Bob authenticates Alice on sk2
+  authentication_on sk2 % Addresses G1, G2, G3, G7, G10
+end goal
+
+<HR>
+
+environment()
+</PRE>
