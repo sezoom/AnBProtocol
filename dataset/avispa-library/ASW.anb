@@ -1,14 +1,27 @@
 
-  The Exchange Subprotocol
-  1. O -> R : me1 = {Vo.Vr.T.Text1.h(No)}_inv(Vo)
-  2. R -> O : me2 = {me1.h(Nr)}_inv(Vr)
-  3. O -> R : No
-  4. R -> O : Nr
-  The Abort Subprotocol
-  1. O -> T: ma1 = {aborted.me1}_inv(Vo)
-  2. T -> O: ma2 = if Resolved(me1) then {me1.me2}_inv(Vt)
-                   else {aborted.ma1}_inv(Vt); Aborted(ma1) := true
-  Resolve Subprotocol
-  1. O -> T: mr1 = me1.me2
-  2. T -> O: mr2 = if Aborted(me1) then {aborted.me1}_inv(Vt)
-                   else {me1.me2}_inv(Vt) ; Resolved(me1) := true
+Protocol ASW_FairExchange_Original:
+
+Declarations:
+    aenc/2;
+    hash/1;
+
+Knowledge:
+    O: pk(Vo), sk(Vo), pk(Vr), pk(Vt);
+    R: pk(Vo), pk(Vr), sk(Vr), pk(Vt);
+    T: pk(Vo), pk(Vr), pk(Vt), sk(Vt);
+
+Actions:
+    [m1] O -> R (me1): aenc{pk(Vo) . pk(Vr) . T . Text1 . hash(No)}sk(Vo);
+    [m2] R -> O (me2): aenc{ aenc{pk(Vo) . pk(Vr) . T . Text1 . hash(No)}sk(Vo) . hash(Nr) }sk(Vr);
+    [m3] O -> R (No): No;
+    [m4] R -> O (Nr): Nr;
+
+    [m5] O -> T (ma1): aenc{aborted . me1}sk(Vo);
+    [m6] T -> O (ma2_ok): aenc{me1 . me2}sk(Vt);
+    [m7] T -> O (ma2_abort): aenc{aborted . ma1}sk(Vt);
+
+    [m8] O -> T (mr1): me1 . me2;
+    [m9] T -> O (mr2_abort): aenc{aborted . me1}sk(Vt);
+    [m10] T -> O (mr2_ok): aenc{me1 . me2}sk(Vt);
+
+end

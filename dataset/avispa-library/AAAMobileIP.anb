@@ -1,42 +1,25 @@
 
- 1. FA   -> MN:   FA,N_FA
- 2. MN   -> FA:   N_FA,MN,AAAH,
-                  {N_FA,MN,AAAH}_K_MnAAAH
- 3. FA   -> AAAL: N_FA,MN,AAAH,
-                  {N_FA,MN,AAAH}_K_MnAAAH
- 4. AAAL -> AAAH: N_FA,MN,AAAH,
-                  {N_FA,MN,AAAH}_K_MnAAAH      
- 5. AAAH -> HA:   MN,
-                  {K_MnHa,K_FaHa}_KAAAHHa,
-                  {K_MnFa,K_MnHa}_K_MnAAAH,
-                  {MN,
-                   {K_MnHa,K_FaHa}_KAAAHHa,
-                   {K_MnFa,K_MnHa}_K_MnAAAH
-                  }_K_AAAHHa
- 6. HA   -> AAAH: {K_MnFa,K_MnHa}_K_MnAAAH,
-                  {{K_MnFa,K_MnHa}_K_MnAAAH}_K_MnHa,
-                  {{K_MnFa,K_MnHa}_K_MnAAAH,
-                   {{K_MnFa,K_MnHa}_K_MnAAAH}_K_MnHa
-                  }_K_AAAHHa
- 7. AAAH -> AAAL: N_FA,
-                  {K_MnFa,K_FaHa}_K_AAAHAAAL,
-                  {K_MnFa,K_MnHa}_K_MnAAAH,
-                  {{K_MnFa,K_MnHa}_K_MnAAAH}_K_MnHa,
-                  {N_FA,
-                   {K_MnFa,K_FaHa}_K_AAAHAAAL,
-                   {K_MnFa,K_MnHa}_K_MnAAAH,
-                   {{K_MnFa,K_MnHa}_K_MnAAAH}_K_MnHa
-                  }_K_AAAHAAAL
- 8. AAAL -> FA:   N_FA,
-                  {K_MnFa,K_FaHa}_K_FaAAAL,
-                  {K_MnFa,K_MnHa}_K_MnAAAH,
-                  {{K_MnFa,K_MnHa}_K_MnAAAH}_K_MnHa,
-                  {N_FA,
-                   {K_MnFa,K_FaHa}_K_FaAAAL,
-                   {K_MnFa,K_MnHa}_K_MnAAAH,
-                   {{K_MnFa,K_MnHa}_K_MnAAAH}_K_MnHa
-                  }_K_FaAAAL
- 9. FA   -> MN:   {K_MnFa,K_FaHa}_K_FaAAAL,
-                  {K_MnFa,K_MnHa}_K_MnAAAH,
-                  {{K_MnFa,K_MnHa}_K_MnAAAH}_K_MnHa
- 
+Protocol AAAMobileIP:
+
+Declarations:
+    senc/2;
+
+Knowledge:
+    MN: K_MnAAAH;
+    FA: K_FaAAAL;
+    AAAL: K_FaAAAL, K_AAAHAAAL;
+    AAAH: K_MnAAAH, K_AAAHHa, K_AAAHAAAL;
+    HA: K_AAAHHa;
+
+Actions:
+    [m1] FA -> MN (N_FA): FA . N_FA;
+    [m2] MN -> FA : N_FA . MN . AAAH . senc{N_FA . MN . AAAH}K_MnAAAH;
+    [m3] FA -> AAAL : N_FA . MN . AAAH . senc{N_FA . MN . AAAH}K_MnAAAH;
+    [m4] AAAL -> AAAH : N_FA . MN . AAAH . senc{N_FA . MN . AAAH}K_MnAAAH;
+    [m5] AAAH -> HA : MN . senc{K_MnHa . K_FaHa}K_AAAHHa . senc{K_MnFa . K_MnHa}K_MnAAAH . senc{MN . senc{K_MnHa . K_FaHa}K_AAAHHa . senc{K_MnFa . K_MnHa}K_MnAAAH}K_AAAHHa;
+    [m6] HA -> AAAH : senc{K_MnFa . K_MnHa}K_MnAAAH . senc{senc{K_MnFa . K_MnHa}K_MnAAAH}K_MnHa . senc{senc{K_MnFa . K_MnHa}K_MnAAAH . senc{senc{K_MnFa . K_MnHa}K_MnAAAH}K_MnHa}K_AAAHHa;
+    [m7] AAAH -> AAAL : N_FA . senc{K_MnFa . K_FaHa}K_AAAHAAAL . senc{K_MnFa . K_MnHa}K_MnAAAH . senc{senc{K_MnFa . K_MnHa}K_MnAAAH}K_MnHa . senc{N_FA . senc{K_MnFa . K_FaHa}K_AAAHAAAL . senc{K_MnFa . K_MnHa}K_MnAAAH . senc{senc{K_MnFa . K_MnHa}K_MnAAAH}K_MnHa}K_AAAHAAAL;
+    [m8] AAAL -> FA : N_FA . senc{K_MnFa . K_FaHa}K_FaAAAL . senc{K_MnFa . K_MnHa}K_MnAAAH . senc{senc{K_MnFa . K_MnHa}K_MnAAAH}K_MnHa . senc{N_FA . senc{K_MnFa . K_FaHa}K_FaAAAL . senc{K_MnFa . K_MnHa}K_MnAAAH . senc{senc{K_MnFa . K_MnHa}K_MnAAAH}K_MnHa}K_FaAAAL;
+    [m9] FA -> MN : senc{K_MnFa . K_FaHa}K_FaAAAL . senc{K_MnFa . K_MnHa}K_MnAAAH . senc{senc{K_MnFa . K_MnHa}K_MnAAAH}K_MnHa;
+
+end

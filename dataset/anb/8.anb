@@ -1,14 +1,28 @@
 Protocol Eight:
 
+Declarations:
+    aenc/2;
+    h/1;
+
+Types:
+    Agent A,B;
+    Number M,N;
+    Function h;
+    Mapping pk
+
 Knowledge:
     A : sk(A), pk(A), pk(B), B, M;
     B : sk(B), pk(B), pk(A), A, N;
 
+Public:
+    pk(A), pk(B);
+Private:
+    sk(A), sk(B);
 
 Actions:
-    [step1] A -> B  : aenc{ M }sk(A);
-    [step2] B -> A  : pk(B) . B . aenc{ N }sk(B);
-    [step3] A -> B  : aenc{ pk(A) . N . B }pk(B);
-    [step4] B -> A  : h(M . B . N);
+    [step1] A -> B (M) : aenc{ M }sk(A);
+    [step2] B -> A (N) : pk(B) . B . aenc{ N }sk(B);
+    [step3] A -> B     : aenc{ pk(A) . N . B }pk(B);
+    [step4] B -> A     : h(M . B . N);
 
 end

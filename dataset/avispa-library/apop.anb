@@ -1,4 +1,15 @@
+Protocol APOP:
 
- S -> C : Hello.Timestamp
- C -> S : C.MD5(Timestamp.K_CS)
- S -> C : Success
+Declarations:
+    hash/1;
+
+Knowledge:
+    C: K_CS;
+    S: K_CS;
+
+Actions:
+    [m1] S -> C (Hello, Timestamp): Hello . Timestamp;
+    [m2] C -> S (C, MD5): C . hash(Timestamp . K_CS);
+    [m3] S -> C : Success;
+
+end

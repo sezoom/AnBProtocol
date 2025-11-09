@@ -9,18 +9,11 @@ Types: Agent A,B;
        Number NA,Text1,tagISOOTPS1;
        Mapping sk
 
-Knowledge: A: A,B,sk(A,B);
-	   B: B,A,sk(A,B)
-
-Public:
-
-Private: 
+Knowledge:
+    A : A, B, sk(A,B), Text1;
+    B : B, A, sk(A,B);
 
 Actions:
-A->B: {|NA,B,Text1|}sk(A,B)
+    [msg1] A -> B (NA) : senc{NA . B . Text1}sk(A,B);
 
-Goals:
-B weakly authenticates A on Text1
-
-ChannelKeys:
-
+end

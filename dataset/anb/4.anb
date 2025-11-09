@@ -2,9 +2,28 @@ Protocol Four:
 
 Declarations:
     g/0;
+    senc/2;
 
-Actions: 
+Types:
+    Agent A,B;
+    Number x, y, N1, N2;
+
+Knowledge:
+    A: g();
+    B: g();
+
+Public:
+    g();
+
+Private:
+
+Actions:
     [m1] A -> B (x, N1) : g()^x . N1;
     [m2] B -> A (y, N2) : g()^y . senc{N1}(g()^x)^y . N2;
-    [m3] A -> B  : senc{N2}(g()^y)^x;
+    [m3] A -> B         : senc{N2}(g()^y)^x;
+
+Goals:
+
+ChannelKeys:
+
 end
