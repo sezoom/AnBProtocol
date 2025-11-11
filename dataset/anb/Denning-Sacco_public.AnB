@@ -1,31 +1,40 @@
-Protocol: DenningSaccoCorrPub  # Verified
 
-# inserted tag to avoid encryption/decryptyion attack
+Protocol DenningSaccoCorrPub:
 
-# inserted name of intended recipient in signature to prevent Abadi's attack
+Declarations:
+    aenc/2;
 
-Types: Agent A,B,s;
-       Number NA,Text1,Text2,Text3,Text4,tag,tagDenningSaccoCorrPub1,tagDenningSaccoCorrPub2,tagDenningSaccoCorrPub3,
-        tagDenningSaccoCorrPub4,tagDenningSaccoCorrPub5,tagDenningSaccoCorrPub6,tagDenningSaccoCorrPub7;
-       Symmetric_key KAB;
-       Mapping pk
+Types:
+    Agent A,B,s;
+    Number NA,tag,tagDenningSaccoCorrPub1,tagDenningSaccoCorrPub2,tagDenningSaccoCorrPub3,tagDenningSaccoCorrPub4,tagDenningSaccoCorrPub5,tagDenningSaccoCorrPub6,tagDenningSaccoCorrPub7;
+    Symmetric_key KAB;
+    Mapping pk,sk
 
-Knowledge: A: A,B,pk(A),inv(pk(A)),pk(s),tag;
-	   B: B,pk(s),pk(B),inv(pk(B)),tag;
-	   s: s,A,B,pk(A),pk(B),pk(s),inv(pk(s)),tag
+Knowledge:
+    A: A, B, pk(A), sk(A), pk(s), tag;
+    B: B, pk(s), pk(B), sk(B), tag;
+    s: s, A, B, pk(A), pk(B), pk(s), sk(s), tag;
 
 Public:
+    pk(A), pk(B), pk(s);
 
 Private:
+    sk(A), sk(B), sk(s);
 
 Actions:
-A->s: tagDenningSaccoCorrPub1,A,B
-s->A: {tagDenningSaccoCorrPub2,A,pk(A)}inv(pk(s)),{tagDenningSaccoCorrPub6,B,pk(B)}inv(pk(s))
-A->B: {tagDenningSaccoCorrPub5,A,pk(A)}inv(pk(s)),{tagDenningSaccoCorrPub7,B,pk(B)}inv(pk(s)),{tagDenningSaccoCorrPub3,{tagDenningSaccoCorrPub4,KAB,NA,B}inv(pk(A)),tag}pk(B)
-
+    [m1] A -> s            : tagDenningSaccoCorrPub1 . A . B;
+    [m2] s -> A            : aenc{ tagDenningSaccoCorrPub2 . A . pk(A) }sk(s) .
+                              aenc{ tagDenningSaccoCorrPub6 . B . pk(B) }sk(s);
+    [m3] A -> B (NA . KAB) : aenc{ tagDenningSaccoCorrPub5 . A . pk(A) }sk(s) .
+                              aenc{ tagDenningSaccoCorrPub7 . B . pk(B) }sk(s) .
+                              aenc{ tagDenningSaccoCorrPub3 .
+                                    aenc{ tagDenningSaccoCorrPub4 . KAB . NA . B }sk(A) .
+                                    tag }pk(B);
 
 Goals:
-A *->* B: KAB
+    B ->* A : KAB;
+    KAB secret between A,B;
 
 ChannelKeys:
 
+end

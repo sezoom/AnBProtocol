@@ -1,31 +1,34 @@
-Protocol: DenningSacco # Verified & Certified
+Protocol DenningSacco:
 
-# The protocol uses timestamps to ensure freshness; thus, when running
-# in classic mode, we get a trivial replay attack. (This does not
-# occur in the fixed-point mode since we check only weak
-# authentication there.)
+Declarations:
+    senc/2;
 
-Types: Agent A,B,s;
-       Number T,timestamp,Payload,tagds1,tagds2,tagds3,tagds4,tagds5;
-       Symmetric_key KAB;
-       Mapping sk
+Types:
+    Agent A,B,s;
+    Number T,timestamp,Payload,tagds1,tagds2,tagds3,tagds4,tagds5;
+    Symmetric_key KAB;
+    Mapping sk
 
-Knowledge: A: A,B,sk(A,s),timestamp;
-	   B: B,A,sk(B,s),timestamp;
- 	   s: A,B,sk(A,s),sk(B,s)
+Knowledge:
+    A: A, B, sk(A,s), timestamp;
+    B: B, A, sk(B,s), timestamp;
+    s: A, B, sk(A,s), sk(B,s);
 
 Public:
 
 Private:
+    sk(A,s)
+    sk(B,s)
 
 Actions:
-A->s: tagds2,A,B
-s->A: {|tagds4,B,KAB,T,{|tagds3,A,KAB,T|}sk(B,s)|}sk(A,s)
-A->B: {|tagds3,A,KAB,T|}sk(B,s)
-B->A: {|tagds1,Payload|}KAB
+    [m1] A -> s             : tagds2 . A . B;
+    [m2] s -> A (KAB, T)    : senc{ tagds4 . B . KAB . T . senc{ tagds3 . A . KAB . T }sk(B,s) }sk(A,s);
+    [m3] A -> B             : senc{ tagds3 . A . KAB . T }sk(B,s);
+    [m4] B -> A (Payload)   : senc{ tagds1 . Payload }KAB;
 
 Goals:
-B *->* A: Payload
+    B authenticates A on Payload;
 
 ChannelKeys:
 
+end

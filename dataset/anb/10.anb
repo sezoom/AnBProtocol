@@ -21,8 +21,13 @@ Private:
     sk(A), sk(B);
 
 Actions:
-    [msg1] A -> B (Kf) : A . pk(A) . aenc{ Kf }sk(A);
+    [msg1] A -> B (Kf) : A . pk(A) . Kf . aenc{ Kf }sk(A);
     [msg2] B -> A      : B . pk(B) . h(Kf);
     [msg3] A -> B      : aenc{ senc{ M }Kf . A . B }pk(B);
+
+Goals:
+    B ->* A : (A, Kf);
+
+ChannelKeys:
 
 end

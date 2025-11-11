@@ -14,7 +14,6 @@ Knowledge:
 Public:
 
 Private:
-    Ks;
 
 Actions:
     [m1] A -> B (Na): Na;

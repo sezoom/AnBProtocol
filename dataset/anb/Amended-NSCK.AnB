@@ -30,8 +30,17 @@ Actions:
     [m7] A -> B            : senc{ tagANSCK9 . pre(NB) }KAB;
 
 Goals:
-    B authenticates A on NB;
+    B ->  A : (A, B, KAB, NB);
+    A ->* B : (A, B, KAB, NB);
+    A ->  S : (A, B, KAB, NA);
+    B ->* S : (A, B, KAB, NB0);
+
+# Secrecy
+    KAB secret between A,B,S;
+    NB secret between A,B;
+    NB0 secret between B,S;
 
 ChannelKeys:
-
+    K(A,s) : sk(A,s);
+    K(B,s) : sk(B,s);
 end

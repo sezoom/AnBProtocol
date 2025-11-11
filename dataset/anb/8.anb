@@ -25,4 +25,10 @@ Actions:
     [step3] A -> B     : aenc{ pk(A) . N . B }pk(B);
     [step4] B -> A     : h(M . B . N);
 
+Goals:
+ B ->* A : (A, M);
+ A ->* B : (B, N);
+
+ChannelKeys:
+
 end

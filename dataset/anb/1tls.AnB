@@ -31,13 +31,13 @@ Actions:
     [m4] B -> A              : senc{hash(prf(PMS, NA, NB) . A . B . NA . NB . Sid . PA . PB . PMS . tagTLS2)}serverK(NA, NB, prf(PMS, NA, NB));
 
 Goals:
-  B authenticates A on prf(PMS,NA,NB);
-  A authenticates B on prf(PMS,NA,NB);
-  prf(PMS,NA,NB) secret between A,B;
+    /*  B authenticates A on prf(PMS,NA,NB); */
+    B -> A : prf(PMS, NA, NB)
+    prf(PMS,NA,NB) secret between A,B;
 
 ChannelKeys:
-K(A,B): clientK(NA,NB,prf(PMS,NA,NB));
-K(B,A): serverK(NA,NB,prf(PMS,NA,NB));
+    K(A,B): clientK(NA,NB,prf(PMS,NA,NB));
+    K(B,A): serverK(NA,NB,prf(PMS,NA,NB));
 
 end
 

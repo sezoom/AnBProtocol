@@ -25,4 +25,9 @@ Actions:
     [msg3] S -> B      : senc{ pk(A) }Kb;
     [msg4] B -> A (M)  : aenc{ M }pk(A);
 
+Goals:
+    B ->* S : pk(A);
+
+ChannelKeys:
+    K(B,s) : Kb;
 end

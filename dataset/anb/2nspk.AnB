@@ -23,10 +23,12 @@ Actions:
     [m3] A -> B      : aenc{tagNSPK2 . NB}pk(B);
 
 Goals:
-  B authenticates A on NA;
-  A authenticates B on NB;
-  NA secret between A,B;
-  NB secret between A,B;
+/*  B authenticates A on NA; */
+/*  A authenticates B on NB; */
+    B -> A : (A, B, NA, tagNSPK3);
+    A -> B : (A, B, NB, tagNSPK1);
+    NA secret between A,B;
+    NB secret between A,B;
 
 ChannelKeys:
 

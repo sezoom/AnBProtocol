@@ -23,7 +23,11 @@ Actions:
     [m3] A -> B         : senc{N2}(g()^y)^x;
 
 Goals:
+    A ->* B : N1
+    B ->* A : N2
 
 ChannelKeys:
+    K(B,A) = (g()^x)^y;
+    K(A,B) = (g()^y)^x;
 
 end

@@ -27,4 +27,14 @@ Actions:
     [msg3] A -> B             : senc{ h(N) }(g()^(nb*na));
     [msg4] B -> A             : aenc{ g()^(na*nb) }sk(B);
 
+Goals:
+    B -> A : (A, B, g^na, g^nb, g^(na*nb), N);
+    A -> B : (A, B, g^na, g^nb, g^(na*nb), N);
+
+    N secret between A,B;
+    g^nb*na secret between A,B;
+
+ChannelKeys:
+    K(A,B) : g^na*nb;
 end
+

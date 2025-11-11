@@ -5,7 +5,8 @@ Protocol: ISO_onepass_symm # Verified & Certified
 # The FP-module of OFMC currently does not handle injective
 # authentication
 
-Types: Agent A,B;
+Types:
+       Agent A,B;
        Number NA,Text1,tagISOOTPS1;
        Mapping sk
 

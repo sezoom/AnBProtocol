@@ -25,4 +25,14 @@ Actions:
     [m5] A -> B (N1): senc{N1}Kf;
     [m6] B -> A : senc{h(N1)}Kf;
 
+Goals:
+    A ->* C : (Kf);
+    B ->* C : (Kf);
+    A ->* B : (Kf, N1);
+    N2 secret between A,B;
+    N1 secret between A,B;
+    kf secret between A,B,C;
+
+ChannelKeys:
+    K(A,B) : kf;
 end
