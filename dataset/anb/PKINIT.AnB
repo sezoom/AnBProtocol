@@ -1,47 +1,63 @@
-Protocol: Kerberos_PKINIT
+Protocol Kerberos_PKINIT:
 
+Declarations:
+    aenc/2;
+    senc/2;
+    hash/1;
 
-Types: Agent C,ath,g,s;
-       Number
-       N1,N2,T0,T1,T2,Payload,tag,tagKPKI1,tagKPKI2,tagKPKI3,tagKPKI4,tagKPKI5,tagKPKI6,tagKPKI7,tagKPKI8,tagKPKI9,tagKPKI10,tagKPKI11,tagKPKI12,tagKPKI13,tagKPKI14;
-       Function hash;
-       Mapping pk,sk;
-       Symmetric_key KCG,KCS,Ktemp,skag,skgs
+Types:
+    Agent C,ath,g,s;
+    Number N1,N2,T0,T1,T2,Payload,tag,
+           tagKPKI1,tagKPKI2,tagKPKI3,tagKPKI4,tagKPKI5,tagKPKI6,tagKPKI7,
+           tagKPKI8,tagKPKI9,tagKPKI10,tagKPKI11,tagKPKI12,tagKPKI13,tagKPKI14;
+    Symmetric_key KCG,KCS,Ktemp,skag,skgs;
+    Function hash;
+    Mapping pk,sk
 
-Knowledge: C: C,ath,g,s,pk(ath),pk(a),pk,inv(pk(C)),hash,tag;
-	   ath: ath,g,pk,inv(pk(ath)),hash,skag,tag;
-	   g: ath,g,skag,skgs,hash,tag;
-	   s: g,s,skgs,hash,tag
+Knowledge:
+    C   : C, ath, g, s, pk(ath), pk(C), sk(C), hash, tag;
+    ath : ath, g, pk(ath), sk(ath), skag, hash, tag;
+    g   : ath, g, skag, skgs, hash, tag;
+    s   : g, s, skgs, hash, tag;
 
-Public: pk(ath),pk(a)
+Public:
+    pk(ath), pk(C);
 
-Private: inv(pk(ath)), inv(pk(C))
+Private:
+    sk(ath), sk(C);
 
 Actions:
+    [m1] C   -> ath (N1) :
+        tagKPKI1 . C . g . N1 .
+        aenc{ tagKPKI10 . T0 . N1 . hash(tagKPKI8 . C . g . N1) }sk(C);
 
+    [m2] ath -> C (KCG, T1, Ktemp) :
+        tagKPKI9 . C .
+        senc{ ath . C . g . KCG . T1 }skag .
+        senc{ g . KCG . T1 . N1 }Ktemp .
+        aenc{ tag . aenc{ tagKPKI11 . Ktemp }sk(ath) }pk(C);
 
-C -> ath: tagKPKI1,C,g,N1,{tagKPKI10,T0,N1,hash(tagKPKI8,C,g,N1)}inv(pk(C))   
+    [m3] C   -> g (N2) :
+        s . N2 .
+        senc{ ath . C . g . KCG . T1 }skag .
+        senc{ tagKPKI3 . C . T1 }KCG;
 
-ath -> C: tagKPKI9,C,
-	({|ath,C,g,KCG,T1|}skag),
-        ({|g,KCG,T1,N1|}Ktemp),
-        { tag,{tagKPKI11,Ktemp}inv(pk(ath))}pk(C)
+    [m4] g   -> C (KCS, T2) :
+        tagKPKI4 . C .
+        senc{ tagKPKI5 . C . s . KCS . T2 }skgs .
+        senc{ tagKPKI2 . s . KCS . T2 . N2 }KCG;
 
-C -> g: s,N2,
-	({|ath,C,g,KCG,T1|}skag),
-	({|tagKPKI3,C,T1|}KCG)
+    [m5] C   -> s :
+        senc{ tagKPKI6 . C . s . KCS . T2 }skgs .
+        senc{ tagKPKI7 . C . hash(tagKPKI13 . T2) }KCS;
 
-g -> C: tagKPKI4,C,
-	({|tagKPKI5,C,s,KCS,T2|}skgs),
-	{|tagKPKI2,s,KCS,T2,N2|}KCG
-
-C -> s: ({|tagKPKI6,C,s,KCS,T2|}skgs),
-	{|tagKPKI7,C,hash(tagKPKI13,T2)|}KCS
-
-s -> C: ({|tagKPKI12,hash(tagKPKI14,T2)|}KCS), {|tagKPKI11,tag,Payload|}KCS
+    [m6] s   -> C :
+        senc{ tagKPKI12 . hash(tagKPKI14 . T2) }KCS .
+        senc{ tagKPKI11 . tag . Payload }KCS;
 
 Goals:
-s *->* C: Payload
+    s *->* C : Payload;
 
 ChannelKeys:
 
+end

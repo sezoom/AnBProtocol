@@ -17,8 +17,7 @@ Knowledge:
 Public:
 
 Private:
-    sk(A,s)
-    sk(B,s)
+
 
 Actions:
     [m1] A -> s             : tagds2 . A . B;
@@ -27,7 +26,8 @@ Actions:
     [m4] B -> A (Payload)   : senc{ tagds1 . Payload }KAB;
 
 Goals:
-    B authenticates A on Payload;
+    KAB secret between A,B;
+    B ->* A : Payload
 
 ChannelKeys:
 

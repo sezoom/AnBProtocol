@@ -1,12 +1,32 @@
 Protocol Simple-Nonce-KDF:
+
+Declarations:
+    senc/2;
+    kdf/2;
+
+Types:
+    Agent A,B;
+    Number NA,NB,tagACK;
+    Function kdf;
+
 Knowledge:
-    Alice: knows pk(B), pk(A)
-    Bob: knows pk(A), pk(B)
+    A: B, kdf;
+    B  : A, kdf;
+
+Public:
+
+Private:
 
 Actions:
-    [step1] Alice -> Bob (generates NA) :
-        NA ;
-    [step2] Bob -> Alice (generates NB) :
-        NB ;
-    [step3] Alice -> Bob (computes k = kdf(NA, NB)) :
-        senc{ "ACK" }k ;
+    [step1] A -> B (NA) : NA;
+    [step2] B   -> A (NB): NB;
+    [step3] A -> B       : senc{ tagACK }kdf(NA, NB);
+
+Goals:
+
+
+ChannelKeys:
+    K(A,B): kdf(NA,NB);
+    K(B,A): kdf(NA,NB);
+
+end
