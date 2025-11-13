@@ -1,15 +1,32 @@
-Protocol nspk: 
+Protocol nspk:
 
-Knowledge: 
-    A: pk(B), B; 
-    B: pk(A), A;
+Declarations:
+    aenc/2;
 
-Actions: 
-    [nspk1] A -> B (Na) : 
-        aenc{'One' . Na. A}pk(B) ;
-    [nspk2] B -> A (Nb) :
-        aenc{'Two' . Na . Nb}pk(A);
-    [nspk3] A -> B:
-        aenc{'Three' . Nb}pk(B);
+Types:
+    Agent A,B;
+    Number Na,Nb,tagNSPK1,tagNSPK2,tagNSPK3;
+    Mapping pk,sk
+
+Knowledge:
+    A: A, B, pk(A), sk(A), pk(B);
+    B: B, A, pk(B), sk(B), pk(A);
+
+Public:
+    pk(A), pk(B);
+
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [nspk1] A -> B (Na) : aenc{ tagNSPK1 . Na . A }pk(B);
+    [nspk2] B -> A (Nb) : aenc{ tagNSPK2 . Na . Nb }pk(A);
+    [nspk3] A -> B      : aenc{ tagNSPK3 . Nb }pk(B);
+
+Goals:
+    Na secret between A,B;
+    Nb secret between A,B;
+
+ChannelKeys:
 
 end

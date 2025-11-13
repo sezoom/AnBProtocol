@@ -1,26 +1,34 @@
-Protocol: BilateralKeyExchange
+Protocol BilateralKeyExchange:
 
-Types: Agent A,B;
-       Number NA,NB,tagBKE1,tagBKE2,tagBKE3;
-       Symmetric_key K;
-       Mapping pk;
-       Function f
+Declarations:
+    aenc/2;
+    senc/2;
 
-Knowledge: A: A,B,pk(A),pk(B),inv(pk(A)),f;
-	   B: A,B,pk(A),pk(B),inv(pk(B)),pk,f
+Types:
+    Agent A,B;
+    Number NA,NB,tagBKE1,tagBKE2,tagBKE3;
+    Symmetric_key K;
+    Mapping pk,sk
+    Function h;
 
-Public: pk(A),pk(B)
+Knowledge:
+    A: A, B, pk(A), pk(B), sk(A), h;
+    B: A, B, pk(A), pk(B), sk(B), pk, h;
 
-Private: inv(pk(A)), inv(pk(B))
+Public:
+    pk(A), pk(B);
 
+Private:
+    sk(A), sk(B);
 
 Actions:
-B->A: tagBKE1,B,{NB,B}pk(A)
-A->B: {f(NB),NA,A,K}pk(B)
-B->A: {|f(NA)|}K
+    [m1] B -> A (NB): tagBKE1 . B . aenc{ NB . B }pk(A);
+    [m2] A -> B (NA . K): aenc{ h(NB) . NA . A . K }pk(B);
+    [m3] B -> A : senc{ h(NA) }K;
 
 Goals:
-A *->* B: K
-
+    /* A authenticates B on K; */
+    A *->* B: K;
 ChannelKeys:
 
+end

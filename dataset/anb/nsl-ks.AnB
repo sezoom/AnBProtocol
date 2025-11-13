@@ -1,28 +1,38 @@
-Protocol: NSLKeyServer # Verified
+Protocol NSLKeyServer:
 
-Types: Agent A,B,s;
-       Number NA,NB,tagNSLKeyServer1,tagNSLKeyServer2,tagNSLKeyServer3,tagNSLKeyServer4,tagNSLKeyServer5,tagNSLKeyServer6,tagNSLKeyServer7;
-       Mapping pk
+Declarations:
+    aenc/2;
 
-Knowledge: A: A,pk(A),inv(pk(A)),s,pk(s),B;
-	   B: B,pk(B),inv(pk(B)),s,pk(s);
-	   s: s,pk,inv(pk(s))
+Types:
+    Agent A,B,s;
+    Number NA,NB,tagNSLKeyServer1,tagNSLKeyServer2,tagNSLKeyServer3,tagNSLKeyServer4,tagNSLKeyServer5,tagNSLKeyServer6,tagNSLKeyServer7;
+    Mapping pk,sk
+
+Knowledge:
+    A: A, B, s, pk(A), sk(A), pk(s);
+    B: B, s, pk(B), sk(B), pk(s);
+    s: s, pk(A), pk(B), pk(s), sk(s);
 
 Public:
+    pk(A), pk(B), pk(s);
 
 Private:
+    sk(A), sk(B), sk(s);
 
 Actions:
-A->s: tagNSLKeyServer1,A,B
-s->A: {tagNSLKeyServer2,B,pk(B)}(inv(pk(s)))
-A->B: {tagNSLKeyServer3,NA,A}(pk(B))
-B->s: tagNSLKeyServer4,B,A
-s->B: {tagNSLKeyServer5,A,pk(A)}(inv(pk(s)))
-B->A: {tagNSLKeyServer6,NA,NB,B}(pk(A))
-A->B: {tagNSLKeyServer7,NB}(pk(B))
+    [m1] A -> s             : tagNSLKeyServer1 . A . B;
+    [m2] s -> A             : aenc{ tagNSLKeyServer2 . B . pk(B) }sk(s);
+    [m3] A -> B (NA)        : aenc{ tagNSLKeyServer3 . NA . A }pk(B);
+    [m4] B -> s             : tagNSLKeyServer4 . B . A;
+    [m5] s -> B             : aenc{ tagNSLKeyServer5 . A . pk(A) }sk(s);
+    [m6] B -> A (NB)        : aenc{ tagNSLKeyServer6 . NA . NB . B }pk(A);
+    [m7] A -> B             : aenc{ tagNSLKeyServer7 . NB }pk(B);
 
-Goals:
+
+endGoals:
 A *->* B: NA
 B *->* A: NB
 
 ChannelKeys:
+
+end

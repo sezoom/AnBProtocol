@@ -1,25 +1,34 @@
-Protocol: NonReversible # Verified & Certified
+Protocol NonReversible:
 
-Types: Agent A,B;
-       Number NA,NB,tagNonReversible1,tagNonReversible2,tagNonReversible3,tagNonReversible4,tagNonReversible5,tagNonReversible6,tagNonReversible7;
-       Symmetric_key K;
-       Function f;
-       Mapping sk
+Declarations:
+    senc/2;
 
-Knowledge: A: A,B,sk(A,B),f;
-	   B: B,A,sk(A,B),f
+Types:
+    Agent A,B;
+    Number NA,NB,tagNonReversible1,tagNonReversible2,tagNonReversible3,tagNonReversible4,tagNonReversible5,tagNonReversible6,tagNonReversible7;
+    Symmetric_key K;
+    Function f;
+    Mapping sk
+
+Knowledge:
+    A: A, B, sk(A,B), f;
+    B: B, A, sk(A,B), f;
 
 Public:
 
 Private:
 
 Actions:
-B->A: tagNonReversible1,B,NB
-A->B: tagNonReversible2,A,{|tagNonReversible3,f(tagNonReversible6,NB),NA,A,K|}sk(A,B)
-B->A: tagNonReversible4,B,{|tagNonReversible5,f(tagNonReversible7,NA)|}K
+    [m1] B -> A (NB)        : tagNonReversible1 . B . NB;
+    [m2] A -> B (NA . K)    : tagNonReversible2 . A .
+                               senc{ tagNonReversible3 . f(tagNonReversible6, NB) . NA . A . K }sk(A,B);
+    [m3] B -> A             : tagNonReversible4 . B .
+                               senc{ tagNonReversible5 . f(tagNonReversible7, NA) }K;
 
 Goals:
-A *->* B: NA
-B *-> A: NB
+    A *->* B : NA;
+    B *-> A : NB;
 
 ChannelKeys:
+
+end

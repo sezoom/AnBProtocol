@@ -1,16 +1,40 @@
 Protocol eleven:
 
 Declarations:
+    aenc/2;
+    senc/2;
+    h/1;
     g/0;
+
+Types:
+    Agent A,B;
+    Number na,nb,N;
+    Function h;
+    Mapping pk
 
 Knowledge:
     A : pk(B), B;
     B : pk(A), A;
 
-Actions:
-    [msg1] A -> B (na) : aenc{ g()^na . A . pk(A) }sk(A) . pk(A);
-    [msg2] B -> A (N, nb) : aenc{ N . g()^nb . B . pk(B) }pk(A);
-    [msg3] A -> B : senc{ h(N) }(g()^(nb*na));
-    [msg4] B -> A : aenc{ g()^(na*nb) }sk(B);
+Public:
+    pk(A), pk(B);
+Private:
+    sk(A), sk(B);
 
+Actions:
+    [msg1] A -> B (na)        : aenc{ g()^na . A . pk(A) }sk(A) . pk(A);
+    [msg2] B -> A (N, nb)     : aenc{ N . g()^nb . B . pk(B) }pk(A);
+    [msg3] A -> B             : senc{ h(N) }(g()^(nb*na));
+    [msg4] B -> A             : aenc{ g()^(na*nb) }sk(B);
+
+Goals:
+    B -> A : (A, B, g^na, g^nb, g^(na*nb), N);
+    A -> B : (A, B, g^na, g^nb, g^(na*nb), N);
+
+    N secret between A,B;
+    g^nb*na secret between A,B;
+
+ChannelKeys:
+    K(A,B) : g^na*nb;
 end
+

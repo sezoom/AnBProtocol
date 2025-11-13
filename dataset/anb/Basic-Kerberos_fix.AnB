@@ -1,38 +1,53 @@
-Protocol: Basic_Kerberos  # Bounded-verified
+Protocol Basic_Kerberos:
 
-Types: Agent C,a,g,s;
-       Number N1,N2,T1,T2,T3,Payload,tag,tag1,tag2,tag3,tag4,tag5,tag6,tag7,tag8,tag9,tag10,tag11;
-       Function hash;
-       Mapping sk;
-       Symmetric_key KCG,KCS
+Declarations:
+    senc/2;
+    hash/1;
 
-Knowledge: C: C,a,g,s,sk(C,a),hash,tag;
-	   a: a,g,hash,C,sk(C,a),sk(a,g),tag;
-	   g: a,g,sk(a,g),sk(g,s),hash,tag;
-	   s: g,s,sk(g,s),hash,tag
+Types:
+    Agent C,a,g,s;
+    Number N1,N2,T1,T2,T3,Payload,tag,tag1,tag2,tag3,tag4,tag5,tag6,tag7,tag8,tag9,tag10,tag11;
+    Symmetric_key KCG,KCS;
+    Mapping sk;
+    Function hash;
+
+Knowledge:
+    C: C, a, g, s, sk(C,a), hash, tag;
+    a: a, g, hash, C, sk(C,a), sk(a,g), tag;
+    g: a, g, sk(a,g), sk(g,s), hash, tag;
+    s: g, s, sk(g,s), hash, tag;
 
 Public:
 
 Private:
 
-
 Actions:
-
-C -> a: tag2,C,g,N1
-a -> C: {| tag6,KCG, C, T1 |} sk(a,g), 
-        {| tag3,KCG, N1, T1, G |} sk(C,a)
-C -> g: {| tag8,KCG, C, T1 |} sk(a,g), 
-	{|tag4,C,T1|}KCG,
-        s,N2
-g -> C: {| tag7,KCS, C, T2 |}sk(g,s),
-	{| tag9, KCS, N2, T2, s |}KCG
-C -> s: {| tag10, KCS, C, T2 |}sk(g,s),
-        {| tag5,C, T3 |}KCS
-s -> C: {|tag11,T3|}KCS, {|tag,Payload|}KCS
+    [m1] C -> a (N1) :
+        tag2 . C . g . N1;
+    [m2] a -> C (KCG, T1) :
+        senc{ tag6 . KCG . C . T1 }sk(a,g) .
+        senc{ tag3 . KCG . N1 . T1 . g }sk(C,a);
+    [m3] C -> g (N2) :
+        senc{ tag8 . KCG . C . T1 }sk(a,g) .
+        senc{ tag4 . C . T1 }KCG .
+        s . N2;
+    [m4] g -> C (KCS, T2) :
+        senc{ tag7 . KCS . C . T2 }sk(g,s) .
+        senc{ tag9 . KCS . N2 . T2 . s }KCG;
+    [m5] C -> s (T3) :
+        senc{ tag10 . KCS . C . T2 }sk(g,s) .
+        senc{ tag5 . C . T3 }KCS;
+    [m6] s -> C :
+        senc{ tag11 . T3 }KCS .
+        senc{ tag . Payload }KCS;
 
 Goals:
-s *->* C: Payload
+    s *->* C: Payload;
+
+    KCG     Secret between C,a,g;
+    KCS     Secret between C,g,s;
+    Payload Secret between C,g,s;
 
 ChannelKeys:
 
-
+end

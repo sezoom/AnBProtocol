@@ -1,14 +1,25 @@
-/* Protocol from Section 7.3 in the thesis */
+Protocol Asym:
 
-Protocol Asym: 
+Declarations:
+    aenc/2;
 
-Knowledge: 
-    B : pk(A); 
-    
-Actions: 
-    [a1] A -> B (n) : aenc{n}sk(A);
-    
-Goals: 
-    [sec]  n secret of A, B; 
-    
+Types:
+    Agent A,B;
+    Number n;
+    Mapping pk
+
+Knowledge:
+    B : pk(A);
+
+Public:
+    pk(A);
+Private:
+    sk(A);
+
+Actions:
+    [a1] A -> B (n) : aenc{ n }sk(A);
+
+Goals:
+    n secret between A,B;
+
 end

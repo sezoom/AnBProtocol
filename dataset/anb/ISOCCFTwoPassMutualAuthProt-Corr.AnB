@@ -1,28 +1,31 @@
-Protocol: ISO_twopass_mutual_CCF_CORRECTED 
+Protocol ISO_twopass_mutual_CCF_CORRECTED:
 
-# The original protocol has a reflection attack that we correct here
-# by a tag in the first message.
+Declarations:
+    f/6;
+    f/5;
 
-Types: Agent A,B;
-       Number NA,NB,Text1,Text2,Text3,Text4,tag,tagISOTMCCF1,tagISOTMCCF2;
-       Mapping sk;
-       Function f
+Types:
+    Agent A,B;
+    Number NA,NB,Text1,Text2,Text3,Text4,tag,tagISOTMCCF1,tagISOTMCCF2;
+    Mapping sk;
+    Function f;
 
-Knowledge: A: A,B,sk(A,B),f,tag;
-	   B: B,A,sk(A,B),f,tag
+Knowledge:
+    A: A, B, sk(A,B), f, tag;
+    B: B, A, sk(A,B), f, tag;
 
 Public:
 
 Private:
 
 Actions:
-A->B: f(tagISOTMCCF1,sk(A,B),NA,B,Text1,tag),NA,B,Text1
-B->A: f(tagISOTMCCF2,sk(A,B),NB,A,Text3),NB,A,Text3
+    [m1] A -> B (NA) : f(tagISOTMCCF1, sk(A,B), NA, B, Text1, tag) . NA . B . Text1;
+    [m2] B -> A (NB) : f(tagISOTMCCF2, sk(A,B), NB, A, Text3) . NB . A . Text3;
 
 Goals:
-
-B weakly authenticates A on Text1 
-A weakly authenticates B on Text3
+    B ->* A : Text1;
+    A ->* B : Text3;
 
 ChannelKeys:
 
+end

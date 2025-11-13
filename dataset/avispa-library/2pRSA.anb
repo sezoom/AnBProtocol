@@ -1,5 +1,17 @@
+Protocol TwoPartyRSA:
 
-0. BC -> S:  M.SM   with SM = {M}_inv(kc)
-                    where S checks if BC has signed, i.e. {SM}_Kbc = M
-1. S  -> BC: SSM    with SSM = {SM}_inv(ks)
-2. BC -> C:  M.SSM  where C checks if S has signed, i.e. {{SSM}_Ks}_Kbc = M
+Declarations:
+    inv/1;
+    senc/2;
+
+Knowledge:
+    BC: pk(Kbc),sk(Kbc), p(Ks);
+    S: pk(Kbc), pk(Ks), sk(ks);
+    C: pk(Kbc), pk(Ks);
+
+Actions:
+    [m1] BC -> S (M, SM): M . aenc{M}(sk(Kbc));
+    [m2] S -> BC (SSM): aenc{SM}(sk(Ks));
+    [m3] BC -> C (M, SSM): M . aenc{aenc{SSM}(pk(Ks))}pk(Kbc);
+
+end

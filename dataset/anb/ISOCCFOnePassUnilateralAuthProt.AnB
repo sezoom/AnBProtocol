@@ -1,27 +1,30 @@
-Protocol: ISO_onepass_CCF # Verified 
+Protocol ISO_onepass_CCF:
 
-# Note that this protocol has a trivial replay attack.  We thus
-# specify only weak authentication as goal (not considering replay).
-# The FP-module of OFMC currently does not handle injective
-# authentication
+Declarations:
+    f/5;
 
-Types: Agent A,B;
-       Number NA,Text1,Text2,tagISO_onepass_CCF1,tagISO_onepass_CCF2,tagISO_onepass_CCF3,tagISO_onepass_CCF4;
-       Function f;
-       Mapping sk
+Types:
+    Agent A,B;
+    Number NA,Text1,Text2,tagISO_onepass_CCF1,tagISO_onepass_CCF2,tagISO_onepass_CCF3,tagISO_onepass_CCF4;
+    Function f;
+    Mapping sk
 
-Knowledge: A: A,B,sk(A,B),f;
-	   B: B,A,sk(A,B),f
+Knowledge:
+    A: A, B, sk(A,B), f;
+    B: B, A, sk(A,B), f;
 
 Public:
 
 Private:
 
 Actions:
-A->B: tagISO_onepass_CCF1,NA,B,Text2,f(tagISO_onepass_CCF2,sk(A,B),NA,B,Text1),NA,B,Text1
+    [m1] A -> B : tagISO_onepass_CCF1 . NA . B . Text2 .
+                  f(tagISO_onepass_CCF2, sk(A,B), NA, B, Text1) .
+                  NA . B . Text1;
 
 Goals:
-B weakly authenticates A on Text1
+    B ->* A : Text1;
 
 ChannelKeys:
 
+end

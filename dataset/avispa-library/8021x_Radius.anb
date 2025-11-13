@@ -1,13 +1,24 @@
+Protocol IEEE8021X_EAPOL:
 
- Client -> Authenticator : EAPOL_Start
- Auth -> Client : EAPOL_Request_Identity
- Client -> Auth : EAPOL_Response (= NAS_ID, NAS_PORT, {Secret_Key}MD5)
- Auth -> Server : Access-Request (= NAS_ID, NAS_PORT, {Secret_Key}MD5)
- Server -> Auth : Access-Challenge 
- Auth -> Client : Access-Challenge 
-           where  Access-Challenge = Message    
- Client -> Auth : Access-Chall-Response 
-           where  Access-Chall-Response : {Message}Secret_Key
- Auth -> Server : Access-Chall_Response 
- Server -> Auth : Access_Accept
- Auth -> Client : EAPOL_Success
+Declarations:
+    hash/1;
+    senc/2;
+
+Knowledge:
+    C: Kcs;
+    S: Kcs;
+    A: ;
+
+Actions:
+    [m1] C -> A : EAPOL_Start;
+    [m2] A -> C : EAPOL_Req_Identity;
+    [m3] C -> A (NAS_ID, NAS_PORT): NAS_ID . NAS_PORT . hash(Kcs);
+    [m4] A -> S : NAS_ID . NAS_PORT . hash(Kcs);
+    [m5] S -> A (Chall): Chall;
+    [m6] A -> C : Chall;
+    [m7] C -> A : NAS_ID . senc{Chall}Kcs;
+    [m8] A -> S : NAS_ID . senc{Chall}Kcs;
+    [m9] S -> A : Access_Accept;
+    [m10] A -> C : EAPOL_Success;
+
+end

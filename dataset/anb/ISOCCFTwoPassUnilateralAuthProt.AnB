@@ -1,23 +1,29 @@
-Protocol: ISO_twopass_CCF # Verified
+Protocol ISO_twopass_CCF:
 
-Types: Agent A,B;
-       Number NB,Text1,Text2,Text3,tagISOTCCF1,tagISOTCCF2,tagISOTCCF3;
-       Mapping sk;
-       Function f
+Declarations:
+    f/4;
 
-Knowledge: A: A,B,sk(A,B),f;
-	   B: B,A,sk(A,B),f
+Types:
+    Agent A,B;
+    Number NB,Text1,Text2,Text3,tagISOTCCF1,tagISOTCCF2,tagISOTCCF3;
+    Mapping sk;
+    Function f;
+
+Knowledge:
+    A: A, B, sk(A,B), f;
+    B: B, A, sk(A,B), f;
 
 Public:
 
 Private:
 
 Actions:
-B->A: tagISOTCCF1,NB
-A->B: f(sk(A,B),NB,B,Text2),NB,B,Text2
+    [m1] B -> A (NB) : tagISOTCCF1 . NB;
+    [m2] A -> B      : f(sk(A,B), NB, B, Text2) . NB . B . Text2;
 
 Goals:
 A *-> B: Text2
 
 ChannelKeys:
 
+end

@@ -1,21 +1,28 @@
-Protocol: ISO_twopass_symm # Verified & Certified
+Protocol ISO_twopass_symm:
 
-Types: Agent A,B;
-       Number NB,Text1,Text2,Text3,tagITS1,tagITS2,tagITS3;
-       Mapping sk
+Declarations:
+    senc/2;
 
-Knowledge: A: A,B,sk(A,B);
-	   B: B,A,sk(A,B)
+Types:
+    Agent A,B;
+    Number NB,Text1,Text2,Text3,tagITS1,tagITS2,tagITS3;
+    Mapping sk
+
+Knowledge:
+    A: A, B, sk(A,B);
+    B: B, A, sk(A,B);
 
 Public:
 
 Private:
 
 Actions:
-B->A: tagITS1,NB
-A->B: {|tagITS2,NB,B,Text2|}sk(A,B)
+    [m1] B -> A (NB) : tagITS1 . NB;
+    [m2] A -> B      : senc{ tagITS2 . NB . B . Text2 }sk(A,B);
 
 Goals:
-A *-> B: Text2
+    B ->* A : Text2;
 
 ChannelKeys:
+
+end

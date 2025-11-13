@@ -1,33 +1,35 @@
-Protocol: NSCK # Needham Schroeder with Conventional Keys # Verified & Certified
+Protocol NSCK:
 
-# The protocol suffers from a replay attack (see also amended NSCK and
-# Denning Sacco). We verify here that it satisfies weak authentication
-# and secrecy.  Note that, due to the formaluation of goals in the
-# abstractions, we cannot formulate goals directly with respect to the
-# key KAB here.
+Declarations:
+    senc/2;
 
-Types: Agent A,B,s;
-       Number NA,NB,NB2,tagnsck1,tagnsck2,tagnsck3,tagnsck4,tagnsck5,tagnsck6,tagnsck7;
-       Symmetric_key KAB;
-       Function pre;
-       Mapping sk
+Types:
+    Agent A,B,s;
+    Number NA,NB,NB2,tagnsck1,tagnsck2,tagnsck3,tagnsck4,tagnsck5,tagnsck6,tagnsck7;
+    Symmetric_key KAB;
+    Function pre;
+    Mapping sk
 
-Knowledge: A: A,B,sk(A,s),pre;
-	   B: B,A,sk(B,s),pre;
- 	   s: A,B,sk(A,s),sk(B,s),pre
+Knowledge:
+    A: A, B, sk(A,s), pre;
+    B: B, A, sk(B,s), pre;
+    s: A, B, sk(A,s), sk(B,s), pre;
+
 Public:
 
 Private:
 
 Actions:
-A->s: tagnsck3,A,B,NA
-s->A: {|tagnsck6,NA,B,KAB,{|tagnsck4,KAB,A|}sk(B,s)|}sk(A,s)
-A->B: {|tagnsck2,KAB,A|}sk(B,s)
-B->A: {|tagnsck1,NB|}KAB
-A->B: {|tagnsck5,pre(tagnsck7,NB)|}KAB
+    [m1] A -> s (NA)    : tagnsck3 . A . B . NA;
+    [m2] s -> A (KAB)   : senc{ tagnsck6 . NA . B . KAB . senc{ tagnsck4 . KAB . A }sk(B,s) }sk(A,s);
+    [m3] A -> B         : senc{ tagnsck2 . KAB . A }sk(B,s);
+    [m4] B -> A (NB)    : senc{ tagnsck1 . NB }KAB;
+    [m5] A -> B         : senc{ tagnsck5 . pre(tagnsck7, NB) }KAB;
 
 Goals:
-B *->* A: NB
-B weakly authenticates A on NB
+    B *->* A : NB;
+    B ->* A : NB;
 
 ChannelKeys:
+
+end

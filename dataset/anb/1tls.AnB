@@ -1,38 +1,43 @@
-Protocol: TLS  # Bounded-verified
+Protocol TLS:
 
-Types: Agent A,B,s;
-       Number NA,NB,Sid,PA,PB,PMS,tagTLS1,tagTLS2,tagTLS3,tagTLS4,tagTLS5,tagTLS6,tagTLS7,tagTLS8,tagTLS9;
-       Function hash,clientK,serverK,prf;
-       Mapping pk
+Declarations:
+    aenc/2;
+    senc/2;
+    hash/1;
+    prf/3;
+    clientK/3;
+    serverK/3;
+Types:
+    Agent A,B,s;
+    Number NA,NB,Sid,PA,PB,PMS,tagTLS1,tagTLS2,tagTLS3,tagTLS4,tagTLS5,tagTLS6,tagTLS7,tagTLS8,tagTLS9;
+    Function hash,clientK,serverK,prf;
+    Mapping pk
+Knowledge:
+    A: pk(A), sk(A), pk(B), pk(s);
+    B: pk(B), sk(B), pk(A), pk(s);
 
-
-Knowledge: A: A,pk(A),pk(s),inv(pk(A)),{A,pk(A)}inv(pk(s)),B,hash,clientK,serverK,prf;
-	   B: B,pk(B),pk(s),inv(pk(B)),{B,pk(B)}inv(pk(s)),hash,clientK,serverK,prf
-
-Public: pk(A),pk(B)
-
-Private: inv(pk(A)), inv(pk(B))  
+Public:
+    pk(A),pk(B);
+Private:
+    sk(A), sk(B);
 
 Actions:
-
-A->B: A,NA,Sid,PA,tagTLS4
-B->A: NB,Sid,PB,{B,pk(B)}inv(pk(s))
-A->B: {A,pk(A)}inv(pk(s)),
-	{PMS}pk(B),
-	{hash(NB,B,PMS,tagTLS5)}inv(pk(A)),
-	{|hash(prf(PMS,NA,NB,tagTLS3),A,B,NA,NB,Sid,PA,PB,PMS)|}
-	  clientK(NA,NB,prf(PMS,NA,NB),tagTLS1)
-B->A: 	{|hash(prf(PMS,NA,NB),A,B,NA,NB,Sid,PA,PB,PMS)|}
-	  serverK(NA,NB,prf(PMS,NA,NB),tagTLS2)
+    [m1] A -> B (NA, Sid, PA) : A . NA . Sid . PA . tagTLS4;
+    [m2] B -> A (NB)         : NB . Sid . PB . aenc{B . pk(B)}sk(s);
+    [m3] A -> B (PMS)        : aenc{A . pk(A)}sk(s)
+                               . aenc{PMS}pk(B)
+                               . aenc{hash(NB . B . PMS . tagTLS5)}sk(A)
+                               . senc{hash(prf(PMS, NA, NB) . A . B . NA . NB . Sid . PA . PB . PMS . tagTLS3)}clientK(NA, NB, prf(PMS, NA, NB));
+    [m4] B -> A              : senc{hash(prf(PMS, NA, NB) . A . B . NA . NB . Sid . PA . PB . PMS . tagTLS2)}serverK(NA, NB, prf(PMS, NA, NB));
 
 Goals:
-
-  B authenticates A on prf(PMS,NA,NB)
-  A authenticates B on prf(PMS,NA,NB)
-  prf(PMS,NA,NB) secret between A,B
+    /*  B authenticates A on prf(PMS,NA,NB); */
+    B -> A : prf(PMS, NA, NB)
+    prf(PMS,NA,NB) secret between A,B;
 
 ChannelKeys:
+    K(A,B): clientK(NA,NB,prf(PMS,NA,NB));
+    K(B,A): serverK(NA,NB,prf(PMS,NA,NB));
 
-K(A,B): clientK(NA,NB,prf(PMS,NA,NB))
-K(B,A): serverK(NA,NB,prf(PMS,NA,NB))
+end
 
