@@ -1,0 +1,30 @@
+# Amended Needham–Schroeder with Key Confirmation (AmendedNSCK)
+
+Three roles: A (initiator), B (responder), and S (trusted key server). Each shares a long-term symmetric key with S: `sk(A,S)` and `sk(B,S)`. The goal is to establish a fresh session key kAB for secure communication between A and B.
+
+Flow
+
+1. A → B: `A` — A announces its identity to B.
+2. B → A: `senc{ A · nB0 }_{sk(B,S)}` — B responds with a nonce nB0, encrypted for S, which A cannot read.
+3. A → S: `A · B · nA · senc{ A · nB0 }_{sk(B,S)}` — A requests a key from S to communicate with B, forwarding B’s encrypted blob and its own nonce nA.
+4. S → A: `senc{ nA · B · kAB · senc{ kAB · nB0 · A }_{sk(B,S)} }_{sk(A,S)}` — S issues a fresh session key kAB, binding it to both identities and the nonces, and includes a “ticket” for B encrypted under `sk(B,S)`.
+5. A → B: `senc{ kAB · nB0 · A }_{sk(B,S)}` — A forwards the ticket, enabling B to obtain kAB.
+6. B → A: `senc{ nB }_{kAB}` — B challenges A with a fresh nonce nB using the new key.
+7. A → B: `senc{ pre(nB) }_{kAB}` — A replies with a one-way transformation of nB to confirm possession of kAB.
+
+Goals & Security Properties
+
+* Mutual authentication:
+
+  * `B -> A : (A,B,kAB,nB)` — B authenticates A (strong).
+  * `A ->* B : (A,B,kAB,nB)` — A weakly authenticates B.
+  * `A -> S : (A,B,kAB,nA)` — A authenticates S on the issued key.
+  * `B ->* S : (A,B,kAB,nB0)` — B weakly authenticates S.
+* Secrecy:
+
+  * `kAB` is secret among A, B, and S.
+  * `nB` remains secret between A and B.
+  * `nB0` remains secret between B and S.
+
+Summary:
+AmendedNSCK securely distributes a fresh session key via a trusted server, includes explicit key confirmation steps (6–7), and mitigates replay attacks found in the classic Needham–Schroeder protocol. It achieves mutual authentication and key freshness with confidentiality across all subchannels.

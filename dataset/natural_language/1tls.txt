@@ -1,0 +1,10 @@
+# TLS Protocol
+
+This is a four-message TLS handshake between client A and server B, certified by authority s.
+
+1. A initiates with its identity, nonce (NA), session ID, and parameters.
+2. B replies with its nonce (NB), session details, and a certificate signed by s (aenc{B.pk(B)}sk(s)), authenticating its public key.
+3. A sends its own certificate, a pre-master secret (PMS) encrypted for B, a signature proving key possession, and an integrity hash encrypted under the derived client key.
+4. B responds with a confirmation hash encrypted under the server key, finalizing the handshake.
+
+Both compute the master secret prf(PMS, NA, NB) and derive symmetric keys for each direction. The protocol achieves mutual authentication, confidentiality of the session keys, and integrity and freshness of the session through the use of nonces, signatures, and hashes.

@@ -1,0 +1,20 @@
+# Asym Protocol
+
+This is a simple one-pass asymmetric protocol for message transmission.
+
+Flow:
+
+1. A → B: `aenc{ n }_{sk(A)}` — A sends a nonce n encrypted (effectively signed) with its private key.
+
+Purpose:
+
+The message serves to prove A’s identity to B, since only A can produce something decryptable with `pk(A)`.
+
+Security analysis:
+
+* Authentication: B can verify that the message originated from A.
+* Secrecy: *Not achieved* — because `aenc{n}_{sk(A)}` is a signature, anyone knowing `pk(A)` can decrypt it; thus n is not secret.
+* The stated goal `n secret between A,B` therefore does not hold.
+
+Summary:
+Asym provides authenticity (proof of origin) but no confidentiality for n.

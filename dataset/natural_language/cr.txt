@@ -1,0 +1,12 @@
+# CR Protocol
+
+This is a simple challenge–response exchange between client C and responder R, using public-key encryption and a hash for verification.
+
+1. C → R: `aenc{ n }_{pk(R)}` — C sends a fresh nonce n encrypted under R’s public key; only R can decrypt it.
+2. R → C: `h(n)` — R replies with the hash of n, proving it successfully decrypted the first message and thus possesses the matching private key.
+
+Security properties:
+
+* Secrecy: n is confidential between C and R (protected by public-key encryption).
+* Authentication: C verifies R’s identity — only R can return `h(n)` correctly.
+* Freshness: ensured by C’s fresh nonce n.

@@ -1,0 +1,15 @@
+# Denning-Sacco protocol
+
+Three roles: A (initiator), B (responder), and trusted server S. A and B each share a long-term key with S: `sk(A,S)` and `sk(B,S)`. The aim is to get a fresh session key kAB for A↔B.
+
+Flow
+
+1. A → S: `A · B` — A requests a key to talk to B.
+2. S → A: `senc{ B · kAB · t · senc{ A · kAB · t }_{sk(B,S)} }_{sk(A,S)}` — S creates kAB and timestamp t, returning them to A along with a ticket for B (the inner part encrypted under `sk(B,S)`).
+3. A → B: `senc{ A · kAB · t }_{sk(B,S)}` — A forwards the ticket so B can recover kAB and learn A’s identity.
+4. B → A: `senc{ payload }_{kAB}` — B uses kAB to send protected application data (or an ack).
+
+Assurances
+
+* Secrecy: `kAB` is secret between A and B (issued by S).
+* Authentication: `B ->* A : payload` — B (weakly) authenticates A on the delivered `payload`, since it’s protected under the server-issued kAB bound to A in the ticket.

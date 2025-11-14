@@ -1,0 +1,9 @@
+# Protocol Ten
+
+Two parties A and B use a fresh value Kf plus public-key ops and a hash.
+
+1. A sends its identity, its public key, a nonce Kf, and signs it; so B can verify that Kf is bound to A.
+2. B sends its identity, its public key, and acknowledges receipt of Kf by returning its hash (unauthenticated).
+3. A sends the payload M to B: an inner symmetric ciphertext under Kf, concatendated with A and B identities, and then wrapped in public-key encryption to B.
+
+Intended property: B weakly authenticates A on the value Kf (non-injective).

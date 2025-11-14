@@ -1,0 +1,24 @@
+# Basic Kerberos protocol
+
+Four roles: C (client), A (authentication server), G (ticket-granting server), and S (service server).
+Each adjacent pair shares a long-term symmetric key:
+`sk(C,A)` (client–AS), `sk(A,G)` (AS–TGS), and `sk(G,S)` (TGS–service).
+Ephemeral session keys are kCG (for C↔G) and kCS (for C↔S).
+
+Flow
+
+1. C → A: `C · G · n₁` – Client asks A for a ticket to G.
+2. A → C: `senc{kCG · C · t₁}_{sk(A,G)} · senc{kCG · n₁ · t₁ · G}_{sk(C,A)}` – A creates kCG and a ticket for G, returns both.
+3. C → G: `ticket_for_G · senc{C · t₁}_{kCG} · S · n₂` – C presents the ticket and authenticator, requesting access to S.
+4. G → C: `senc{kCS · C · t₂}_{sk(G,S)} · senc{kCS · n₂ · t₂ · S}_{kCG}` – G issues service key kCS and a ticket for S.
+5. C → S: `ticket_for_S · senc{C · t₃}_{kCS}` – C contacts S with its ticket and authenticator.
+6. S → C: `senc{t₃}_{kCS} · senc{payload}_{kCS}` – S confirms freshness and delivers protected data.
+
+Assurances
+
+* `S *->* C : payload` – C accepts payload as authenticated from S.
+* Secrecy: kCG is secret among C,A,G; kCS and payload are secret among C,G,S.
+* Freshness: nonces (n₁,n₂) and timestamps (t₁–t₃) prevent replays; authenticators bind sessions to identities and keys.
+
+Summary:
+This models the standard Kerberos key-distribution workflow: chained servers (A→G→S) issue time-bound session keys, providing end-to-end confidentiality and authenticated delivery of payload from S to C.
