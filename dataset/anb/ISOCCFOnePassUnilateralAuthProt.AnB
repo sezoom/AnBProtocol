@@ -5,7 +5,7 @@ Declarations:
 
 Types:
     Agent A,B;
-    Number NA,Text1,Text2,tagISO_onepass_CCF1,tagISO_onepass_CCF2,tagISO_onepass_CCF3,tagISO_onepass_CCF4;
+    Number NA,Text1,Text2,tagISO_onepass_CCF1,tagISO_onepass_CCF2;
     Function f;
     Mapping sk
 
@@ -19,8 +19,7 @@ Private:
 
 Actions:
     [m1] A -> B : tagISO_onepass_CCF1 . NA . B . Text2 .
-                  f(tagISO_onepass_CCF2, sk(A,B), NA, B, Text1) .
-                  NA . B . Text1;
+                  f(tagISO_onepass_CCF2, sk(A,B), NA, B, Text1) . Text1;
 
 Goals:
     B ->* A : Text1;

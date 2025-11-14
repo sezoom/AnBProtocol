@@ -4,7 +4,7 @@ Declarations:
 
 Types:
     Agent A,B;
-    Number NA,NB,Text1,Text2,Text3,Text4,Text5,tagISOTMC1,tagISOTMC2,tagISOTMC3;
+    Number NA,NB,Text2,Text4,tagISOTMC1;
     Mapping sk;
     Function f;
 

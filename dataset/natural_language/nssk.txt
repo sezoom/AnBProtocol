@@ -1,0 +1,120 @@
+
+NSPK is protocol 1 in the following document:
+
+Using Encryption for Authentication in Large Networks of Computers
+Roger M. Needham and Michael D. Schroeder
+Xerox Palo Alto Research Center
+
+Use of encryption to achieve authenticated communication in computer networks is discussed. Example protocols are presented for the establishment of authenticated connections, for the management of authenticated mail, and for signature verification and document integrity guarantee. Both conventional and public-key encryption algorithms are considered as the basis for protocols.
+
+Key Words and Phrases: encryption, security, authentication, networks, protocols, public-key cryptosystems, data encryption standard
+CR Categories: 3.81, 4.31, 4.35
+
+Introduction
+
+In the context of secure computer communications, authentication means verifying the identity of the communicating principals to one another. A network in which a large number of computers communicate may have no central machine or system that contains authoritative descriptions of the connected computers, of the purposes for which they are used, or of the individuals who use them. We present protocols for decentralized authentication in such a network that are integrated with the allied subject of naming. There is minimal reliance on network-wide services; in particular there is no reliance on a single network clock or a single network name management authority.
+
+Three functions are discussed:
+(1) Establishment of authenticated interactive communication between two principals on different machines. By interactive communication we mean a series of messages in either direction, typically each in response to a previous one.
+(2) Authenticated one-way communication, such as is found in mail systems, where it is impossible to require protocol exchanges between the sender and the recipient while sending an item, since there can be no guarantee that sender and recipient are simultaneously available.
+(3) Signed communication, in which the origin of a communication and the integrity of the content can be authenticated to a third party.
+
+Secure communication in physically vulnerable networks depends upon encryption of material passed between machines. We assume that it is feasible for each computer in the network to encrypt and decrypt material efficiently with arbitrary keys, and that these keys are not readily discoverable by exhaustive search or cryptanalysis. We consider both conventional encryption algorithms and public-key encryption algorithms as a basis for the protocols presented.
+
+We assume that an intruder can interpose a computer in all communication paths, and thus can alter or copy parts of messages, replay messages, or emit false material. While this may seem an extreme view, it is the only safe one when designing authentication protocols.
+
+We also assume that each principal has a secure environment in which to compute, such as is provided by a personal computer or would be by a secure shared operating system. Our viewpoint throughout is to provide authentication services to principals that choose to communicate securely. We have not considered the extra problems encountered when trying to force all communication to be performed in a secure fashion or when trying to prevent communication between particular principals in order to enforce restrictions on information flow.
+
+Our protocols should be regarded as examples that expose the authentication issues in large networks rather than as fully engineered solutions to the overall security problems of a particular application. While providing an adequate solution to the authentication problems specified and meeting most common security objectives, our protocols would need elaboration to meet other security goals such as preventing traffic analysis, withholding all matching cleartext-ciphertext pairs from an eavesdropper, and ensuring instantaneous detection of tampering, and also to maximize efficiency in particular networks. It is possible to devise other protocols similar to those presented that also meet the stated objectives.
+
+There is a modest amount of literature on our subject, and methods have been proposed for several of the individual functions we describe [1, 3, 5, 6], although no work is reported that integrates these techniques and applies them in a decentralized environment, or that provides functionally equivalent protocols based on both conventional and public-key encryption.
+	1.	Encryption Algorithms
+
+The important difference between conventional and public-key encryption algorithms is the way keys are used. With a conventional encryption algorithm, such as the NBS Data Encryption Standard [7], the same key is used for both encryption and decryption. Authentication depends upon the two participants in a conversation being the only two principals (apart possibly from trusted servers) who know the key that is being used to encrypt the transmitted material.
+
+With a public-key encryption algorithm, a concept originated by Diffie and Hellman [3], two keys are necessary: one that is used in the conversion of cleartext to ciphertext, and another that is used in the conversion of ciphertext to cleartext. Furthermore, knowledge of one key gives no help in finding the other, and the two keys will act as inverses for each other. Elegant systems may be devised in which each principal has one public key and one secret key. Anyone may encrypt a communication for A using his public key, but only A can decrypt the result using his secret key. Likewise, only A can encrypt messages that will decrypt sensibly with A’s public key. The first example of a public-key encryption algorithm was devised by Rivest et al. [9], and others are sure to follow.
+	2.	Authentication Servers
+
+With both kinds of encryption the basis of authenticated communication is a secret key belonging to each principal using the network, and there is need for an authoritative source of information about these keys. We use the term authentication server for a server that can deliver identifying information computed from a requested principal’s secret key.
+
+Since the main database of an authentication server is indexed by name, the management of authentication servers is related to the management of names. In an extended network it is inexpedient to have a single central name registration authority, so we suppose that there are multiple naming authorities, each of which assigns and cancels names as it wishes. With this organization, principals have names of the form “NamingAuthority.SimpleName.” Associated with each naming authority are one or more name lookup servers and one or more authentication servers.
+
+A name lookup server is prepared to provide various network addresses associated with a given SimpleName, for example, the address of that principal’s mail system buffer. One or more instances of a master name lookup server will provide the network addresses of appropriate name lookup and authentication servers when given a naming authority’s name. Authentication servers perform strikingly similar functions for the two classes of encryption algorithms; the differences will be brought out as they arise.
+	3.	Means of Encryption
+
+One significant issue in this area of study is where the encryption and decryption are done. Branstad [2] suggests that these actions take place in the network interface of a computer. It is a requirement of some of our protocols that the encryption be done elsewhere, because it is necessary to prepare an encrypted message without actually sending it yet or to receive an encrypted message without knowing at the network interface what the key is. Accordingly we have assumed that any hardware encryption aid is located so one can say
+
+X := encrypt(Y, Key) — and still have X in hand, or say —
+if (X := decrypt(Y, Key1)) = nonsense then X := decrypt(Y, Key2) fi
+	4.	Protocols for Establishing Interactive Connections
+
+Protocol 1. With Conventional Algorithms
+
+If a conventional algorithm is used then each principal has a secret key that is known only to itself and to its authentication server, the contents of which are accordingly secret. The essential step in setting up secure communication between A and B is for the initiator, say A, to generate a message with two properties: (a) It must be comprehensible only to B, i.e., allow only B to use its contents to identify himself to A. (b) It must be evident to B that it originated with A. The use of encryption to achieve these properties was first described by Feistel [4] and applied to a network context by Branstad [1].
+
+Assuming for the moment that A and B are in the purview of the same authentication server AS, we now outline a protocol. The notation used will be followed throughout: encryption is indicated by braces that are superscripted with the key used.
+
+The protocol opens with A communicating in clear to AS his own claimed identity and the identity of the desired correspondent, B, together with A’s nonce identifier for this transaction, I_A. (“Nonce” means “used only once.”) Here the nonce identifier must be different than others used by A in previous messages of the same type.
+
+Upon receiving that message, AS looks up the secret, identifying keys of both parties and also computes a new key CK that will be the key for the conversation if all goes well. The next transaction is a message from AS to A: {I_A, B, CK, {CK, A}_K_B}_K_A, where K_A and K_B are A’s and B’s secret identifying keys. Because this is encrypted with A’s secret key, only A can decrypt it and discover the conversation key CK. Following decryption, A checks for the presence of the intended recipient’s name, B, and the correct identifier, I_A, in order to verify that the message really is a reply by AS to the current enquiry. Both the name of the intended recipient and the transaction identifier must appear. If the recipient’s name is left out, then an intruder could change that name in the first message, say to X, before AS receives it, with the subsequent result that A would unknowingly communicate with X instead of B. If the identifier is left out, then an intruder could substitute a previously recorded server reply (from AS to A about B) and force A to reuse a previous conversation key. A remembers CK and sends the part encrypted with K_B to B: {CK, A}_K_B. The real B, but no other, will be able to decrypt and emerge with the conversation key CK, the same as A has. B also knows the identity of the intending correspondent, as authenticated by AS.
+
+It is worth reviewing at this point the state of knowledge of the two parties. A now knows that any communication he receives encrypted with CK must have originated with B, and also that any communication he emits with CK encryption will be understood only by B. Both are known because the only messages containing CK that have ever been sent are tied to A’s and B’s secret keys. B is in a similar state, mutatis mutandis. It is important, however, to be sure that no part of the protocol exchange or ensuing conversation is being replayed by an intruder from a recording of a previous conversation. In relationship to this question the positions of A and B differ. A is aware that he has not used the key CK before and therefore has no reason to fear that material encrypted with it is other than the legitimate responses from B. B’s position is not so good; unless he remembers indefinitely keys previously used by A in order to check that CK is new, he is unclear that the authenticator and subsequent messages are not being replayed. To guard against this possibility, B generates a nonce identifier for the transaction, I_B, and sends it to A under CK, expecting a related reply (e.g., I_B − 1). If this reply is satisfactorily received, then the mutual confidence is sufficient to enable substantive communication, encrypted with CK, to begin.
+
+There are five messages in protocol 1. The number may be reduced to three by A’s keeping, for regular interaction partners, a cache of items of the form B : CK, {CK, A}_K_B derived from the server’s reply, thus eliminating the initial two server messages. Note however that, if such authenticators are cached, changes are needed to the protocol: with caching, the same CK is being used again and again, so the conversation identifier handshakes need to be two-way (details omitted here). In practice, these steps would be used to start a two-way seriation in order to ensure the integrity of the subsequent conversation. Methods for ensuring integrity following initial contact have been studied by Kent [5].
+
+Protocol 2. With Public-Key Algorithms
+
+We use key labels such as PK_A for A’s public key and SK_A for his secret one. The exchange opens with A consulting the authentication server in the clear to find B’s public key. The server responds with {PK_B, B}_SK_AS, where SK_AS is the authentication server’s secret key. A is presumed to know the AS’s public key, PK_AS, which is used to decrypt the message. A must obtain and store PK_AS in a reliable way, so he is sure it is correct. The importance of the reciprocity between the public and secret keys is shown here. Encryption of the server’s response is required not to ensure the privacy of the information but to ensure its integrity. It is important that A should be sure that he is getting PK_B rather than the public key of some miscreant. A knows that the name of the intended recipient, B, was correctly communicated to AS because that name is returned.
+
+The next step is for the communication with B to be initiated: {I_A, A}_PK_B. This message, which can only be understood by B, indicates that someone purporting to be A wishes to establish communication, and secretly communicates a nonce identifier generated by A. B decrypts the message with his secret key and then finds PK_A with steps similar to A’s. At this point a double handshake is needed to authenticate the peers to one another and to establish the time integrity of the conversation: {I_A, I_B}_PK_A followed by {I_B}_PK_B (using appropriate key directions). There are seven steps in this protocol as against five with protocol 1, but the four server lookup/signature steps can be done away with by both parties caching commonly used public keys. The resulting three protocol steps have very similar purposes to the three remaining after caching in protocol 1.
+
+Observe that, because public keys are not secret, double encryption (or an equivalent measure) is required during the ensuing interaction so that authenticity as well as privacy is maintained. An equivalent safeguard is to use a large random base for seriation of encryption blocks.
+	5.	Multiple Authentication Servers
+
+In the protocols just given we assumed that the peers were clients of the same authentication server. This restriction is not necessary, and we now remove it. When extending the protocols we must bear in mind that, while an authentication server must be regarded as the final authority for its clients, it must be able to have no effect for good or ill on communication between clients of other authentication servers. Then our system will not be upset completely by the conduct of a shoddy authenticator.
+
+The effects on the protocols of multiple authentication servers differ somewhat between the two encryption techniques. For conventional encryption, both authentication servers are involved to produce an item of the form {CK, A}_K_B for A to use when approaching B; secure links between servers are assumed (e.g., established when they come into operation). In the public-key case, since no secret keys are moved around, a party can approach the other’s authentication server directly if it knows that server’s public key. In both cases caching can be expected to reduce the number of protocol messages to three.
+	6.	Implementing Authentication Servers
+
+There are differences in the implementation of authentication servers for the two varieties of encryption. In the conventional case the content of the database, items of the form A : K_A, must be kept secret (which could be done by encrypting it with the server’s secret identifying key). A secure transaction takes place every time the server is used: the keys of both customers must be extracted in order to construct the message contents. By contrast, in the public-key case the content of the database need not be secret, and no secure transaction need take place when the server is used if the server’s database is set up to contain items of the form A : {PK_A, A}_SK_AS. With the public-key authentication server there is still a requirement for a secure computation creating such signed public-key records, but only when a new public key is registered, and this operation may be done outside the authentication server and the result added to the database in a nonsecure way. In practice, implementations may nonetheless look similar due to integrity and reliability requirements on server data.
+
+With both techniques the communications with servers can be done without the formalities of establishing a “connection.” The servers need never retain information about an ongoing transaction from one message to the next, so that repetition or loss of protocol packets does not matter.
+	7.	One-Way Communication
+
+In a computerized mail system it is impossible to depend upon interaction between the sender and the receiver in the course of each delivery. The mail is put into the hands of a transport mechanism and may be delivered later when the sender is no longer available. Two-way authentication of sender and receiver is as desirable for mail as it is for interactive communication. Good design suggests that the mail transport mechanism not be part of the security system.
+
+With Conventional Algorithms. We assume that subsequent blocks of the mail are securely seriated (e.g., as in Kent). The delay inherent in mail requires steps to ensure time integrity (protection against replay). Although we have avoided time-stamps elsewhere (they presuppose a network-wide reliable source of time), here a time-stamp scheme can be used without requiring a universal clock: each message includes a time-stamp; recipients keep a small register of {source, time-stamp} pairs within a window T, rejecting duplicates or items older than T.
+
+With Public-Key Algorithms. Time-integrity measures are identical. Two alternatives exist. One uses a header that identifies the sender to the recipient without a handshake: e.g., a header encrypted under the recipient’s public key containing the sender’s identity and a sender-generated token sufficient to authenticate later (via key-server lookups), plus a nonce binding the ensuing text blocks. The other provides signatures and is described next.
+
+Note also that a message of the form {CK, A}_K_B (from the conventional interactive protocol) can be put at the head of mail encrypted with CK to make the whole self-authenticating as to recipient and originator even though the recipient played no part in the setup.
+	8.	Digital Signatures
+
+Sometimes evidence to a third party is needed that a particular communication is exactly as received from a particular sender. This is met by signatures for messages.
+
+Protocol 3. Signatures with Conventional Encryption and a Little Help. One method uses a characteristic function of the clear-text message to be signed, with the property that it is hard to find another sensible message producing the same value; the value is preferably smaller than the message. While sending the text (interactive or mail), the sender computes the characteristic value CS and requests a signature block from the authentication server by sending {CS}_K_A. The server returns {A, CS}_K_AS. The sender transmits the signature block along with the text. The recipient decrypts the text, computes its own characteristic value CSC, and asks the server to decrypt the signature block; if the returned CS matches CSC, the named principal is the sender of the signed text. If the recipient wishes to retain evidence, it suffices to retain the signature block and the text.
+
+Signatures with Public-Key Encryption. A more elegant method—first described by Diffie and Hellman—uses double encryption of the seriated text blocks: {{text-block}_SK_A}_PK_B. The recipient performs the outer decryption (its secret key) and then uses the sender’s public key to verify content. For arbitration, the recipient can reveal the outer decryption and an arbiter uses the sender’s public key to complete verification. To support key changes, the authentication server retains records of old public keys and change times; signed texts include their signing time.
+	9.	Commentary
+
+We conclude that protocols using public-key cryptosystems and using conventional encryption algorithms are strikingly similar. The number of protocol messages exchanged is very comparable, the public-key system having a noticeable advantage only in the case of signed communications. Caching is important to reduce transactions with lookup servers; this is particularly so with the public-key system. We noticed also a requirement in the public-key system for encryption (or signature) over public data to ensure integrity. A consequence of the similarity is that helpful tricks for the conventional system have analogs in the public-key system; there may be scope for hybrid systems in which a public-key method is used to establish an authenticated connection to be used conventionally. The intrinsic security requirements of a public-key authentication server may be easier to meet than those of a conventional one, but system issues (e.g., retaining secure records of old public keys for arbitration) may minimize this advantage. The choice of technique should be based on the economy and cryptographic strength of the encryption techniques themselves, rather than on their effects on protocol complexity.
+
+Finally, protocols such as those developed here are prone to extremely subtle errors that are unlikely to be detected in normal operation. The need for techniques to verify the correctness of such protocols is great.
+
+Acknowledgments. We are indebted to a number of people who have read drafts of this paper and made careful and helpful comments, notably: Peter Denning, Stockton Gaines, Jim Gray, Steve Kent, Gerry Popek, Ron Rivest, Jerry Saltzer, and Robin Walker.
+Received September 1977; revised April 1978; final revision May 1978
+
+References
+	1.	Branstad, D. Security aspects of computer networks, Proc. AIAA Computer Network Systems Conf., April 1973, paper 73-427.
+	2.	Branstad, D. Encryption protection in computer data communications. Proc. Fourth Data Communications Symp., Oct. 1975, pp. 8.1-8.7 (available from ACM, New York).
+	3.	Diffie, W., and Hellman, M. Multiuser Cryptographic Techniques, Proc. AFIPS 1976 NCC, AFIPS Press, Montvale, N.J., pp. 109-112.
+	4.	Feistel, H. Cryptographic coding for data bank privacy. Res. Rep. RC2827, IBM T.J. Watson Res. Ctr., Yorktown Heights, N.Y., March 1970.
+	5.	Kent, S. Encryption-based protection protocols for interactive user-computer communication, M.S. Thesis, EECS Dept., M.I.T., 1976; also Tech. Rep. 162, Lab. for Computer Science, M.I.T., 1976.
+	6.	Kent, S. Encryption-based protection for interactive user/computer communication. Proc. Fifth Data Communication Symp., Sept. 1977, pp. 5-7–5-13 (available from ACM, New York).
+	7.	National Bureau of Standards. Data Encryption Standard. FIPS 46, NBS, Washington, D.C., Jan. 1977.
+	8.	Pohlig, S. Algebraic and combinatoric aspects of cryptography. Tech. Rep. No. 6602-1, Stanford Electron. Labs., Stanford, Calif., Oct. 1977.
+	9.	Rivest, R.L., et al. A method for obtaining digital signatures and public-key cryptosystems. Commun. ACM 21, 2 (Feb. 1978), 120-126.
+
+⸻
+
+Source: Needham & Schroeder, “Using Encryption for Authentication in Large Networks of Computers.”  ￼

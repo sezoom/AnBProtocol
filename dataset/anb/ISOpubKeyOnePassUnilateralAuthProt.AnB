@@ -5,7 +5,7 @@ Declarations:
 
 Types:
     Agent A,B,s;
-    Number NA,Text1,tagISO_onepass_pk1,tagISO_onepass_pk2,tagISO_onepass_pk3,tagISO_onepass_pk4;
+    Number NA,Text1,tagISO_onepass_pk1,tagISO_onepass_pk2;
     Mapping pk,sk
 
 Knowledge:

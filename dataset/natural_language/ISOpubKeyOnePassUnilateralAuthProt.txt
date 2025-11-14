@@ -1,0 +1,13 @@
+The two-pass unilateral entity-authentication mechanism from the ISO/IEC 9798 family that uses a cryptographic check function (a MAC). One party (the verifier) begins by sending a protocol identifier together with a freshly generated challenge NB. The identifier provides domain separation for this mechanism, while the time-variant parameter NB delivers freshness and replay resistance, as required by ISO/IEC 9798-4.  ￼
+
+Upon receiving the challenge, the other party (the claimant) computes a MAC under the pre-shared secret sk(A,B) over the tuple (NB, verifier-ID, Text2) and returns both the MAC and the clear fields NB, verifier-ID, and Text2. The verifier recomputes the MAC and, if it verifies, accepts that the claimant currently knows the shared key and that Text2 is authentic and bound to this run. Because only the verifier sends the initial challenge and only the claimant returns a MAC, the protocol authenticates the claimant to the verifier and provides data-origin authentication for Text2—but it does not authenticate the verifier back to the claimant, nor does it provide confidentiality for Text2. Including the verifier’s identifier in the MAC input binds direction and thwarts simple reflection.  ￼
+
+Robust instantiations use modern MACs (e.g., HMAC or CMAC), ensure NB is freshly and uniformly generated each run, and use explicit mechanism identifiers/constant tags as clarified by Technical Corrigendum 2 so that computed check values cannot be misapplied across contexts. The academic literature evaluating 9798-4 highlights these domain-separation requirements and common pitfalls, and proposes repairs that align with this modeling approach.  ￼
+
+Reference
+
+ISO/IEC 9798-4:1999, Information technology — Security techniques — Entity authentication — Part 4: Mechanisms using a cryptographic check function (scope, use of time-variant parameters, MAC-based one- and two-pass mechanisms).  ￼
+
+ISO/IEC 9798-4:1999/Cor. 2:2012, Technical Corrigendum 2 (identifiers and constants for cryptographic check values / domain separation).  ￼
+
+Basin, Cremers, Meier, “Provably Repairing the ISO/IEC 9798 Standard for Entity Authentication,” POST 2012 / JCS 2013 (analysis and recommended hardenings of the 9798-4 mechanisms).  ￼

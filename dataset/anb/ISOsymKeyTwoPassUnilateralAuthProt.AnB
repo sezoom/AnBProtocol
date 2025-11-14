@@ -5,7 +5,7 @@ Declarations:
 
 Types:
     Agent A,B;
-    Number NB,Text1,Text2,Text3,tagITS1,tagITS2,tagITS3;
+    Number NB,Text2,tagITS1,tagITS2;
     Mapping sk
 
 Knowledge:
