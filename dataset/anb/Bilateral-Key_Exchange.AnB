@@ -5,30 +5,26 @@ Declarations:
     senc/2;
 
 Types:
-    Agent A,B;
-    Number NA,NB,tagBKE1,tagBKE2,tagBKE3;
-    Symmetric_key K;
-    Mapping pk,sk
-    Function h;
+    Agent 			A, B;
+    Number 			nA, nB;
+    Symmetric_key 	k;
+    Mapping 		pk, sk
+    Function 		h;
 
 Knowledge:
-    A: A, B, pk(A), pk(B), sk(A), h;
-    B: A, B, pk(A), pk(B), sk(B), pk, h;
+    A: B, sk(A), h;
+    B: A, sk(B), h;
 
 Public:
     pk(A), pk(B);
 
-Private:
-    sk(A), sk(B);
-
 Actions:
-    [m1] B -> A (NB): tagBKE1 . B . aenc{ NB . B }pk(A);
-    [m2] A -> B (NA . K): aenc{ h(NB) . NA . A . K }pk(B);
-    [m3] B -> A : senc{ h(NA) }K;
+    [m1] B -> A (nB) 	: B.aenc{nB.B}pk(A);
+    [m2] A -> B (nA, k) : aenc{h(nB).nA.A.k}pk(B);
+    [m3] B -> A         : senc{h(nA)}k;
 
 Goals:
     /* A authenticates B on K; */
     A *->* B: K;
-ChannelKeys:
 
 end

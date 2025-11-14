@@ -5,42 +5,38 @@ Declarations:
     pre/1;
 
 Types:
-    Agent A,B,s;
-    Number NA,NB,NB0,tagANSCK1,tagANSCK2,tagANSCK3,tagANSCK4,tagANSCK5,tagANSCK6,tagANSCK7,tagANSCK8,tagANSCK9;
-    Symmetric_key KAB;
-    Mapping sk;
-    Function pre;
+    Agent 		  A, B, S;
+    Number 		  nA, nB, nB0;
+    Symmetric_key kAB;
+    Mapping 	  sk;
+    Function 	  pre;
 
 Knowledge:
-    A: A, B, sk(A,s), pre;
-    B: B, A, sk(B,s), pre;
-    s: A, B, sk(A,s), sk(B,s), pre;
-
-Public:
-
-Private:
+    A: A, B, sk(A,S), pre;
+    B: B, A, sk(B,S), pre;
+    S: A, B, sk(A,S), sk(B,S), pre;
 
 Actions:
-    [m1] A -> B            : tagANSCK1 . A;
-    [m2] B -> A (NB0)      : senc{ tagANSCK2 . A . NB0 }sk(B,s);
-    [m3] A -> s (NA)       : tagANSCK5 . A . B . NA . senc{ tagANSCK3 . A . NB0 }sk(B,s);
-    [m4] s -> A            : senc{ tagANSCK7 . NA . B . KAB . senc{ tagANSCK4 . KAB . NB0 . A }sk(B,s) }sk(A,s);
-    [m5] A -> B            : senc{ tagANSCK6 . KAB . NB0 . A }sk(B,s);
-    [m6] B -> A (NB)       : senc{ tagANSCK8 . NB }KAB;
-    [m7] A -> B            : senc{ tagANSCK9 . pre(NB) }KAB;
+    [m1] A -> B            : A;
+    [m2] B -> A (nB0)      : senc{ A . nB0 }sk(B,S);
+    [m3] A -> S (nA)       : A . B . nA . senc{ A . nB0 }sk(B,S);
+    [m4] S -> A            : senc{ nA . B . kAB . senc{ kAB . nB0 . A }sk(B,S) }sk(A,S);
+    [m5] A -> B            : senc{ kAB . nB0 . A }sk(B,S);
+    [m6] B -> A (nB)       : senc{ nB }kAB;
+    [m7] A -> B            : senc{ pre(nB) }kAB;
 
 Goals:
-    B ->  A : (A, B, KAB, NB);
-    A ->* B : (A, B, KAB, NB);
-    A ->  S : (A, B, KAB, NA);
-    B ->* S : (A, B, KAB, NB0);
+    B ->  A : (A, B, kAB, nB);
+    A ->* B : (A, B, kAB, nB);
+    A ->  S : (A, B, kAB, nA);
+    B ->* S : (A, B, kAB, nB0);
 
-# Secrecy
-    KAB secret between A,B,S;
-    NB secret between A,B;
-    NB0 secret between B,S;
+    kAB secret between A,B,S;
+    nB secret between A,B;
+    nB0 secret between B,S;
 
 ChannelKeys:
-    K(A,s) : sk(A,s);
-    K(B,s) : sk(B,s);
+    K(A,S) : sk(A,S);
+    K(B,S) : sk(B,S);
+
 end

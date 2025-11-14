@@ -6,15 +6,15 @@ Protocol: ISO_onepass_symm # Verified & Certified
 # authentication
 
 Types:
-       Agent A,B;
-       Number NA,Text1,tagISOOTPS1;
+       Agent   A, B;
+       Number  nA, text1;
        Mapping sk
 
 Knowledge:
-    A : A, B, sk(A,B), Text1;
+    A : A, B, sk(A,B), text1;
     B : B, A, sk(A,B);
 
 Actions:
-    [msg1] A -> B (NA) : senc{NA . B . Text1}sk(A,B);
+    [msg1] A -> B (nA) : senc{nA . B . text1}sk(A,B);
 
 end

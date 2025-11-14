@@ -1,40 +1,29 @@
-
-Protocol DenningSaccoCorrPub:
+Protocol DenningSaccoPub:
 
 Declarations:
     aenc/2;
 
 Types:
-    Agent A,B,s;
-    Number NA,tag,tagDenningSaccoCorrPub1,tagDenningSaccoCorrPub2,tagDenningSaccoCorrPub3,tagDenningSaccoCorrPub4,tagDenningSaccoCorrPub5,tagDenningSaccoCorrPub6,tagDenningSaccoCorrPub7;
-    Symmetric_key KAB;
-    Mapping pk,sk
+    Agent 			A, B, S;
+    Number 			tA;
+    Symmetric_key 	kAB;
+    Mapping 		pk, sk;
 
 Knowledge:
-    A: A, B, pk(A), sk(A), pk(s), tag;
-    B: B, pk(s), pk(B), sk(B), tag;
-    s: s, A, B, pk(A), pk(B), pk(s), sk(s), tag;
-
-Public:
-    pk(A), pk(B), pk(s);
-
-Private:
-    sk(A), sk(B), sk(s);
+    A: B, S, pk(S);
+    B: A, S, pk(S);
+    S: A, B, pk(A), pk(B);
 
 Actions:
-    [m1] A -> s            : tagDenningSaccoCorrPub1 . A . B;
-    [m2] s -> A            : aenc{ tagDenningSaccoCorrPub2 . A . pk(A) }sk(s) .
-                              aenc{ tagDenningSaccoCorrPub6 . B . pk(B) }sk(s);
-    [m3] A -> B (NA . KAB) : aenc{ tagDenningSaccoCorrPub5 . A . pk(A) }sk(s) .
-                              aenc{ tagDenningSaccoCorrPub7 . B . pk(B) }sk(s) .
-                              aenc{ tagDenningSaccoCorrPub3 .
-                                    aenc{ tagDenningSaccoCorrPub4 . KAB . NA . B }sk(A) .
-                                    tag }pk(B);
+    [m1] A -> S            	: A.B;
+    [m2] S -> A            	: aenc{A.pk(A)}sk(S).
+							  aenc{B.pk(B)}sk(S);
+    [m3] A -> B (kAB, tA)	: aenc{A.pk(A)}sk(S).
+							  aenc{B.pk(B)}sk(S).
+							  aenc{ aenc{kAB.tA}sk(A) }pk(B);
 
 Goals:
-    B ->* A : KAB;
-    KAB secret between A,B;
-
-ChannelKeys:
+    B ->* A : kAB;
+    kAB secret between A, B;
 
 end
