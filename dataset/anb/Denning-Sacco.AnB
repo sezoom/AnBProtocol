@@ -4,31 +4,24 @@ Declarations:
     senc/2;
 
 Types:
-    Agent A,B,s;
-    Number T,timestamp,Payload,tagds1,tagds2,tagds3,tagds4,tagds5;
-    Symmetric_key KAB;
-    Mapping sk
+    Agent 	      A, B, S;
+    Number 		  t, payload;
+    Symmetric_key kAB;
+    Mapping 	  sk
 
 Knowledge:
-    A: A, B, sk(A,s), timestamp;
-    B: B, A, sk(B,s), timestamp;
-    s: A, B, sk(A,s), sk(B,s);
-
-Public:
-
-Private:
-
+    A: B, S, sk(A,S);
+    B: A, S, sk(B,S);
+    S: A, B, sk(A,S), sk(B,S);
 
 Actions:
-    [m1] A -> s             : tagds2 . A . B;
-    [m2] s -> A (KAB, T)    : senc{ tagds4 . B . KAB . T . senc{ tagds3 . A . KAB . T }sk(B,s) }sk(A,s);
-    [m3] A -> B             : senc{ tagds3 . A . KAB . T }sk(B,s);
-    [m4] B -> A (Payload)   : senc{ tagds1 . Payload }KAB;
+    [m1] A -> S             : A.B;
+    [m2] S -> A (kAB, t)    : senc{B.kAB.t.senc{A.kAB.t}sk(B,S)}sk(A,S);
+    [m3] A -> B             : senc{A.kAB.t}sk(B,S);
+    [m4] B -> A (payload)	: senc{payload}kAB;
 
 Goals:
-    KAB secret between A,B;
-    B ->* A : Payload
-
-ChannelKeys:
+    kAB secret between A,B;
+    B ->* A : payload
 
 end

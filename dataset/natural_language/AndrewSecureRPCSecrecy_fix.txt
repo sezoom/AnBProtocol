@@ -1,0 +1,19 @@
+# Andrew Secure RPC Secrecy
+
+Two parties, A (initiator) and B (responder), share a long-term symmetric key `sk(A,B)` and use nonces to achieve mutual authentication and secrecy.
+
+Flow
+
+1. A → B: `A · senc{ nA }_{sk(A,B)}` — A initiates contact and proves knowledge of the shared key by encrypting a fresh nonce nA.
+2. B → A: `senc{ succ(nA) · nB }_{sk(A,B)}` — B confirms receipt by returning `succ(nA)` and includes a fresh nonce nB, maintaining continuity and freshness.
+3. A → B: `senc{ succ(nB) }_{sk(A,B)}` — A acknowledges nB, confirming mutual possession of the shared key and completing authentication.
+4. B → A: `senc{ nB2 }_{sk(A,B)}` — B optionally sends another secret value nB2, protected under the same key.
+
+Goals & Security Properties
+
+* Mutual authentication: Both parties verify each other’s ability to encrypt/decrypt with `sk(A,B)` using the nonce succession pattern (`succ(nA)`, `succ(nB)`).
+* Secrecy: `nA`, `nB`, and `nB2` remain confidential between A and B.
+* Freshness: Each step involves a fresh nonce to prevent replay attacks.
+
+Summary:
+Andrew Secure RPC provides a symmetric-key mutual authentication and secure message exchange protocol that guarantees confidentiality of session data and verification of both parties using a simple nonce succession scheme.

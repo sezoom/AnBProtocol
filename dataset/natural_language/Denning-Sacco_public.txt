@@ -1,0 +1,14 @@
+# Denning–Sacco Public-Key
+
+Three roles: A (initiator), B (responder), and trusted server S. The goal is to distribute a fresh session key kAB using public-key cryptography.
+
+Flow
+
+1. A → S: `A · B` — A requests a public-key certificate for both itself and B.
+2. S → A: `aenc{A · pk(A)}_{sk(S)} · aenc{B · pk(B)}_{sk(S)}` — S returns signed certificates binding A and B to their public keys, proving their authenticity.
+3. A → B: `aenc{A · pk(A)}_{sk(S)} · aenc{B · pk(B)}_{sk(S)} · aenc{ aenc{kAB · tA}_{sk(A)} }_{pk(B)}` — A forwards the certificates and a session key kAB (with timestamp tA) that it signs and encrypts for B.
+
+Goals
+
+* Authentication: `B ->* A : kAB` — B (weakly) authenticates A on the session key kAB, since only A could have produced the signed key encrypted for B.
+* Secrecy: kAB remains confidential between A and B.

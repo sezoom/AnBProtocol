@@ -1,0 +1,18 @@
+# Bilateral Key Exchange protocol
+
+Two parties, A (initiator) and B (responder), use public-key encryption to establish a fresh symmetric key k for secure communication.
+
+Flow:
+
+1. B → A: `B · aenc{ nB · B }_{pk(A)}` — B starts by sending its identity and a fresh nonce nB, encrypted so only A can read it.
+2. A → B: `aenc{ h(nB) · nA · A · k }_{pk(B)}` — A confirms it decrypted B’s message by returning h(nB), adds its own nonce nA, identity, and a newly generated session key k, all encrypted for B.
+3. B → A: `senc{ h(nA) }_{k}` — B replies using k, returning h(nA) to prove possession of the same key and complete mutual confirmation.
+
+Security goals:
+
+* `A *->* B : k` — A weakly authenticates B on the shared key k (non-injective agreement).
+* Confidentiality: k is protected in transit by public-key encryption; only A and B learn it.
+* Freshness: ensured by nonces nA and nB.
+
+Summary:
+This protocol achieves secure key establishment and one-way (weak) authentication of B to A, using public-key encryption for setup and symmetric encryption for key confirmation.

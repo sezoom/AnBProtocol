@@ -1,0 +1,15 @@
+# Protocol Eleven
+
+Two parties A and B run an authenticated Diffie–Hellman with key confirmation.
+
+1. A signs its DH share `g^na`, its identity and public key, appends its public key, and sends them to B.
+2. B sends to A: a fresh nonce `N`, its DH share `g^nb`, its identity, and its public key, encrypted with A's public key.
+3. Using the DH secret `g^{na*nb}` as key, A returns encrypted `h(N)` to prove it derived the same key (key confirmation).
+4. B signs the shared secret to authenticate itself and confirm the key.
+
+Keys & goals
+
+* Session key: `K(A,B) = g^{na*nb}`
+* Mutual authentication: Both parties authenticate each other on the tuple `(A, B, g^na, g^nb, g^{na*nb}, N)`.
+* Secrecy: `N` and the DH secret `g^{na*nb}` are known only to A and B.
+* Freshness & confirmation: Fresh nonces `na, nb, N` and the two confirmation steps (3 and 4) ensure both sides agree on a fresh shared key bound to identities and DH shares.

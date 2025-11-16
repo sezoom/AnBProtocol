@@ -5,27 +5,21 @@ Declarations:
     h/1;
 
 Types:
-    Agent C,R;
-    Number n;
-    Function h;
-    Mapping pk
+    Agent 		C, R;
+    Number 		n;
+    Function 	h;
+    Mapping 	pk;
 
 Knowledge:
     C: pk(R);
 
-Public:
-    pk(R);
-
-Private:
-    sk(R);
-
 Actions:
-    [cr1] C -> R (n) : aenc{ n }pk(R);
+    [cr1] C -> R (n) : aenc{n}pk(R);
     [cr2] R -> C     : h(n);
 
 Goals:
     /* Goals that hold */
-    n secret between C,R;
+    n secret between C, R;
     R ->* C : n;
     R -> C : n;
 

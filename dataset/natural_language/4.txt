@@ -1,0 +1,10 @@
+# Protocol Four
+
+This is a three-message Diffie–Hellman–based key exchange protocol between A and B that achieves mutual authentication and key confirmation.
+
+1. A generates an ephemeral exponent x, sends its Diffie–Hellman value g^x and a nonce N1.
+2. B chooses exponent y and computes the shared secret (g^x)^y. B returns g^y, an encryption of N1 under that secret to prove key possession, plus its own nonce N2.
+3. A encrypts N2 with the same shared secret (g^y)^x, confirming that both parties derived the same session key.
+
+Both sides now share the key K = g^{xy} derived from the Diffie–Hellman exchange.
+Security properties: the protocol provides mutual authentication, freshness through N1 and N2, and secrecy of the session key K.

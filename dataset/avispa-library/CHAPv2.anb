@@ -1,5 +1,27 @@
+Protocol CHAPv2:
 
-  1. A -> B : A
-  2. B -> A : Nb
-  3. A -> B : Na,H(k(A,B),(Na,Nb,A))
-  4. B -> A : H(k(A,B),Na)
+Declarations:
+    h/1;
+
+Types:
+    Agent         A, B;
+    Number        nA, nB;
+    Symmetric_key k(A,B);
+    Function      h;
+
+Knowledge:
+    A : k(A,B);
+    B : k(A,B);
+
+Actions:
+    A -> B      : A;
+    B -> A (nB) : nB;
+    A -> B (nA) : nA, h(k(A,B).nA.nB.A);
+    B -> A      : h(k(A,B).nA);
+
+Goals:
+    k(A,B) secret between A,B;
+    B -> A : nB;
+    A -> B : nA;
+
+end

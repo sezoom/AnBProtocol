@@ -1,0 +1,15 @@
+# Protocol Twelve
+
+Three roles: A and B are peers; C is a key-distribution server (KDC).
+
+1. A asks C to set up with B by sending identities of A and B.
+2. C creates a fresh session key Kf and returns two encrypted copies of Kf to A: one is encrypted with A's key Ka, and the other is encrypted with B's key Kb.
+3. A decrypts its copy to learn Kf, and forwards B's sealed copy `senc{Kf}Kb` to B so B can obtain Kf
+4. Then they confirm the key with a nonce exchange protected by Kf: B sends `senc{N2}Kf`, and A sends `senc{N1}Kf`, and B sends `senc{h(N1)}Kf` to prove decryption.
+
+Intended guarantees:
+
+* Weak auth of C: A and B each accept Kf as issued by C.
+* Weak auth of B to A on key+nonce: `A ->* B : (Kf, N1)`.
+* Secrecy: `N1` and `N2` are secret between A and B; Kf is secret among A, B, and C.
+* Channel key: `K(A,B) = Kf` for subsequent protected communication.

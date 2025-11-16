@@ -1,0 +1,19 @@
+# ASW Protocol
+
+Two agents A and B use public-key encryption and hashes to authenticate and agree on a message m.
+
+Flow:
+
+1. A → B: `aenc{ pk(A) · pk(B) · m · h(n₁) }_{sk(A)}` — A signs (encrypts with its private key) a tuple containing both identities, m, and a hash of a fresh nonce n₁, proving origin and binding the message to both parties.
+2. B → A: `aenc{ aenc{ pk(A) · pk(B) · m · h(n₁) }_{sk(A)} · h(n₂) }_{sk(B)}` — B confirms receipt by signing the entire first message along with a hash of its own nonce n₂, thus acknowledging A’s message.
+3. A → B: sends n₁ in the clear so B can verify `h(n₁)`.
+4. B → A: sends n₂ in the clear so A can verify `h(n₂)`.
+
+Goals:
+
+* Weak (non-injective) agreement: both A and B agree on m (A→*B:m, B→*A:m).
+* Injective agreement: A strongly authenticates B on m (A→B:m).
+* Unmet goals: B does *not* achieve injective authentication of A, and m is *not confidential* (revealed by signatures).
+
+Summary:
+ASW provides mutual but asymmetric authentication on m using nested signed encryptions and nonces for freshness. However, it does not guarantee secrecy of m, and B’s authentication of A is only weak (non-injective).

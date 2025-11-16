@@ -4,34 +4,28 @@ Declarations:
     senc/2;
 
 Types:
-    Agent A,B;
-    Number NA,NB,NB2,tagASRPCSEC1,tagASRPCSEC2,tagASRPCSEC3,tagASRPCSEC4,tagASRPCSEC5,tagASRPCSEC6,tagASRPCSEC7,tagASRPCSEC8;
+    Agent 	A, B;
+    Number 	nA, nB, nB2;
     Mapping sk;
     Function succ;
 
 Knowledge:
-    A: A, B, sk(A,B), succ;
-    B: B, A, sk(A,B), succ;
-
-Public:
-
-Private:
+    A: B, sk(A,B), succ;
+    B: A, sk(A,B), succ;
 
 Actions:
-    [m1] A -> B (NA)   : tagASRPCSEC1 . A . senc{ tagASRPCSEC2 . NA }sk(A,B);
-    [m2] B -> A (NB)   : tagASRPCSEC3 . senc{ tagASRPCSEC2 . succ(NA) . NB }sk(A,B);
-    [m3] A -> B        : tagASRPCSEC4 . senc{ tagASRPCSEC7 . succ(NB) }sk(A,B);
-    [m4] B -> A (NB2)  : tagASRPCSEC5 . senc{ tagASRPCSEC6 . NB2 }sk(A,B);
+    [m1] A -> B (nA)   : A . senc{ nA }sk(A,B);
+    [m2] B -> A (nB)   : senc{ succ(nA) . nB }sk(A,B);
+    [m3] A -> B        : senc{ succ(nB) }sk(A,B);
+    [m4] B -> A (nB2)  : senc{ nB2 }sk(A,B);
 
 Goals:
-    B ->  A : (A, B, NA, NB);
-    A ->  B : (A, B, NA, NB);
-    B ->* A: NB2;
+    B ->  A : (A, B, nA, nB);
+    A ->  B : (A, B, nA, nB);
+    B ->* A : nB2;
 
-    NA  secret between A,B;
-    NB  secret between A,B;
-    NB2 secret between A,B;
+    nA  secret between A,B;
+    nB  secret between A,B;
+    nB2 secret between A,B;
 
-ChannelKeys:
-
- end
+end
