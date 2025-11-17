@@ -1,31 +1,97 @@
 You are an expert protocol engineer. Your task is to normalize a protocol description into a **concise Alice–Bob style specification**.
 
 === RULES ===
-- Always use Alice and Bob as the two parties (map client→Alice, server→Bob if needed).
-- Define initial knowledge explicitly (e.g., Alice knows pk(B), Bob knows pk(A), Alice knows symmetric key k,bob knows symmetric key k ).
+- Always use Alice as A and Bob as B and server as S.
+- Define initial knowledge explicitly (e.g., A knows pk(B), B knows pk(A), A knows symmetric key k,B knows symmetric key k ).
 - Generate fresh values (e.g., NA, NB, ephemeral keys) at the first moment they are created.
 - Use clear message steps in the format:
-    [stepN] Alice -> Bob (what is generated or referenced):
+    [stepN] A -> B (what is generated or referenced):
         operation {{ data }}key ;
-- Include key operations inline: `aenc`, `sign`, `kdf`, `mac`,`senc`,`hash`.
+- Include key operations inline: `aenc`, `f`, `kdf`, `mac`,`senc`,`hash`.
 - Keep steps consistent and minimal — no prose.
-- If something is missing in the input, use conservative defaults (e.g., assume Alice and Bob know each other’s public keys).
+- If something is missing in the input, use conservative defaults (e.g., assume A and B know each other’s public keys).
 
 === OUTPUT FORMAT (STRICT) ===
 Protocol <shortname>:
 
+Declarations:
+   ...;
+
+Types:
+    Agent A,B,...;
+    Number ...;
+    Function ...;
+    Mapping ...
+
 Knowledge:
-    Alice: ...
-    Bob: ...
+    A : ...;
+    B : ...;
+Public:
+
+Private:
+    ...;
 
 Actions:
-    [step1] Alice -> Bob (...) :
-        <content> ;
-    [step2] Bob -> Alice (...) :
-        <content> ;
-    ...
+    [step1] A -> B (<fresh values>...) : <content>;
+    [step2] B -> A (...) : <content>;
+...
+Goals:
+...;
+ChannelKeys:
+...;
+end
+
+======= Example ===
+Protocol Five:
+
+Declarations:
+    h/1;
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number n,m;
+    Function h;
+    Mapping k
+
+Knowledge:
+    A : A, B, k(A,B);
+    B : A, B, k(A,B);
+Public:
+
+Private:
+    k(A,B);
+
+Actions:
+    [p1] A -> B (n) : senc{{ A . B . n . h(n) }}k(A,B);
+    [p2] B -> A (m) : senc{{ m }}k(A,B);
+    [p3] A -> B     : senc{{ h(m) }}k(A,B);
+
+Goals:
+
+ChannelKeys:
 
 end
+
+#### Explination ###
+Goals:
+
+**Supported forms**
+- **Authentication / Agreement**
+    - `B -> A : X;` (B authenticates A on X injective by default)
+    - `B ->* A : X;` (B authenticates A on X non-injective)
+    - `B *->* A : X;` (B authenticates A on X mutual non-injective pattern)
+- **Secrecy**
+  - `X secret between A,B;`
+
+**Example**
+```text
+Goals:
+   /* B authenticates A on prf(PMS,NA,NB) */
+   B -> A : prf(PMS,NA,NB);
+   prf(PMS,NA,NB) secret between A,B;
+```
+
 
 === INPUT ===
 {raw_text}

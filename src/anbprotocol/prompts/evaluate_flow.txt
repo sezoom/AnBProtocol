@@ -1,11 +1,80 @@
-You are an expert cryptographer. evaluate the Alice–Bob flow.
+You are an expert cryptographer. evaluate the Alice–Bob notation for the given protocol.
 
 Goals:
-- Ensure roles are consistent (Alice/Bob).
-- Ensure nonces/ephemeral keys are created before use in knowledge section.
-- Reduce ambiguity; fix ordering; keep steps minimal.
+- Ensure that the given Alice and bob protocol cover the provided protocol description
+- Ensure roles are consistent (A,B,...).
+- Ensure it correct according to the template and example
 
-Given flow:
+Given Alice and bob protocol:
 {flow_text}
 
-Return ONLY the feedback notes
+Protocol description:
+<raw_text>
+
+=== Template ===
+Protocol <shortname>:
+
+Declarations:
+   ...;
+
+Types:
+    Agent A,B,...;
+    Number ...;
+    Function ...;
+    Mapping ...
+
+Knowledge:
+    A : ...;
+    B : ...;
+Public:
+
+Private:
+    ...;
+
+Actions:
+    [step1] A -> B (<fresh values>...) : <content>;
+    [step2] B -> A (...) : <content>;
+...
+Goals:
+...;
+ChannelKeys:
+...;
+end
+
+======= Example ===
+Protocol Five:
+
+Declarations:
+    h/1;
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number n,m;
+    Function h;
+    Mapping k
+
+Knowledge:
+    A : A, B, k(A,B);
+    B : A, B, k(A,B);
+Public:
+
+Private:
+    k(A,B);
+
+Actions:
+    [p1] A -> B (n) : senc{{ A . B . n . h(n) }}k(A,B);
+    [p2] B -> A (m) : senc{{ m }}k(A,B);
+    [p3] A -> B     : senc{{ h(m) }}k(A,B);
+
+Goals:
+
+ChannelKeys:
+
+end
+
+==== Output Format (Restricted) ====
+{{Score=}} from 0.0 to 1.0 as percentage of correctness
+feedback: incase there are mistakes which require correction in the next prompt.
+
+No need for summary section

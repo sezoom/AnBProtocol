@@ -1,9 +1,8 @@
 from __future__ import annotations
 from typing import Tuple, List, Dict, Callable
 import re
-from .state import Flow, Message
+from .state import Flow, Message,llm2
 from pathlib import Path
-from .llm import make_llm
 from langchain_core.prompts import PromptTemplate
 
 
@@ -91,17 +90,17 @@ def basic_score(flow: Flow) -> Tuple[float, List[str]]:
     print("DebugMSG_score_output:",score)
     return min(1.0, round(score, 4)), notes
 
-def MAD_score(flow: Flow) -> Tuple[float, list]:
-    #TODO: use LLM to to evaluate the output
-    notes: List[str] = []
-    llm = make_llm("gpt-4.1-mini")
-    flow_text = "\n".join([f"{m.sender} -> {m.receiver}: {m.content}" for m in flow.messages])
+def MAD_score(state: GraphState) -> Tuple[float, list]:
+
+
+    flow_raw = state["flow_raw"]
+
     prompt = PromptTemplate(
         template=PROMPT_PATH.read_text(),
         input_variables=["flow_text"],
     )
-    text = (prompt | llm).invoke({"flow_text": flow_text}).content
-    print("DebugMSG_MAD_output:",text)
-    notes.append(text)
+    feedback = (prompt | llm2).invoke({"flow_text": flow_raw}).content
+    print("DebugMSG_MAD_output:",feedback)
 
-    return notes
+
+    return feedback
