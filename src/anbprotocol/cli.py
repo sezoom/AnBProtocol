@@ -23,7 +23,6 @@ def run(
         raise SystemExit("[protoflow] The input file is empty. Please provide a protocol description.")
     graph = build_graph()
     state = {"raw_text": text}
-    #print("DebugMSG_raw_text:",state)
 
     result = graph.invoke(state, config={"configurable": {"thread_id": thread}})
 

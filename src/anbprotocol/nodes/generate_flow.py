@@ -3,6 +3,8 @@ from pathlib import Path
 from typing import List
 from langchain_core.prompts import PromptTemplate
 from ..state import GraphState, Message, Flow,llm1,Flow_raw
+from rich.console import Console
+from rich.panel import Panel
 
 import re
 
@@ -121,7 +123,7 @@ def generate_flow_node(state: GraphState,config) -> GraphState:
     #print("DebugMSG_prompt:",prompt)
     #print("DebugMSG_spec:",raw_text)
     text = (prompt | llm1).invoke({"raw_text": raw_text}).content
-    print("DebugMSG_prompt1_output:",text)
+    Console().print(Panel.fit(f"[bold]Agent 1:[/bold] {text}"))
     ##### if parsing flow is required but now we will relay on not parsed fllow
     # lines = text.splitlines()
     # flow = Flow(messages=_lines_to_messages(lines))

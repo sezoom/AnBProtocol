@@ -9,8 +9,8 @@ from .nodes.validate import validate_node
 from .nodes.render_outputs import render_outputs_node
 
 
-SCORE_THRESHOLD = 0.8
-MAX_ITERS = 3
+SCORE_THRESHOLD = 0.95
+MAX_ITERS = 5
 
 
 

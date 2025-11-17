@@ -15,8 +15,9 @@ def extract_score(text: str, default=None) -> float | None:
 
 def validate_node(state: GraphState) -> GraphState:
     flow_raw = state["flow_raw"]
+    ## basic score will be disabled
     #score, notes = basic_score(flow)
-    ## update the extra feedback from another LLM
+    ## feedback from another LLM
     feedback1=MAD_score(state)
     flow_raw.feedback.extend(feedback1)
     state["score"] = extract_score(feedback1)

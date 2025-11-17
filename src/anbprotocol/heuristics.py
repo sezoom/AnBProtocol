@@ -4,7 +4,8 @@ import re
 from .state import Flow, Message,llm2
 from pathlib import Path
 from langchain_core.prompts import PromptTemplate
-
+from rich.console import Console
+from rich.panel import Panel
 
 PROMPT_PATH = Path(__file__).resolve().parent / "prompts" / "evaluate_flow.txt"
 
@@ -100,7 +101,8 @@ def MAD_score(state: GraphState) -> Tuple[float, list]:
         input_variables=["flow_text"],
     )
     feedback = (prompt | llm2).invoke({"flow_text": flow_raw}).content
-    print("DebugMSG_MAD_output:",feedback)
+
+    Console().print(Panel.fit(f"[bold]Agent 2:[/bold] {feedback}", border_style="blue"))
 
 
     return feedback

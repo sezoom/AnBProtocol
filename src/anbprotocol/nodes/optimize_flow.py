@@ -3,7 +3,8 @@ from pathlib import Path
 from typing import List
 from langchain_core.prompts import PromptTemplate
 from ..state import GraphState, Message, Flow,Flow_raw,llm1
-
+from rich.console import Console
+from rich.panel import Panel
 
 PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "optimize_flow.txt"
 
@@ -36,8 +37,9 @@ def optimize_flow_node(state: GraphState) -> GraphState:
     #lines = improved.splitlines()
     #state["flow"] = Flow(messages=_lines_to_messages(lines), notes=flow.notes)
     state["flow_raw"] = Flow_raw(messages=[improved])
-    print("DebugOptimize_prompt:",prompt)
-    print("DebugMessage_input:", text)
-    print("DebugMessage_output:", improved)
+    Console().print(Panel.fit(f"[bold]Agent 1:[/bold] {feedback}"))
+    # print("DebugOptimize_prompt:",prompt)
+    # print("DebugMessage_input:", text)
+    # print("DebugMessage_output:", improved)
     state["iter"] = int(state.get("iter", 0)) + 1
     return state
