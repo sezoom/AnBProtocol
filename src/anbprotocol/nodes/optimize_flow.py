@@ -2,8 +2,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import List
 from langchain_core.prompts import PromptTemplate
-from ..state import GraphState, Message, Flow
-from ..llm import make_llm
+from ..state import GraphState, Message, Flow,Flow_raw,llm1
+from rich.console import Console
+from rich.panel import Panel
 
 PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "optimize_flow.txt"
 
@@ -21,21 +22,25 @@ def _lines_to_messages(lines: List[str]) -> List[Message]:
     return msgs
 
 def optimize_flow_node(state: GraphState) -> GraphState:
-    llm = make_llm(temperature=0.1)
-    flow = state["flow"]
-    text = "\n".join([f"{m.sender} -> {m.receiver}: {m.content}" for m in flow.messages])
+    flow = state["flow_raw"]
+    #text = "\n".join([f"{m.sender} -> {m.receiver}: {m.content}" for m in flow.messages])
+    # last message
+    text=flow.messages[-1]
     #print("DebugMessage_flow_tex:", text)
     prompt = PromptTemplate(
         template=PROMPT_PATH.read_text(),
         input_variables=["flow_text"],
     )
-    #TODO: fix the loop take the last feedback note only
-    #feedback_text= flow.notes
-    feedback_text = ""
-    improved = (prompt | llm).invoke({"flow_text": text,"feedback_text":feedback_text}).content
-    lines = improved.splitlines()
-    state["flow"] = Flow(messages=_lines_to_messages(lines), notes=flow.notes, warnings=flow.warnings)
-    print("DebugOptimize_prompt:",prompt)
-    print("DebugMessage_result:", text)
+    #take the last feedback
+    feedback_text = flow.feedback[-1]
+    improved = (prompt | llm1).invoke({"flow_text": text,"feedback_text":feedback_text}).content
+    #lines = improved.splitlines()
+    #state["flow"] = Flow(messages=_lines_to_messages(lines), notes=flow.notes)
+    state["flow_raw"].messages.append(improved)
+
+    Console().print(Panel.fit(f"[bold]Agent 1:[/bold] {improved}"))
+    # print("DebugOptimize_prompt:",prompt)
+    # print("DebugMessage_input:", text)
+    # print("DebugMessage_output:", improved)
     state["iter"] = int(state.get("iter", 0)) + 1
     return state

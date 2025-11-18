@@ -1,14 +1,39 @@
-You are an expert cryptographer. fix the Alice–Bob flow.
-
-Goals:
-- Ensure roles are consistent (Alice/Bob).
-- Ensure nonces/ephemeral keys are created before use in knowledge section.
-- Reduce ambiguity; fix ordering; keep steps minimal.
-
-Given flow:
+Read the feedback and double check if the protocol flow is correct or not. if not then update alice and bob to cover the raw_text. .
+The protocol flow:
 {flow_text}
 
 Given feedback:
 {feedback_text}
 
-Return ONLY the improved steps in the same format: 'Alice -> Bob: ...' lines.
+
+==== Output Format (Restricted) ====
+Return Updated Alice and Bob protocol with respect to the template only. No other details.
+=== Template ===
+Protocol <shortname>:
+
+Declarations:
+   ...;
+
+Types:
+    Agent A,B,...;
+    Number ...;
+    Function ...;
+    Mapping ...
+
+Knowledge:
+    A : ...;
+    B : ...;
+Public:
+
+Private:
+    ...;
+
+Actions:
+    [step1] A -> B (<fresh values>...) : <content>;
+    [step2] B -> A (...) : <content>;
+...
+Goals:
+...;
+ChannelKeys:
+...;
+end

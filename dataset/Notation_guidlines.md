@@ -243,7 +243,7 @@ Actions:
     [e3] A -> B      : senc{ h(NA . NB . Sid . tagE3) }KAB;
 
 Goals:
-    B authenticates A on h(NA . NB . Sid);
+    B -> A : h(NA . NB . Sid);
     h(NA . NB . Sid) secret between A,B;
 
 ChannelKeys:

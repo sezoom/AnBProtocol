@@ -8,8 +8,11 @@ from .nodes.optimize_flow import optimize_flow_node
 from .nodes.validate import validate_node
 from .nodes.render_outputs import render_outputs_node
 
-SCORE_THRESHOLD = 0.9
-MAX_ITERS = 3
+
+SCORE_THRESHOLD = 0.95
+MAX_ITERS = 5
+
+
 
 def _router(state: GraphState) -> Literal["optimize", "render"]:
     score = float(state.get("score", 0.0))
