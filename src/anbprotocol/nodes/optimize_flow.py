@@ -36,8 +36,9 @@ def optimize_flow_node(state: GraphState) -> GraphState:
     improved = (prompt | llm1).invoke({"flow_text": text,"feedback_text":feedback_text}).content
     #lines = improved.splitlines()
     #state["flow"] = Flow(messages=_lines_to_messages(lines), notes=flow.notes)
-    state["flow_raw"] = Flow_raw(messages=[improved])
-    Console().print(Panel.fit(f"[bold]Agent 1:[/bold] {feedback}"))
+    state["flow_raw"].messages.append(improved)
+
+    Console().print(Panel.fit(f"[bold]Agent 1:[/bold] {improved}"))
     # print("DebugOptimize_prompt:",prompt)
     # print("DebugMessage_input:", text)
     # print("DebugMessage_output:", improved)

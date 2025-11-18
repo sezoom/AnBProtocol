@@ -95,14 +95,14 @@ def MAD_score(state: GraphState) -> Tuple[float, list]:
 
 
     flow_raw = state["flow_raw"]
-
+    feedback: List[str] = []
     prompt = PromptTemplate(
         template=PROMPT_PATH.read_text(),
         input_variables=["flow_text"],
     )
-    feedback = (prompt | llm2).invoke({"flow_text": flow_raw}).content
+    feedback1 = (prompt | llm2).invoke({"flow_text": flow_raw}).content
 
-    Console().print(Panel.fit(f"[bold]Agent 2:[/bold] {feedback}", border_style="blue"))
+    Console().print(Panel.fit(f"[bold]Agent 2:[/bold] {feedback1}", border_style="blue"))
+    feedback.append(feedback1)
 
-
-    return feedback
+    return feedback1

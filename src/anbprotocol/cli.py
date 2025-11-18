@@ -13,10 +13,9 @@ console = Console()
 ROOT = pathlib.Path("AnBProtocol")
 
 @app.command()
-def run(
+def single(
     in_: Path = typer.Option(..., "--in", help="Path to protocol description .txt"),
     out: Path = typer.Option("out.txt", "--out", help="Output txt path"),
-    thread: str = typer.Option("default", "--thread", help="Thread id for checkpointing"),
 ):
     text = in_.read_text(encoding="utf-8")
     if not text.strip():
@@ -24,10 +23,10 @@ def run(
     graph = build_graph()
     state = {"raw_text": text}
 
-    result = graph.invoke(state, config={"configurable": {"thread_id": thread}})
+    result = graph.invoke(state, config={"configurable": {"thread_id": in_.stem}})
 
     rendered = result["rendered"]
-    flow = result["flow_raw"]
+    #flow = result["flow_raw"]
 
 #### output using MD format ####
     # md = []
@@ -51,6 +50,41 @@ def run(
         out = out.with_suffix(".txt")
     out.write_text(rendered.ascii, encoding="utf-8")
     console.print(Panel.fit(f"Done. Wrote [bold]{out}[/bold]"))
+
+@app.command()
+def batch(
+    dataset: Path = typer.Option(Path("dataset/natural_language"), "--dataset", help="Folder with input .txt files"),
+    output: Path  = typer.Option(Path("output"), "--output", help="Folder to write .anb files"),
+    pattern: str  = typer.Option("*.txt", "--pattern", help="Inputs extensions"),
+):
+    """Process all files in a dataset folder and write .anb outputs to /output."""
+    output.mkdir(parents=True, exist_ok=True)
+
+    graph = build_graph()
+    files = sorted(dataset.rglob(pattern))
+
+    if not files:
+        raise SystemExit(f"[protoflow] No files matching {pattern!r} under {dataset}")
+
+    for i, inp in enumerate(files, 1):
+        try:
+            text = inp.read_text(encoding="utf-8")
+            if not text.strip():
+                console.print(Panel.fit(f"Skip empty file: {inp}", border_style="yellow"))
+                continue
+
+            # isolate checkpoints per file so histories don't mix
+            thread_id = f"{inp.stem}"
+            state = {"raw_text": text}
+            result = graph.invoke(state, config={"configurable": {"thread_id": thread_id}})
+            rendered = result["rendered"]
+
+            out_path = output / (inp.stem + ".anb")
+            out_path.write_text(rendered.ascii, encoding="utf-8")
+
+            console.print(Panel.fit(f"[{i}/{len(files)}] Wrote [bold]{out_path}[/bold]", border_style="blue"))
+        except Exception as e:
+            console.print(Panel.fit(f"Error on {inp} -> {e}", border_style="red"))
 
 if __name__ == "__main__":
     app()

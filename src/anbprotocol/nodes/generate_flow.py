@@ -5,7 +5,7 @@ from langchain_core.prompts import PromptTemplate
 from ..state import GraphState, Message, Flow,llm1,Flow_raw
 from rich.console import Console
 from rich.panel import Panel
-
+import os
 import re
 
 PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "generate_flow.txt"
@@ -130,5 +130,11 @@ def generate_flow_node(state: GraphState,config) -> GraphState:
     # state["flow"] = flow
     state["flow_raw"] = Flow_raw(messages=[text])
     state["iter"] = int(state.get("iter", 0))
+
+    ### Temperary ouput for ablation study #####
+    outputDir="./outputWithoutDebate/"
+    os.makedirs(outputDir, exist_ok=True)
+    with open(os.path.join(outputDir, config["configurable"]["thread_id"]+".anb"), "w") as f:
+        f.write(text)
 
     return state

@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 from .llm import make_llm
 
 llm1 = make_llm("gpt-4.1")
-llm2 = make_llm("gpt-4.1")
+llm2 = make_llm("gpt-5.1")
 
 
 class Message(BaseModel):
