@@ -1,0 +1,47 @@
+Protocol AmendedNSCK:
+
+Declarations:
+    senc/2;
+    pre/1;
+    mapping sk/1;
+
+Types:
+    Agent A,B,S;
+    Number NA,NB,NB0;
+    Symmetric_key KAB;
+    Function pre;
+    Mapping sk
+
+Knowledge:
+    A : A, B, sk(A,S);
+    B : B, A, sk(B,S);
+    S : S, A, B, sk(A,S), sk(B,S);
+
+Public:
+
+Private:
+    sk(A,S), sk(B,S);
+
+Actions:
+    [step1] A -> B () : A;
+    [step2] B -> A (NB0) : senc{ A . NB0 }sk(B,S);
+    [step3] A -> S (NA) : A . B . NA . senc{ A . NB0 }sk(B,S);
+    [step4] S -> A (KAB) : senc{ NA . B . KAB . senc{ KAB . NB0 . A }sk(B,S) }sk(A,S);
+    [step5] A -> B () : senc{ KAB . NB0 . A }sk(B,S);
+    [step6] B -> A (NB) : senc{ NB }KAB;
+    [step7] A -> B () : senc{ pre(NB) }KAB;
+
+Goals:
+    B -> A : A . B . KAB . NB;
+    A ->* B : A . B . KAB . NB;
+    A -> S : A . B . KAB . NA;
+    B ->* S : A . B . KAB . NB0;
+    KAB secret between A,B,S;
+    NB secret between A,B;
+    NB0 secret between B,S;
+
+ChannelKeys:
+    K(A,B): KAB;
+    K(B,A): KAB;
+
+end

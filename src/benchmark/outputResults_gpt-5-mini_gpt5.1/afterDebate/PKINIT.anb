@@ -1,0 +1,41 @@
+Protocol PKINIT_DH:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    kdf/1;
+    hash/1;
+    g/0;
+
+Types:
+    Agent A,B;
+    Number NA, XA, XB, clientDHNonce, serverDHNonce, REQBODY, AS_REP, CONFIRM;
+    Symmetric_key K;
+    Function hash,kdf;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, B, pk(B), sk(A), REQBODY;
+    B : A, B, pk(A), sk(B);
+
+Public:
+    pk(A), pk(B);
+
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [step1] A -> B (NA, XA, clientDHNonce) : aenc{ A . B . NA . g()^XA . hash(REQBODY) . clientDHNonce }sk(A);
+    [step2] B -> A (XB, serverDHNonce) : aenc{ B . g()^XB . NA . clientDHNonce }sk(B) . serverDHNonce;
+    [step3] B -> A () : senc{ AS_REP }K;
+    [step4] A -> B () : senc{ CONFIRM }K;
+
+Goals:
+    B -> A : NA;
+    A -> B : g()^(XA*XB);
+    K secret between A,B;
+
+ChannelKeys:
+    K(A,B): kdf( g()^(XA*XB) . clientDHNonce . serverDHNonce );
+
+end

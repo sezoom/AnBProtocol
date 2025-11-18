@@ -1,0 +1,44 @@
+Protocol TLS4:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    sign/2;
+    h/1;
+    prf/3;
+    kdf/2;
+
+Types:
+    Agent A,B,S;
+    Number NA,NB,Sid,PMS,tagTLS1,tagTLS2,tagClient,tagServer;
+    Function h,prf,kdf,sign;
+    Mapping pk,sk
+
+Knowledge:
+    A : A, B, pk(A), sk(A), pk(B), pk(S);
+    B : A, B, pk(B), sk(B), pk(A), pk(S);
+    S : S, pk(S), sk(S), A, B;
+Public:
+    pk(A), pk(B), pk(S);
+Private:
+    sk(A), sk(B), sk(S);
+
+Actions:
+    [step1] A -> B (NA, Sid) : A . B . Sid . NA . tagTLS1 ;
+    [step2] B -> A (NB)     : B . A . Sid . NB . sign{ B . pk(B) }sk(S) . tagTLS2 ;
+    [step3] A -> B (PMS)    : sign{ A . pk(A) }sk(S) . aenc{ PMS }pk(B) . sign{ h( A . B . Sid . NA . NB . PMS ) }sk(A) . senc{ h( NA . NB . Sid . tagClient ) }kdf( prf(PMS,NA,NB) , tagClient ) ;
+    [step4] B -> A          : senc{ h( NA . NB . Sid . tagServer ) }kdf( prf(PMS,NA,NB) , tagServer ) ;
+
+Goals:
+    B -> A : prf(PMS,NA,NB);
+    A -> B : prf(PMS,NA,NB);
+    PMS secret between A,B;
+    prf(PMS,NA,NB) secret between A,B;
+    kdf(prf(PMS,NA,NB),tagClient) secret between A,B;
+    kdf(prf(PMS,NA,NB),tagServer) secret between A,B;
+
+ChannelKeys:
+    K(A,B): kdf( prf(PMS,NA,NB) , tagClient );
+    K(B,A): kdf( prf(PMS,NA,NB) , tagServer );
+
+end

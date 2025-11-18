@@ -1,0 +1,35 @@
+Protocol Two:
+
+Declarations:
+    senc/2;
+    xor/2;
+
+Types:
+    Agent A,B;
+    Number N,M;
+    Symmetric_key Ks;
+    Function xor;
+    Mapping 
+
+Knowledge:
+    A : A, B, Ks;
+    B : A, B, Ks;
+
+Public:
+
+Private:
+    Ks;
+
+Actions:
+    [t1] A -> B (N)      : N;
+    [t2] B -> A          : xor(N, Ks);
+    [t3] A -> B (M)      : senc{ xor(M, N) }Ks;
+
+Goals:
+    B -> A : Ks;
+    A -> B : Ks;
+    xor(M, N) secret between A,B;
+
+ChannelKeys:
+
+end

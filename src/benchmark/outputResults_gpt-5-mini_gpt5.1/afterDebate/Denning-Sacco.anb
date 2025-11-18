@@ -1,0 +1,36 @@
+Protocol DenningSacco:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent Alice,Bob,S;
+    Number T,M;
+    Symmetric_key kAB;
+    Mapping sk;
+
+Knowledge:
+    Alice : Alice, Bob, sk(Alice,S);
+    Bob : Alice, Bob, sk(Bob,S);
+    S : Alice, Bob, sk(Alice,S), sk(Bob,S);
+
+Public:
+
+Private:
+    sk(Alice,S), sk(Bob,S);
+
+Actions:
+    [s1] Alice -> S () : Alice . Bob;
+    [s2] S -> Alice (kAB, T) : senc{ Bob . kAB . T . senc{ Alice . kAB . T }sk(Bob,S) }sk(Alice,S);
+    [s3] Alice -> Bob () : senc{ Alice . kAB . T }sk(Bob,S);
+    [s4] Bob -> Alice (M) : senc{ M }kAB;
+
+Goals:
+    Bob ->* Alice : M;
+    kAB secret between Alice,Bob;
+
+ChannelKeys:
+    K(Alice,Bob): kAB;
+    K(Bob,Alice): kAB;
+
+end

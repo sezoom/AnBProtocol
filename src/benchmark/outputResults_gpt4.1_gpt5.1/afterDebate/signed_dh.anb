@@ -1,0 +1,42 @@
+Protocol STS:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    hash/1;
+    g/0;
+    f/2;
+
+Types:
+    Agent A,B;
+    Number x,y;
+    Mapping pk,sk;
+    Function hash,f;
+
+Knowledge:
+    A : A, B, pk(A), sk(A), pk(B);
+    B : A, B, pk(A), pk(B), sk(B);
+
+Public:
+    pk(A), pk(B);
+
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [s1] A -> B (x) :
+        g()^x;
+    [s2] B -> A (y) :
+        g()^y . senc{ aenc{ hash(g()^y . g()^x) }sk(B) }f(g()^x,g()^y);
+    [s3] A -> B :
+        senc{ aenc{ hash(g()^x . g()^y) }sk(A) }f(g()^x,g()^y);
+
+Goals:
+    B -> A : f(g()^x,g()^y);
+    f(g()^x,g()^y) secret between A,B;
+
+ChannelKeys:
+    K(A,B): f(g()^x,g()^y);
+    K(B,A): f(g()^x,g()^y);
+
+end

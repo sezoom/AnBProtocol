@@ -1,0 +1,41 @@
+Protocol ServiceProvision:
+
+Declarations:
+    senc/2;
+    pre/2;
+
+Types:
+    Agent A,B,S;
+    Number NA,NB,tagnsck1,tagnsck2,tagnsck3,tagnsck4,tagnsck5,tagnsck6,tagnsck7;
+    Symmetric_key KAB;
+    Function pre;
+    Mapping pk,sk
+
+Knowledge:
+    A : A, B, S, pk(A), pk(B), pk(S), sk(A,S);
+    B : A, B, S, pk(A), pk(B), pk(S), sk(B,S);
+    S : A, B, S, pk(A), pk(B), pk(S), sk(A,S), sk(B,S);
+
+Public:
+    tagnsck1, tagnsck2, tagnsck3, tagnsck4, tagnsck5, tagnsck6, tagnsck7, pk(A), pk(B), pk(S);
+
+Private:
+    sk(A,S), sk(B,S);
+
+Actions:
+    [m1] A -> S (NA) : senc{ tagnsck1 . A . B . NA }sk(A,S);
+    [m2] S -> A (KAB) : senc{ tagnsck2 . NA . B . KAB . senc{ tagnsck3 . KAB . A }sk(B,S) }sk(A,S);
+    [m3] A -> B      : senc{ tagnsck3 . KAB . A }sk(B,S);
+    [m4] B -> A (NB) : senc{ tagnsck6 . NB }KAB;
+    [m5] A -> B      : senc{ tagnsck7 . pre(tagnsck7, NB) }KAB;
+
+Goals:
+    B -> A : pre(tagnsck7,NB);
+    KAB secret between A,B;
+    tagnsck2 . NA . B . KAB secret between A,B;
+
+ChannelKeys:
+    K(A,B): KAB;
+    K(B,A): KAB;
+
+end

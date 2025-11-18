@@ -1,0 +1,40 @@
+Protocol STS:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    kdf/1;
+    g/0;
+
+Types:
+    Agent A,B,T;
+    Number XA,YB,alpha,p,CertA,CertB;
+    Function kdf;
+    Mapping pk,sk
+
+Knowledge:
+    A : A, B, pk(A), sk(A), pk(B), pk(T);
+    B : A, B, pk(B), sk(B), pk(A), pk(T);
+    T : T, pk(T), sk(T);
+
+Public:
+    pk(A), pk(B), g(), alpha, p;
+
+Private:
+    sk(A), sk(B), sk(T);
+
+Actions:
+    [s1] A -> B (XA) : A . alpha . p . g()^XA ;
+    [s2] B -> A (YB) : B . g()^YB . CertB . senc{ aenc{ g()^YB . g()^XA }sk(B) }kdf( g()^(XA*YB) ) ;
+    [s3] A -> B      : A . CertA . senc{ aenc{ g()^XA . g()^YB }sk(A) }kdf( g()^(XA*YB) ) ;
+
+Goals:
+    B -> A : aenc{ g()^XA . g()^YB }sk(A);
+    A -> B : aenc{ g()^YB . g()^XA }sk(B);
+    kdf( g()^(XA*YB) ) secret between A,B;
+
+ChannelKeys:
+    K(A,B): kdf( g()^(XA*YB) );
+    K(B,A): kdf( g()^(XA*YB) );
+
+end

@@ -1,0 +1,35 @@
+Protocol SimpleHandshake:
+
+Declarations:
+    senc/2;
+    kdf/2;
+
+Types:
+    Agent A,B;
+    Number NA,NB,ACK;
+    Symmetric_key K;
+    Function kdf;
+    Mapping pk,sk
+
+Knowledge:
+    A : A, B, pk(A), pk(B);
+    B : A, B, pk(A), pk(B);
+
+Public:
+    pk(A), pk(B);
+
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [step1] A -> B (NA) : NA;
+    [step2] B -> A (NB) : NB;
+    [step3] A -> B (K)  : senc{ ACK }K;
+
+Goals:
+    ACK secret between A,B;
+
+ChannelKeys:
+    K(A,B): kdf(NA,NB);
+
+end

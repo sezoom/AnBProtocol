@@ -1,0 +1,32 @@
+Protocol ISO9798_3_M5:
+
+Declarations:
+    aenc/2;
+
+Types:
+    Agent A,B,S;
+    Number NA,NB,Text1,Text3,tagA,tagB,Domain;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, B, S, sk(A), pk(A), pk(S), aenc{ A . pk(A) }sk(S), Text1, Domain, tagA;
+    B : A, B, S, sk(B), pk(B), pk(S), aenc{ B . pk(B) }sk(S), Text3, Domain, tagB;
+    S : A, B, S, sk(S), pk(S);
+
+Public:
+    A, B, S, pk(S), pk(A), pk(B), Domain, tagA, tagB, Text1, Text3;
+
+Private:
+    sk(A), sk(B), sk(S);
+
+Actions:
+    [step1] A -> B (NA) : aenc{ A . pk(A) }sk(S) . aenc{ tagA . NA . B . Text1 . Domain }sk(A);
+    [step2] B -> A (NB) : aenc{ B . pk(B) }sk(S) . aenc{ tagB . NB . A . Text3 . Domain }sk(B);
+
+Goals:
+    B -> A : Text1;
+    A -> B : Text3;
+
+ChannelKeys:
+
+end

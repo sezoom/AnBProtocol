@@ -1,0 +1,35 @@
+Based on the feedback, the protocol flow is correct. The feedback confirms that the Alice-Bob script faithfully captures the protocol, all declarations and knowledge are consistent, and the goals are appropriate. The only issue mentioned was structural duplication in a list, which is not a flaw in the protocol logic itself. Therefore, no changes are needed for the protocol content.
+
+Protocol ISO9798-4-3P:
+
+Declarations:
+    mac/2;
+
+Types:
+    Agent A,B;
+    Number NA,NB,Text2,Text4,tag;
+    Function mac;
+    Mapping k;
+
+Knowledge:
+    A : A, B, k(A,B), Text2;
+    B : A, B, k(A,B), Text4, tag;
+
+Public:
+    A, B, tag;
+
+Private:
+    k(A,B);
+
+Actions:
+    [p1] B -> A (NB) : tag . NB;
+    [p2] A -> B (NA) : NA . NB . B . Text2 . mac(NA . NB . B . Text2, k(A,B));
+    [p3] B -> A      : NB . NA . Text4 . mac(NB . NA . Text4, k(A,B));
+
+Goals:
+    B -> A : Text2;
+    A -> B : Text4;
+
+ChannelKeys:
+
+end

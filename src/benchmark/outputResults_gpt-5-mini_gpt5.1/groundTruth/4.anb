@@ -1,0 +1,33 @@
+Protocol Four:
+
+Declarations:
+    g/0;
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number x, y, N1, N2;
+
+Knowledge:
+    A: g();
+    B: g();
+
+Public:
+    g();
+
+Private:
+
+Actions:
+    [m1] A -> B (x, N1) : g()^x . N1;
+    [m2] B -> A (y, N2) : g()^y . senc{N1}(g()^x)^y . N2;
+    [m3] A -> B         : senc{N2}(g()^y)^x;
+
+Goals:
+    A ->* B : N1
+    B ->* A : N2
+
+ChannelKeys:
+    K(B,A) = (g()^x)^y;
+    K(A,B) = (g()^y)^x;
+
+end

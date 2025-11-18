@@ -1,0 +1,31 @@
+Protocol ISO9798_MAC:
+
+Declarations:
+    mac/2;
+
+Types:
+    Agent A,B;
+    Number NB, Text2, tag9798_4;
+    Symmetric_key SKAB;
+    Mapping sk
+
+Knowledge:
+    A : A, B, SKAB;
+    B : A, B, SKAB;
+
+Public:
+    A, B, tag9798_4;
+
+Private:
+    SKAB;
+
+Actions:
+    [m1] B -> A (NB) : B . tag9798_4 . NB ;
+    [m2] A -> B (Text2) : NB . B . Text2 . mac{ tag9798_4 . NB . B . Text2 }SKAB ;
+
+Goals:
+    B -> A : Text2;
+
+ChannelKeys:
+
+end

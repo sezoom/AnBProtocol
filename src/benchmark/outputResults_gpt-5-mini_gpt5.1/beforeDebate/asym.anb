@@ -1,0 +1,30 @@
+Protocol Asym:
+
+Declarations:
+    aenc/2;
+    pk/1;
+    sk/1;
+
+Types:
+    Agent A,B;
+    Number NA;
+    Mapping pk,sk
+
+Knowledge:
+    A : A, B, pk(A), sk(A), pk(B);
+    B : A, B, pk(B), sk(B), pk(A);
+
+Public:
+    pk(A), pk(B);
+
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [m1] A -> B (NA) : aenc{ NA }sk(A);
+
+Goals:
+    B -> A : NA;
+    /* NA secret between A,B does not hold (aenc with sk(A) is verifiable with pk(A); message is public) */
+
+end

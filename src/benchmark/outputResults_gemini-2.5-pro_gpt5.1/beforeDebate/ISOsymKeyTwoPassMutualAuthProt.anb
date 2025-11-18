@@ -1,0 +1,33 @@
+Protocol ISO9798-2-AEAD:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number NA,NB,Text1,Text3,tagITMS1,tagITMS2,tag;
+    Mapping k;
+
+Knowledge:
+    A : A, B, k(A,B), Text1, tag, tagITMS1, tagITMS2;
+    B : A, B, k(A,B), Text3, tag, tagITMS1, tagITMS2;
+
+Public:
+    A, B, tag, tagITMS1, tagITMS2;
+
+Private:
+    k(A,B);
+
+Actions:
+    [p1] A -> B (NA) : senc{ tagITMS1 . NA . B . Text1 . tag }k(A,B);
+    [p2] B -> A (NB) : senc{ tagITMS2 . NB . A . Text3 }k(A,B);
+
+Goals:
+    B -> A : Text1;
+    A -> B : Text3;
+    Text1 secret between A,B;
+    Text3 secret between A,B;
+
+ChannelKeys:
+
+end

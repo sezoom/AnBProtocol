@@ -1,0 +1,30 @@
+Protocol Asym:
+
+Declarations:
+    aenc/2;
+
+Types:
+    Agent A,B;
+    Number n;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, B, sk(A), pk(B);
+    B : A, B, pk(A), sk(B);
+
+Public:
+    pk(A), pk(B);
+
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [step1] A -> B (n) : aenc{ n }sk(A);
+
+Goals:
+    B -> A : n;
+    /* n secret between A,B; (does not hold) */
+
+ChannelKeys:
+
+end

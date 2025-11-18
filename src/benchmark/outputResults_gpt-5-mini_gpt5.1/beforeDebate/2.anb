@@ -1,0 +1,35 @@
+Protocol Two:
+
+Declarations:
+    senc/2;
+    xor/2;
+
+Types:
+    Agent A,B;
+    Number NA,M;
+    Symmetric_key KS;
+    Function xor;
+    Mapping pk,sk
+
+Knowledge:
+    A : A, B, pk(A), sk(A), pk(B), KS, M;
+    B : A, B, pk(B), sk(B), pk(A), KS;
+
+Public:
+    pk(A), pk(B);
+
+Private:
+    KS, sk(A), sk(B);
+
+Actions:
+    [step1] A -> B (NA) : NA;
+    [step2] B -> A      : xor(NA,KS);
+    [step3] A -> B      : senc{ xor(M,NA) }KS;
+
+Goals:
+    KS secret between A,B;
+    M secret between A,B;
+
+ChannelKeys:
+
+end

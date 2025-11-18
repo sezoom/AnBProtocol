@@ -1,0 +1,73 @@
+Protocol Alice:
+
+Declarations:
+    aenc/2;
+    senc/2;
+
+Types:
+    Agent A,B,S;
+    Number tA;
+    Symmetric_key KAB;
+    Mapping pk,sk
+
+Knowledge:
+    A : A, B, pk(S), pk(A), pk(B), sk(A);
+    B : A, B, pk(S), pk(A), pk(B), sk(B);
+    S : A, B, pk(S), pk(A), pk(B), sk(S);
+
+Public:
+    pk(A), pk(B), pk(S);
+
+Private:
+    sk(A), sk(B), sk(S);
+
+Actions:
+    [s1] A -> S () : A . B ;
+    [s2] S -> A (KAB) : aenc{ aenc{ KAB . B }sk(S) }pk(A) . aenc{ aenc{ KAB . A }sk(S) }pk(B) ;
+    [s3] A -> B (tA) : aenc{ aenc{ KAB . A }sk(S) }pk(B) . senc{ tA }KAB ;
+
+Goals:
+    A ->* B : KAB;
+    B ->* A : KAB;
+    KAB secret between A,B;
+
+ChannelKeys:
+
+end
+
+Protocol Bob:
+
+Declarations:
+    aenc/2;
+    senc/2;
+
+Types:
+    Agent A,B,S;
+    Number tA;
+    Symmetric_key KAB;
+    Mapping pk,sk
+
+Knowledge:
+    A : A, B, pk(S), pk(A), pk(B), sk(A);
+    B : A, B, pk(S), pk(A), pk(B), sk(B);
+    S : A, B, pk(S), pk(A), pk(B), sk(S);
+
+Public:
+    pk(A), pk(B), pk(S);
+
+Private:
+    sk(A), sk(B), sk(S);
+
+Actions:
+    [s1] A -> S () : A . B ;
+    [s2] S -> A (KAB) : aenc{ aenc{ KAB . B }sk(S) }pk(A) . aenc{ aenc{ KAB . A }sk(S) }pk(B) ;
+    [s3] A -> B (tA) : aenc{ aenc{ KAB . A }sk(S) }pk(B) . senc{ tA }KAB ;
+
+Goals:
+    A ->* B : KAB;
+    B ->* A : KAB;
+    KAB secret between A,B;
+
+ChannelKeys:
+
+end

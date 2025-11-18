@@ -1,0 +1,45 @@
+Protocol NonReversible:
+
+Declarations:
+    senc/2;
+    f/2;
+
+Types:
+    Agent A,B;
+    Number NA,NB,K,tag1,tag2,tag6,tag7;
+    Symmetric_key sk;
+    Function f;
+    Mapping sk
+
+Knowledge:
+    A : A, B, sk(A,B);
+    B : A, B, sk(A,B);
+
+Public:
+
+Private:
+    sk(A,B);
+
+Actions:
+    [m1] B -> A (NB) :
+        B . senc{ tag1 . NB }sk(A,B);
+
+    [m2] A -> B (NA,K) :
+        A . senc{ tag2 . f(tag6, NB) . NA . A . K }sk(A,B);
+
+    [m3] B -> A :
+        senc{ tag7 . f(tag7, NA) }K;
+
+Goals:
+    /* B authenticates A on (NA, K, NB) */
+    B -> A : NA . K . NB;
+    /* A authenticates B on (NB, K) */
+    A -> B : NB . K;
+    /* K secret between A,B */
+    K secret between A,B;
+    /* NA remains secret even if K is revealed */
+    f(tag7, NA) public, NA not derivable from f(tag7, NA);
+
+ChannelKeys:
+
+end

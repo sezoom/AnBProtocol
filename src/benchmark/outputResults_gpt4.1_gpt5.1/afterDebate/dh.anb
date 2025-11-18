@@ -1,0 +1,34 @@
+Protocol DH-Explicit-KC:
+
+Declarations:
+    g/0;
+    exp/2;
+    kdf/1;
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number x,y,n;
+    Function exp, kdf;
+
+Knowledge:
+    A : A, B, g();
+    B : A, B, g();
+Public:
+    g();
+
+Private:
+
+Actions:
+    [m1] A -> B (x) : exp(g(), x);
+    [m2] B -> A (y) : exp(g(), y);
+    [m3] A -> B (n) : senc{ n }kdf(exp(exp(g(), y), x));
+
+Goals:
+    exp(exp(g(), y), x) secret between A,B;
+    B -> A : n;
+
+ChannelKeys:
+    K(A,B): kdf(exp(exp(g(), y), x));
+
+end

@@ -1,0 +1,28 @@
+Protocol ISO_twopass_symm:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number NB,Text2,tagITS1,tagITS2;
+    Mapping sk
+
+Knowledge:
+    A: A, B, sk(A,B);
+    B: B, A, sk(A,B);
+
+Public:
+
+Private:
+
+Actions:
+    [m1] B -> A (NB) : tagITS1 . NB;
+    [m2] A -> B      : senc{ tagITS2 . NB . B . Text2 }sk(A,B);
+
+Goals:
+    B ->* A : Text2;
+
+ChannelKeys:
+
+end

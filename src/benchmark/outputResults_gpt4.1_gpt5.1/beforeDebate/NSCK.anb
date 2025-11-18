@@ -1,0 +1,53 @@
+Protocol NSCK:
+
+Declarations:
+    senc/2;
+    pre/2;
+
+Types:
+    Agent A,B,S;
+    Number NA,NB,KAB,tagnsck1,tagnsck2,tagnsck3,tagnsck4,tagnsck5,tagnsck6,tagnsck7;
+    Symmetric_key sk;
+    Function pre;
+    Mapping sk
+
+Knowledge:
+    A : A, B, S, sk(A,S), pk(S);
+    B : A, B, S, sk(B,S), pk(S);
+    S : A, B, S, sk(A,S), sk(B,S);
+
+Public:
+    pk(S);
+
+Private:
+    sk(A,S), sk(B,S);
+
+Actions:
+    [m1] A -> S (NA) :
+        senc{ tagnsck1 . A . B . NA }sk(A,S);
+
+    [m2] S -> A (KAB) :
+        senc{
+            tagnsck2 . NA . B . KAB .
+            senc{ tagnsck3 . KAB . A }sk(B,S)
+        }sk(A,S);
+
+    [m3] A -> B :
+        senc{ tagnsck3 . KAB . A }sk(B,S);
+
+    [m4] B -> A (NB) :
+        senc{ tagnsck6 . NB }KAB;
+
+    [m5] A -> B :
+        senc{ tagnsck7 . pre(tagnsck7, NB) }KAB;
+
+Goals:
+    /* Key agreement: both A and B agree on KAB provisioned by S */
+    B -> A : KAB;
+    KAB secret between A,B;
+
+ChannelKeys:
+    K(A,B): KAB;
+    K(B,A): KAB;
+
+end

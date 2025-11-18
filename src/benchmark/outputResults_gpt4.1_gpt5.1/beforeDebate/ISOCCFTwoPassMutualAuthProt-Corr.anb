@@ -1,0 +1,39 @@
+Protocol ISOTMCCF2:
+
+Declarations:
+    f/6;
+    f/5;
+
+Types:
+    Agent A,B;
+    Number NA,NB,Text1,Text3,tag,tagISOTMCCF1,tagISOTMCCF2;
+    Symmetric_key sk;
+    Function f;
+    Mapping sk
+
+Knowledge:
+    A : A, B, sk(A,B), tagISOTMCCF1, tagISOTMCCF2, tag;
+    B : A, B, sk(A,B), tagISOTMCCF1, tagISOTMCCF2, tag;
+
+Public:
+
+Private:
+    sk(A,B);
+
+Actions:
+    [m1] A -> B (NA) :
+        NA . B . Text1 .
+        f(tagISOTMCCF1, sk(A,B), NA, B, Text1, tag);
+
+    [m2] B -> A (NB) :
+        NB . A . Text3 .
+        f(tagISOTMCCF2, sk(A,B), NB, A, Text3);
+
+Goals:
+    /* Mutual entity authentication and data-origin authentication for Text1 and Text3 */
+    B -> A : f(tagISOTMCCF2, sk(A,B), NB, A, Text3);
+    A -> B : f(tagISOTMCCF1, sk(A,B), NA, B, Text1, tag);
+
+ChannelKeys:
+
+end

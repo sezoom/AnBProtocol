@@ -8,6 +8,8 @@ from rich.panel import Panel
 from .graph import build_graph
 
 
+
+
 app = typer.Typer(add_completion=False)
 console = Console()
 ROOT = pathlib.Path("AnBProtocol")
@@ -58,6 +60,7 @@ def batch(
     pattern: str  = typer.Option("*.txt", "--pattern", help="Inputs extensions"),
 ):
     """Process all files in a dataset folder and write .anb outputs to /output."""
+
     output.mkdir(parents=True, exist_ok=True)
 
     graph = build_graph()

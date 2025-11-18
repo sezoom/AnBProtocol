@@ -1,0 +1,40 @@
+Protocol KeyDiscoveryChallenge:
+
+Declarations:
+    aenc/2;
+
+Types:
+    Agent A,B,S;
+    Number NA,NB, tagSReq, tagCred, tagA2B, tagB2A, tagDone;
+    Function ;
+    Mapping pk,sk
+
+Knowledge:
+    A : A, pk(A), sk(A), pk(S), S;
+    B : B, pk(B), sk(B), pk(S), S;
+    S : S, pk(S), sk(S), A, B;
+
+Public:
+    pk(S);
+
+Private:
+    sk(S), sk(A), sk(B);
+
+Actions:
+    [s1] A -> S : A . B . tagSReq;
+    [s2] S -> A : aenc{ S . B . pk(B) . tagCred }sk(S);
+    [m1] A -> B (NA) : aenc{ A . NA . tagA2B }pk(B);
+    [s3] B -> S : B . A . tagSReq;
+    [s4] S -> B : aenc{ S . A . pk(A) . tagCred }sk(S);
+    [m2] B -> A (NB) : aenc{ B . NA . NB . tagB2A }pk(A);
+    [m3] A -> B     : aenc{ A . NB . tagDone }pk(B);
+
+Goals:
+    B -> A : NA;
+    A -> B : NB;
+    NA secret between A,B;
+    NB secret between A,B;
+
+ChannelKeys:
+
+end

@@ -1,0 +1,32 @@
+Protocol ISO9798_UNILATERAL_AEAD:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number NB, Text2, tagITS1, tagITS2;
+    Symmetric_key KAB;
+    Mapping sk;
+
+Knowledge:
+    A : A, B, KAB;
+    B : A, B, KAB;
+
+Public:
+    tagITS1, tagITS2;
+
+Private:
+    KAB;
+
+Actions:
+    [step1] B -> A (NB) : tagITS1 . NB ;
+    [step2] A -> B (Text2) : senc{ tagITS2 . NB . B . Text2 }KAB;
+
+Goals:
+    B -> A : Text2;
+    Text2 secret between A,B;
+
+ChannelKeys:
+
+end

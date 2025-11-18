@@ -1,0 +1,37 @@
+Protocol Four:
+
+Declarations:
+    g/0;
+    exp/2;
+    senc/2;
+    kdf/1;
+
+Types:
+    Agent A,B;
+    Number x,y,N1,N2;
+    Function kdf,exp;
+    Mapping;
+
+Knowledge:
+    A : A, B, g();
+    B : A, B, g();
+Public:
+    g();
+
+Private:
+
+Actions:
+    [f1] A -> B (x,N1) : exp(g(),x) . N1;
+    [f2] B -> A (y,N2) : exp(g(),y) . senc{ N1 }kdf(exp(exp(g(),x),y)) . N2;
+    [f3] A -> B        : senc{ N2 }kdf(exp(exp(g(),x),y));
+
+Goals:
+    B -> A : kdf(exp(exp(g(),x),y));
+    A -> B : kdf(exp(exp(g(),x),y));
+    kdf(exp(exp(g(),x),y)) secret between A,B;
+
+ChannelKeys:
+    K(A,B): kdf(exp(exp(g(),x),y));
+    K(B,A): kdf(exp(exp(g(),x),y));
+
+end

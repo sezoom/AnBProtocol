@@ -1,0 +1,31 @@
+Protocol ISO9798-4_MAC_ClaimantToVerifier:
+
+Declarations:
+    mac/2;
+
+Types:
+    Agent A,B;
+    Number NA, tagProt, tagMAC;
+    Symmetric_key KAB;
+    Function ;
+    Mapping pk,sk
+
+Knowledge:
+    A : A, B, pk(A), sk(A), pk(B), KAB, tagProt, tagMAC, Text1, Text2;
+    B : A, B, pk(B), sk(B), pk(A), KAB, tagProt, tagMAC;
+
+Public:
+    pk(A), pk(B), tagProt, tagMAC;
+
+Private:
+    sk(A), sk(B), KAB;
+
+Actions:
+    [step1] A -> B (NA) : tagProt . NA . B . Text2 . mac{ tagMAC . KAB . NA . B . Text1 }KAB . NA . B . Text1;
+
+Goals:
+    B -> A : Text1;
+
+ChannelKeys:
+
+end

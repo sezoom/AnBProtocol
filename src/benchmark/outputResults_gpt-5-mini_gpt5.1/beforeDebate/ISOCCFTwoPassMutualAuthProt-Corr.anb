@@ -1,0 +1,33 @@
+Protocol ISO9798-4-3-CCF:
+
+Declarations:
+    f/6;
+
+Types:
+    Agent A,B;
+    Number NA,NB,tagISOTMCCF1,tagISOTMCCF2,tag,Text1,Text3;
+    Mapping sk
+
+Knowledge:
+    A : A, B, sk(A,B);
+    B : A, B, sk(A,B);
+
+Public:
+    tagISOTMCCF1, tagISOTMCCF2, tag, A, B;
+
+Private:
+    sk(A,B);
+
+Actions:
+    [step1] A -> B (NA) : NA . B . Text1 . f(tagISOTMCCF1, sk(A,B), NA, B, Text1, tag);
+    [step2] B -> A (NB) : NB . A . Text3 . f(tagISOTMCCF2, sk(A,B), NB, A, Text3, tag);
+
+Goals:
+    /* B authenticates A on Text1 (data-origin, freshness NA) */
+    B -> A : Text1;
+    /* A authenticates B on Text3 (data-origin, freshness NB) */
+    A -> B : Text3;
+
+ChannelKeys:
+
+end

@@ -1,0 +1,31 @@
+Protocol ISO9798-4-1MAC:
+
+Declarations:
+    mac/2;
+
+Types:
+    Agent A,B;
+    Number NA,tag1,tag2;
+    Text Text1,Text2;
+    Symmetric_key k;
+
+Knowledge:
+    A : A, B, k;
+    B : A, B, k;
+
+Public:
+
+Private:
+    k;
+
+Actions:
+    [m1] A -> B (NA) : tag1 . NA . B . Text2 . mac{ tag2 . k . NA . B . Text1 }k . NA . B . Text1;
+    [m2] B -> A      : mac{ tag2 . k . NA . B . Text1 }k;
+
+Goals:
+    B -> A : mac{ tag2 . k . NA . B . Text1 }k;
+    mac{ tag2 . k . NA . B . Text1 }k secret between A,B;
+
+ChannelKeys:
+
+end

@@ -1,0 +1,30 @@
+Protocol DIFFIE_HELLMAN:
+
+Declarations:
+    g/0;
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number x,y,n;
+
+Knowledge:
+    A : B;
+    B : A;
+
+Public:
+
+Private:
+
+Actions:
+    [dh_1] A -> B (x) : g()^x;
+    [dh_2] B -> A (y) : g()^y;
+    [dh_3] A -> B (n) : senc{ n }(g()^(x*y));
+
+Goals:
+    g()^(x*y) secret between A,B;
+
+ChannelKeys:
+    K(A,B): g()^(x*y);
+
+end
