@@ -1,0 +1,47 @@
+Protocol KeyServer-TaggedPK:
+
+Declarations:
+    aenc/2;
+
+Types:
+    Agent A,B,S;
+    Number NA,NB,tagQ,tagCred,tag1,tag2,tag3;
+    Mapping pk,sk
+
+Knowledge:
+    A : A, B, S, pk(A), sk(A), pk(S), pk(B);
+    B : A, B, S, pk(B), sk(B), pk(S), pk(A);
+
+Public:
+    pk(A), pk(B), pk(S);
+
+Private:
+    sk(A), sk(B), sk(S);
+
+Actions:
+    [step1] A -> S (tagQ) :
+        tagQ . B;
+    [step2] S -> A (tagCred) :
+        aenc{ tagCred . B . pk(B) }sk(S);
+    [step3] A -> B (NA,tag1) :
+        aenc{ tag1 . A . NA }pk(B);
+    [step4] B -> S (tagQ) :
+        tagQ . A;
+    [step5] S -> B (tagCred) :
+        aenc{ tagCred . A . pk(A) }sk(S);
+    [step6] B -> A (NB,tag2) :
+        aenc{ tag2 . B . NA . NB }pk(A);
+    [step7] A -> B (tag3) :
+        aenc{ tag3 . NB }pk(B);
+
+Goals:
+    /* Mutual authentication on NA, NB under tags */
+    B -> A : NA;
+    A -> B : NB;
+    /* Secrecy of NA, NB */
+    NA secret between A,B;
+    NB secret between A,B;
+
+ChannelKeys:
+
+end

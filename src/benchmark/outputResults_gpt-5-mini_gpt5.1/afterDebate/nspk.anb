@@ -1,0 +1,37 @@
+Protocol NSPK_CA:
+
+Declarations:
+    aenc/2;
+
+Types:
+    Agent A,B,AS;
+    Number IA,IB,Sid;
+    Mapping pk,sk
+
+Knowledge:
+    A : A, B, AS, pk(A), sk(A), pk(AS);
+    B : A, B, AS, pk(B), sk(B), pk(AS);
+    AS: AS, A, B, pk(AS), sk(AS), pk(A), pk(B);
+
+Public:
+    pk(A), pk(B), pk(AS);
+
+Private:
+    sk(A), sk(B), sk(AS);
+
+Actions:
+    [s1] A -> AS (IA,Sid) : A . B . IA . Sid;
+    [s2] AS -> A          : aenc{ pk(B) . B . IA . Sid }sk(AS);
+    [s3] A -> B           : aenc{ IA . A . Sid }pk(B);
+    [s4] B -> AS (IB)     : B . A . IB . Sid;
+    [s5] AS -> B          : aenc{ pk(A) . A . IB . Sid }sk(AS);
+    [s6] B -> A           : aenc{ IA . IB . Sid }pk(A);
+    [s7] A -> B           : aenc{ IB . Sid }pk(B);
+
+Goals:
+    B -> A : IA;
+    A -> B : IB;
+
+ChannelKeys:
+
+end

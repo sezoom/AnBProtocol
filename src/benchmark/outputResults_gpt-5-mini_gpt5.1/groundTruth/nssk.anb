@@ -1,0 +1,39 @@
+Protocol nssk:
+
+Declarations:
+    senc/2;
+    dec/1;
+
+Types:
+    Agent A,B,S;
+    Number Na,Nb,tagNSSK1,tagNSSK2,tagNSSK3,tagNSSK4,tagNSSK5;
+    Symmetric_key KAB;
+    Function dec;
+    Mapping k
+
+Knowledge:
+    A: k(A,S), B;
+    B: k(B,S), A;
+    S: k(A,S), k(B,S), A, B;
+
+Public:
+
+Private:
+
+Actions:
+    [nssk1] A -> S (Na)      : tagNSSK1 . A . B . Na;
+    [nssk2] S -> A (KAB)     : senc{ tagNSSK2 . Na . B . KAB .
+                                     senc{ tagNSSK3 . KAB . A }k(B,S) }k(A,S);
+    [nssk3] A -> B           : senc{ tagNSSK3 . KAB . A }k(B,S);
+    [nssk4] B -> A (Nb)      : senc{ tagNSSK4 . Nb }KAB;
+    [nssk5] A -> B           : senc{ tagNSSK5 . dec(Nb) }KAB;
+
+Goals:
+    B *->* A : Nb;
+    KAB secret between A,B;
+
+ChannelKeys:
+    K(A,B): KAB;
+    K(B,A): KAB;
+
+end

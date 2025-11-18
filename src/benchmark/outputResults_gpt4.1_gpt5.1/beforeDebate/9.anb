@@ -1,0 +1,36 @@
+Protocol Nine:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    sign/2;
+
+Types:
+    Agent A,B,S;
+    Number Kb,M;
+    Function sign;
+    Mapping pk,sk
+
+Knowledge:
+    A : pk(A), sk(A), pk(S), S, B;
+    B : pk(B), sk(B), pk(S), S, A;
+    S : pk(S), sk(S), pk(A), pk(B), A, B;
+
+Public:
+    pk(A), pk(B), pk(S);
+
+Private:
+    sk(A), sk(B), sk(S);
+
+Actions:
+    [n1] A -> S         : sign{ A . pk(A) }sk(A);
+    [n2] B -> S (Kb)    : senc{ B . A . Kb }pk(S);
+    [n3] S -> B         : senc{ pk(A) }Kb;
+    [n4] B -> A (M)     : aenc{ M }pk(A);
+
+Goals:
+    B ->* S : pk(A);
+
+ChannelKeys:
+
+end

@@ -1,0 +1,30 @@
+Protocol ISO9798-2-Unilateral:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number NA, Text2, tagITS1, tagITS2;
+    Mapping k;
+
+Knowledge:
+    A : A, B, k(A,B);
+    B : A, B, k(A,B), Text2;
+
+Public:
+
+Private:
+    k(A,B);
+
+Actions:
+    [step1] A -> B (NA) : tagITS1 . NA;
+    [step2] B -> A      : senc{ tagITS2 . NA . A . Text2 }k(A,B);
+
+Goals:
+    A -> B : Text2;
+    Text2 secret between A,B;
+
+ChannelKeys:
+
+end

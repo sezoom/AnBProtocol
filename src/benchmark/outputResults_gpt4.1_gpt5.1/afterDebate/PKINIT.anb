@@ -1,0 +1,84 @@
+Protocol PKINIT:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    sign/2;
+    hash/1;
+    kdf/3;
+    prf/3;
+    octetstring2key/1;
+    random-to-key/1;
+    DH/2;
+    pk/1;
+    sk/1;
+
+Types:
+    Agent A,S;
+    Number NA, NB, n, ctime, cusec, Sid, tagPKINIT1, tagPKINIT2, tagPKINIT3, clientDHNonce, serverDHNonce, dhKeyExpiration, ya, yb;
+    Symmetric_key K_AS, K_TGT, K_tmp;
+    Function hash, kdf, prf, octetstring2key, random-to-key, DH;
+    Mapping pk, sk;
+
+Knowledge:
+    A : pk(A), sk(A), pk(S), S;
+    S : pk(S), sk(S), pk(A), A;
+
+Public:
+    pk(A), pk(S);
+
+Private:
+    sk(A), sk(S);
+
+Actions:
+    /* AS Exchange: Initial Authentication with PKINIT (Diffie-Hellman variant) */
+
+    [p1] A -> S (NA, ctime, cusec, n, clientDHNonce, ya) :
+        aenc{ 
+            A . S . NA . ctime . cusec . n . 
+            sign{ 
+                hash(AS_REQ_BODY) 
+            }sk(A) . 
+            ya . clientDHNonce . tagPKINIT1 
+        }pk(S);
+
+    [p2] S -> A (NB, yb, serverDHNonce, dhKeyExpiration) :
+        aenc{
+            S . A . NB . yb . 
+            sign{
+                yb . n . dhKeyExpiration . tagPKINIT2
+            }sk(S) . 
+            serverDHNonce
+        }pk(A);
+
+    /* Both sides compute DHSharedSecret = DH(ya, yb), derive K_AS = octetstring2key(DH(ya, yb) . clientDHNonce . serverDHNonce) */
+
+    [p3] S -> A (K_TGT) :
+        senc{
+            TGT . K_TGT . tagPKINIT3
+        }K_AS;
+
+    /* (Alternative: Public Key Encryption variant) */
+    [p2b] S -> A (K_tmp, K_AS) :
+        aenc{
+            senc{
+                K_AS . hash(AS_REQ)
+            }K_tmp
+        }pk(A);
+
+    [p3b] S -> A (K_TGT) :
+        senc{
+            TGT . K_TGT . tagPKINIT3
+        }K_AS;
+
+Goals:
+    S -> A : K_AS;
+    K_AS secret between A,S;
+    S authenticates A on pk(A), signature, and possession of sk(A);
+    A authenticates S on pk(S), signature, and possession of sk(S);
+
+ChannelKeys:
+    K(A,S): K_AS;
+    K(S,A): K_AS;
+
+end

@@ -1,0 +1,32 @@
+Protocol One:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number Na, M;
+    Mapping k;
+
+Knowledge:
+    A : A, B, k(A,B), M;
+    B : A, B, k(A,B);
+
+Public:
+
+Private:
+    k(A,B);
+    M;
+
+Actions:
+    [step1] A -> B (Na) : Na;
+    [step2] B -> A       : senc{ Na }k(A,B);
+    [step3] A -> B       : senc{ M }k(A,B);
+
+Goals:
+    A -> B : Na;
+    M secret between A,B;
+
+ChannelKeys:
+
+end

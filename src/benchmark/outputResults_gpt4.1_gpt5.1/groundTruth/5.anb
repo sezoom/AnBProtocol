@@ -1,0 +1,30 @@
+Protocol Five:
+
+Declarations:
+    h/1;
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number n,m;
+    Function h;
+    Mapping k
+
+Knowledge:
+    A : A, B, k(A,B);
+    B : A, B, k(A,B);
+Public:
+
+Private:
+    k(A,B);
+
+Actions:
+    [p1] A -> B (n) : senc{ A . B . n . h(n) }k(A,B);
+    [p2] B -> A (m) : senc{ m }k(A,B);
+    [p3] A -> B     : senc{ h(m) }k(A,B);
+
+Goals:
+
+ChannelKeys:
+
+end

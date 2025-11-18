@@ -1,0 +1,31 @@
+Protocol ISO_twopass_mutual_CCF_CORRECTED:
+
+Declarations:
+    f/6;
+    f/5;
+
+Types:
+    Agent A,B;
+    Number NA,NB,Text1,Text3,tag,tagISOTMCCF1,tagISOTMCCF2;
+    Mapping sk;
+    Function f;
+
+Knowledge:
+    A: A, B, sk(A,B), f, tag;
+    B: B, A, sk(A,B), f, tag;
+
+Public:
+
+Private:
+
+Actions:
+    [m1] A -> B (NA) : f(tagISOTMCCF1, sk(A,B), NA, B, Text1, tag) . NA . B . Text1;
+    [m2] B -> A (NB) : f(tagISOTMCCF2, sk(A,B), NB, A, Text3) . NB . A . Text3;
+
+Goals:
+    B ->* A : Text1;
+    A ->* B : Text3;
+
+ChannelKeys:
+
+end

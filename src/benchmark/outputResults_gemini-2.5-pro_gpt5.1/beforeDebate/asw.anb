@@ -1,0 +1,36 @@
+Protocol ASW:
+
+Declarations:
+    aenc/2;
+    h/1;
+
+Types:
+    Agent A,B;
+    Number N1,N2,m;
+    Function h;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, B, pk(A), sk(A), pk(B), m;
+    B : A, B, pk(B), sk(B), pk(A);
+
+Public:
+    pk(A), pk(B);
+
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [step1] A -> B (N1) : aenc{ pk(A) . pk(B) . m . h(N1) }sk(A);
+    [step2] B -> A (N2) : aenc{ aenc{ pk(A) . pk(B) . m . h(N1) }sk(A) . h(N2) }sk(B);
+    [step3] A -> B      : N1;
+    [step4] B -> A      : N2;
+
+Goals:
+    A -> B : m;
+    B ->* A : m;
+    m secret between A,B;
+
+ChannelKeys:
+
+end

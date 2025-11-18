@@ -1,0 +1,37 @@
+Protocol Nine:
+
+Declarations:
+    aenc/2;
+    senc/2;
+
+Types:
+    Agent A,B,S;
+    Number M;
+    Symmetric_key Kb;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, B, S, pk(A), sk(A);
+    B : A, B, S, M;
+    S : A, B, S;
+
+Public:
+    A, B, S;
+
+Private:
+    sk(A);
+    M;
+
+Actions:
+    [p1] A -> S     : aenc{ A . pk(A) }sk(A);
+    [p2] B -> S (Kb) : A . Kb;
+    [p3] S -> B     : senc{ pk(A) }Kb;
+    [p4] B -> A     : aenc{ M }pk(A);
+
+Goals:
+    B ->* S : pk(A);
+    M secret between A,B;
+
+ChannelKeys:
+
+end

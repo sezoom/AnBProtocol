@@ -1,0 +1,35 @@
+Protocol AndrewRPC:
+
+Declarations:
+    senc/2;
+    succ/1;
+
+Types:
+    Agent Alice,Bob;
+    Number nA,nB,nB2;
+    Mapping sk
+
+Knowledge:
+    Alice : Alice, Bob, sk(Alice,Bob);
+    Bob : Alice, Bob, sk(Alice,Bob);
+Public:
+
+Private:
+    sk(Alice,Bob);
+
+Actions:
+    [s1] Alice -> Bob (nA) : Alice . senc{ nA }sk(Alice,Bob);
+    [s2] Bob -> Alice (nB) : senc{ succ(nA) . nB }sk(Alice,Bob);
+    [s3] Alice -> Bob      : senc{ succ(nB) }sk(Alice,Bob);
+    [s4] Bob -> Alice (nB2): senc{ nB2 }sk(Alice,Bob);
+
+Goals:
+    Bob -> Alice : succ(nA);
+    Alice -> Bob : succ(nB);
+    nA secret between Alice,Bob;
+    nB secret between Alice,Bob;
+    nB2 secret between Alice,Bob;
+
+ChannelKeys:
+
+end

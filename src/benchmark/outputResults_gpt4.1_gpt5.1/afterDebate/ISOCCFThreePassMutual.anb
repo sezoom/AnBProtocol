@@ -1,0 +1,34 @@
+Protocol ISO9798-4-3pass-CCF:
+
+Declarations:
+    mac/2;
+
+Types:
+    Agent A,B;
+    Number NA,NB,tag9798,Text2,Text4;
+    Symmetric_key KAB;
+
+Knowledge:
+    A : A, B, KAB, tag9798;
+    B : A, B, KAB, tag9798;
+
+Public:
+    tag9798;
+
+Private:
+    KAB;
+
+Actions:
+    [m1] B -> A (NB) : tag9798 . NB;
+    [m2] A -> B (NA) : NA . NB . B . Text2 . mac{ NA . NB . B . tag9798 . Text2 }KAB;
+    [m3] B -> A      : NB . NA . Text4 . mac{ NB . NA . tag9798 . Text4 }KAB;
+
+Goals:
+    B -> A : mac{ NB . NA . tag9798 . Text4 }KAB;
+    A -> B : mac{ NA . NB . B . tag9798 . Text2 }KAB;
+    mac{ NA . NB . B . tag9798 . Text2 }KAB secret between A,B;
+    mac{ NB . NA . tag9798 . Text4 }KAB secret between A,B;
+
+ChannelKeys:
+
+end

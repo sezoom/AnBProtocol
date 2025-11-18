@@ -1,0 +1,32 @@
+Protocol Basic_Kerberos:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent 			C, A, G, S;
+    Number 			n1, n2, t1, t2, t3, payload;
+    Symmetric_key 	kCG, kCS;
+    Mapping 	    sk;
+
+Actions:
+    [m1] C -> A (n1) 		: C.G.n1;
+    [m2] A -> C (kCG, t1) 	: senc{kCG.C.t1}sk(A,G).
+							  senc{kCG.n1.t1.G}sk(C,A);
+    [m3] C -> G (n2) 		: senc{kCG.C.t1}sk(A,G).
+							  senc{C.t1}kCG.
+							  S.n2;
+    [m4] G -> C (kCS, t2)	: senc{kCS.C.t2}sk(G,S).
+							  senc{kCS.n2.t2.S}kCG;
+    [m5] C -> S (t3) 		: senc{kCS.C.t2}sk(G,S).
+							  senc{C.t3}kCS;
+    [m6] S -> C 			: senc{t3}kCS.
+							  senc{payload}kCS;
+
+Goals:
+    S *->* C: payload;
+    kCG     secret between C,A,G;
+    kCS     secret between C,G,S;
+    payload secret between C,G,S;
+
+end

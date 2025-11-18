@@ -1,0 +1,30 @@
+Protocol SIGNED_DIFFIE_HELLMAN:
+
+Declarations:
+    aenc/2;
+    g/0;
+
+Types:
+    Agent A,B;
+    Number x,y,tagSDH1,tagSDH2;
+    Mapping pk,sk
+
+Knowledge:
+    A: pk(A), sk(A), pk(B), B;
+    B: pk(B), sk(B), pk(A), A;
+
+Public:
+    pk(A), pk(B);
+
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [dh_1] A -> B (x) : aenc{ tagSDH1 . A . B . g()^x }sk(A);
+    [dh_2] B -> A (y) : aenc{ tagSDH2 . B . A . g()^y }sk(B);
+
+Goals:
+    g()^(x*y) secret between A,B;
+
+
+end

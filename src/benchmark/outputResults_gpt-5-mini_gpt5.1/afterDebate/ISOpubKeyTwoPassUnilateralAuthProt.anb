@@ -1,0 +1,32 @@
+Protocol ISO_TwoPass:
+
+Declarations:
+    aenc/2;
+
+Types:
+    Agent A,B,S;
+    Number RA,RB,Text2,tagISO_twopass_symm1,tagISO_twopass_symm2,certA;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, B, pk(A), sk(A), pk(B), pk(S), certA;
+    B : A, B, pk(B), sk(B), pk(A), pk(S);
+    S : S, pk(S), sk(S);
+
+Public:
+    pk(A), pk(B), pk(S), tagISO_twopass_symm1, tagISO_twopass_symm2, certA;
+
+Private:
+    sk(A), sk(B), sk(S);
+
+Actions:
+    [step1] B -> A (RB) : tagISO_twopass_symm1 . RB ;
+    [step2] A -> B (RA) : certA . aenc{ RA . RB . B . Text2 }sk(A) ;
+
+Goals:
+    B -> A : certA;
+    B -> A : aenc{ RA . RB . B . Text2 }sk(A);
+
+ChannelKeys:
+
+end
