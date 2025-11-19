@@ -5,6 +5,8 @@ from langchain_core.prompts import PromptTemplate
 from ..state import GraphState, Message, Flow,Flow_raw,llm1
 from rich.console import Console
 from rich.panel import Panel
+import os
+from ..llm import extract_k2_think_answer
 
 PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "optimize_flow.txt"
 
@@ -14,7 +16,7 @@ def _lines_to_messages(lines: List[str]) -> List[Message]:
     for line in lines:
         s = line.strip()
         if not s or "->" not in s or ":" not in s:
-            continue
+            continueno
         left, content = s.split(":", 1)
         sender, receiver = [x.strip() for x in left.split("->")]
         msgs.append(Message(step=step, sender=sender, receiver=receiver, content=content.strip()))
@@ -34,8 +36,10 @@ def optimize_flow_node(state: GraphState) -> GraphState:
     #take the last feedback
     feedback_text = flow.feedback[-1]
     improved = (prompt | llm1).invoke({"flow_text": text,"feedback_text":feedback_text}).content
-    #lines = improved.splitlines()
-    #state["flow"] = Flow(messages=_lines_to_messages(lines), notes=flow.notes)
+    #incase we use k2-think then we need to seperate chain-of-thought from the final answer
+    if "k2-think" in os.getenv("LLM_OPTIMIZER"):
+        improved= extract_k2_think_answer(improved)
+
     state["flow_raw"].messages.append(improved)
 
     Console().print(Panel.fit(f"[bold]Agent 1:[/bold] {improved}"))
