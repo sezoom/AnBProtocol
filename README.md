@@ -53,6 +53,11 @@ pip install -r requirements.txt
 # Example — include the keys your setup requires
 OPENAI_API_KEY=...
 GOOGLE_API_KEY=...
+K2_THINK_API_KEY=...
+
+### models: gpt-4.1,gpt-5.1,gpt-5-mini,gemini-2.5-pro,k2-think
+LLM_OPTIMIZER="k2-think"
+LLM_EVALUATOR="gpt-5.1"
 ```
 
 2) Run on a single example:
