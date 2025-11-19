@@ -1,0 +1,37 @@
+Protocol ISO9798_4_3:
+
+Declarations:
+    f/6;
+
+Types:
+    Agent A,B;
+    Number NA, NB, tagISOTMCCF1, tagISOTMCCF2, tag, Text1, Text3;
+    Function f;
+    Mapping sk/2;
+
+Knowledge:
+    A : A, B, sk(A,B), tagISOTMCCF1, tagISOTMCCF2, tag, Text1;
+    B : A, B, sk(A,B), tagISOTMCCF1, tagISOTMCCF2, tag, Text3;
+
+Public:
+    tagISOTMCCF1, tagISOTMCCF2, tag;
+
+Private:
+    sk(A,B);
+
+Actions:
+    [step1] A -> B (NA) : NA . B . Text1 . f(tagISOTMCCF1, sk(A,B), NA, B, Text1, tag);
+    [step2] B -> A (NB) : NB . A . Text3 . f(tagISOTMCCF2, sk(A,B), NB, A, Text3, tag);
+
+Goals:
+    /* Data-origin authentication: Text1 from A to B */
+    A -> B : Text1;
+    /* Data-origin authentication: Text3 from B to A */
+    B -> A : Text3;
+    /* Mutual entity authentication: A authenticated to B, B authenticated to A */
+    A *->* B : A;
+    B *->* A : B;
+
+ChannelKeys:
+
+end

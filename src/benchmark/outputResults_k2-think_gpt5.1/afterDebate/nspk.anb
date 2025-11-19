@@ -1,0 +1,38 @@
+Protocol NSPK:
+
+Declarations:
+    aenc/2, sig/2;
+
+Types:
+    Agent A, B, S;
+    Number I_A, I_B;
+    Mapping pk, sk;
+
+Knowledge:
+    A : A, B, pk(S), sk(A);
+    B : B, A, pk(S), sk(B);
+    S : sk(S), pk(S), A, B;
+
+Public:
+    pk(A), pk(B), pk(S);
+
+Private:
+    sk(A), sk(B), sk(S);
+
+Actions:
+    [step1] A -> S : A . B;
+    [step2] S -> A : sig(pk(B) . B, sk(S));
+    [step3] A -> B (I_A) : aenc{ sig(I_A . A, sk(A)) }pk(B);
+    [step4] B -> S : B . A;
+    [step5] S -> B : sig(pk(A) . A, sk(S));
+    [step6] B -> A (I_B) : aenc{ sig(I_A . I_B, sk(B)) }pk(A);
+    [step7] A -> B : aenc{ sig(I_B, sk(A)) }pk(B);
+
+Goals:
+    I_A secret between A, B;
+    I_B secret between A, B;
+    A -> B : I_B;
+    B -> A : I_A;
+ChannelKeys:
+
+end

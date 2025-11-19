@@ -1,0 +1,38 @@
+Protocol ASW:
+
+Declarations:
+    aenc/2;
+    h/1;
+
+Types:
+    Agent A,B;
+    Number n₁, n₂, m;
+    Function h;
+    Mapping pk, sk;
+
+Knowledge:
+    A : pk(A), sk(A), pk(B), B;
+    B : pk(B), sk(B), pk(A), A;
+
+Public:
+    pk(A), pk(B);
+
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [step1] A -> B (n₁) : aenc{ pk(A) . pk(B) . m . h(n₁) }sk(A);
+    [step2] B -> A (n₂) : aenc{ aenc{ pk(A) . pk(B) . m . h(n₁) }sk(A) . h(n₂) }sk(B);
+    [step3] A -> B      : n₁;
+    [step4] B -> A      : n₂;
+
+Goals:
+    /* Weak (non-injective) agreement: A and B agree on m */
+    A ->* B : m;
+    B ->* A : m;
+    /* Injective agreement: A strongly authenticates B on m */
+    A -> B : m;
+
+ChannelKeys:
+
+end

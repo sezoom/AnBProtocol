@@ -1,0 +1,28 @@
+Protocol ISO_onepass_symm:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number nA, m;
+    Mapping sk;
+
+Knowledge:
+    A : A, B, sk(A,B);
+    B : A, B, sk(A,B);
+
+Public:
+    ;
+
+Private:
+    sk(A,B);
+
+Actions:
+    [step1] A -> B (nA) : senc{ nA . B . m }sk(A,B);
+
+Goals:
+    nA . B . m secret between A,B;
+    B -> A : nA . B . m;
+
+end

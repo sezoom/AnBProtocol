@@ -1,0 +1,31 @@
+Protocol MAC_Auth1:
+
+Declarations:
+    Function mac/2;
+
+Types:
+    Agent A, B;
+    Number ProtocolTag, MACTag, Nonce, VerifierID, Text1, Text2;
+    Symmetric_key KAB;
+
+Knowledge:
+    A : KAB, ProtocolTag, MACTag, VerifierID;
+    B : KAB, ProtocolTag, MACTag, VerifierID;
+
+Public:
+    ProtocolTag, MACTag, VerifierID, A, B;
+
+Private:
+    KAB;
+
+Actions:
+    [m1] A -> B (N) : ProtocolTag . N . VerifierID . Text1 . Text2 . mac{ MACTag . N . VerifierID . Text1 }KAB;
+
+Goals:
+    DataOriginAuth(B, A, Text1);
+    Freshness(B, N);
+
+ChannelKeys:
+    ;
+
+end

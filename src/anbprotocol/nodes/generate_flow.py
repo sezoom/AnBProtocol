@@ -7,6 +7,7 @@ from rich.console import Console
 from rich.panel import Panel
 import os
 import re
+from ..llm import extract_k2_think_answer
 
 PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "generate_flow.txt"
 
@@ -123,6 +124,9 @@ def generate_flow_node(state: GraphState,config) -> GraphState:
     #print("DebugMSG_prompt:",prompt)
     #print("DebugMSG_spec:",raw_text)
     text = (prompt | llm1).invoke({"raw_text": raw_text}).content
+    #incase we use k2-think then we need to seperate chain-of-thought from the final answer
+    if "k2-think" in os.getenv("LLM_OPTIMIZER"):
+        text= extract_k2_think_answer(text)
     Console().print(Panel.fit(f"[bold]Agent 1:[/bold] {text}"))
     ##### if parsing flow is required but now we will relay on not parsed fllow
     # lines = text.splitlines()

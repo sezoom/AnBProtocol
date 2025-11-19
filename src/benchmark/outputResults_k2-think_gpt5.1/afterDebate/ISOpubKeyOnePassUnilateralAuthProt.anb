@@ -1,0 +1,31 @@
+Protocol ISO9798TwoPass:
+
+Declarations:
+    mac/2;
+
+Types:
+    Agent Alice,Bob;
+    Number NB, Text2, tag9798;
+    Function mac;
+    Mapping sk;
+
+Knowledge:
+    Alice : sk(Alice,Bob), Bob, tag9798;
+    Bob : sk(Alice,Bob), Alice, tag9798;
+
+Public:
+    tag9798;
+
+Private:
+    sk(Alice,Bob);
+
+Actions:
+    [step1] Bob -> Alice (NB) : tag9798 . NB;
+    [step2] Alice -> Bob (Text2) : NB . Bob . Text2 . mac(NB . Bob . Text2, sk(Alice,Bob));
+
+Goals:
+    Bob -> Alice : mac(NB . Bob . Text2, sk(Alice,Bob));
+
+ChannelKeys:
+
+end

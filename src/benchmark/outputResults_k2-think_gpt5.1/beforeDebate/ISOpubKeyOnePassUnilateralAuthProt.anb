@@ -1,0 +1,30 @@
+Protocol ISO9798TwoPass:
+
+Declarations:
+    mac/2;
+
+Types:
+    Agent A,B;
+    Number NB, Text2, tag9798;
+    Symmetric_key sk(A,B);
+    Function ;
+    Mapping ;
+
+Knowledge:
+    A : sk(A,B), B, tag9798;
+    B : sk(A,B), A, tag9798;
+
+Public:
+    tag9798;
+
+Private:
+    sk(A,B);
+
+Actions:
+    [step1] B -> A (NB) : tag9798 . NB;
+    [step2] A -> B (Text2) : NB . B . Text2 . mac(NB . B . Text2, sk(A,B));
+
+Goals:
+    B -> A : mac(NB . B . Text2, sk(A,B));
+
+end
