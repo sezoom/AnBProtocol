@@ -1,0 +1,31 @@
+Protocol ITMS9798:
+
+Declarations:
+   senc/2;
+
+Types:
+    Agent A,B;
+    Number NA,NB,tagITMS1,tagITMS2,tagITMS3,Text2,Text4;
+    Symmetric_key K;
+
+Knowledge:
+    A : A, B, K;
+    B : A, B, K;
+
+Public:
+    tagITMS1, tagITMS2, tagITMS3, A, B;
+
+Private:
+    K;
+
+Actions:
+    [p1] B -> A (NB) : tagITMS1 . NB;
+    [p2] A -> B (NA) : senc{ tagITMS3 . NA . NB . B . Text2 }K;
+    [p3] B -> A      : senc{ tagITMS2 . NB . NA . Text4 }K;
+Goals:
+    mutual_auth(A,B);
+    Text2 origin A;
+    Text4 origin B;
+ChannelKeys:
+    ;
+end

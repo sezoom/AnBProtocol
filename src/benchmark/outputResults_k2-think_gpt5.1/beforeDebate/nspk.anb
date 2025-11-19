@@ -1,0 +1,37 @@
+Protocol NSPK:
+
+Declarations:
+    aenc/2;
+
+Types:
+    Agent A,B,S;
+    Number I_A,I_B;
+    Function aenc;
+
+Knowledge:
+    A : A, B, PK_S, SK_A;
+    B : B, A, PK_S, SK_B;
+
+Public:
+    PK_A, PK_B, PK_S;
+
+Private:
+    SK_A, SK_B, SK_S;
+
+Actions:
+    [step1] A -> S () : A . B;
+    [step2] S -> A : aenc{ PK_B . B }SK_S ;
+    [step3] A -> B (I_A) : aenc{ I_A . A }PK_B ;
+    [step4] B -> S () : B . A;
+    [step5] S -> B : aenc{ PK_A . A }SK_S ;
+    [step6] B -> A (I_B) : aenc{ I_A . I_B }PK_A ;
+    [step7] A -> B () : aenc{ I_B }PK_B ;
+
+Goals:
+    A authenticates B;
+    B authenticates A;
+    Prevent replay;
+
+ChannelKeys:
+
+end

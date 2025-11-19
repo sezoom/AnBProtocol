@@ -1,0 +1,37 @@
+Protocol AndrewRPC:
+
+Declarations:
+    senc/2;
+    succ/1;
+
+Types:
+    Agent A,B;
+    Number nA,nB,nB2;
+    Symmetric_key sk(A,B);
+    Function succ;
+
+Knowledge:
+    A : sk(A,B), B;
+    B : sk(A,B), A;
+
+Public:
+
+Private:
+    sk(A,B);
+
+Actions:
+    [step1] A -> B (nA) : A . senc{nA}sk(A,B);
+    [step2] B -> A (nB) : senc{ succ(nA) . nB }sk(A,B);
+    [step3] A -> B      : senc{ succ(nB) }sk(A,B);
+    [step4] B -> A (nB2): senc{nB2}sk(A,B);
+
+Goals:
+    B -> A : succ(nA);
+    A -> B : succ(nB);
+    nA secret between A,B;
+    nB secret between A,B;
+    nB2 secret between A,B;
+
+ChannelKeys:
+
+end

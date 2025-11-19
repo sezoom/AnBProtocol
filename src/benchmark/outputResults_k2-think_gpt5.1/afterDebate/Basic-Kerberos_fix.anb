@@ -1,0 +1,51 @@
+Protocol KerberosBasic:
+
+Declarations:
+    senc/2;
+    ;
+
+Types:
+    Agent C, A, G, S;
+    Number n1, n2, t1, t2, t3;
+    Symmetric_key kCG, kCS;
+    Data payload;
+    Mapping sk : Agent × Agent → Symmetric_key;
+    ;
+
+Knowledge:
+    C : sk(C,A);
+    A : sk(A,C), sk(A,G);
+    G : sk(A,G), sk(G,S);
+    S : sk(G,S);
+    ;
+
+Public:
+    C, A, G, S;
+    ;
+
+Private:
+    sk(C,A), sk(A,G), sk(G,S);
+    ;
+
+Actions:
+    [1] C -> A (n1) : C . G . n1;
+    [2] A -> C (kCG, t1) : senc{ kCG . C . t1 }sk(A,G) . senc{ kCG . n1 . t1 . G }sk(C,A);
+    [3] C -> G (n2) : senc{ kCG . C . t1 }sk(A,G) . senc{ C . t1 }kCG . n2;
+    [4] G -> C (kCS, t2) : senc{ kCS . C . t2 }sk(G,S) . senc{ kCS . n2 . t2 . S }kCG;
+    [5] C -> S (t3) : senc{ kCS . C . t2 }sk(G,S) . senc{ C . t3 }kCS;
+    [6] S -> C () : senc{ t3 }kCS . senc{ payload }kCS;
+    ;
+
+Goals:
+    kCG secret between C, G;
+    kCS secret between C, S;
+    authenticated(C, S);
+    authenticated(S, C);
+    ;
+
+ChannelKeys:
+    kCG : C <-> G;
+    kCS : C <-> S;
+    ;
+
+end

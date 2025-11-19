@@ -1,0 +1,32 @@
+Protocol TwoPass:
+
+Declarations:
+    aenc/2;   % Asymmetric encryption function with arity 2 (message, public key)
+    sig/2;    % Signature function with arity 2 (message, private key)
+    Mapping pk/1, sk/1;  % Public and private key mappings with arity 1
+
+Types:
+    Agent A,B,S;         % Agent types
+    Number RA,RB,tagISO_twopass_symm1,tagISO_twopass_symm2,Text2;  % Nonces and tags under Number (as per template)
+    Mapping pk/1, sk/1;  % Explicit arity for mappings
+
+Knowledge:
+    A : sk(A), pk(A), A, B, S, pk(S), sig{ tagISO_twopass_symm2 . A . pk(A) }sk(S);  % A initially knows own private key, public key, agents, S's public key, and S's signature over A's identity and public key
+    B : pk(S), B, A, S, tagISO_twopass_symm1, tagISO_twopass_symm2, pk(A);  % B initially knows S's public key, agents, tags, and A's public key (added pk(A))
+
+Public:
+    pk(A), pk(B), pk(S), tagISO_twopass_symm1, tagISO_twopass_symm2;  % Public keys and tags are public
+
+Private:
+    sk(A), sk(B), sk(S);  % Private keys for A, B, S (added sk(B) to resolve asymmetry)
+
+Actions:
+    [step1] B -> A (RB) : tagISO_twopass_symm1 . RB;  % B sends nonce RB to A with tag
+    [step2] A -> B (RA) : sig{ tagISO_twopass_symm2 . A . pk(A) }sk(S) . aenc{ RA . RB . B . Text2 }pk(B);  % A sends nonce RA, includes S's signature (for authentication), and encrypts data with B's public key (for confidentiality)
+
+Goals:
+    B knows RA . RB . B . Text2;  % Revised goal: B must learn the plaintext (adjusting syntax to clarify intent; original "B->A" may have been directional ambiguity)
+
+ChannelKeys:
+    % Removed as no session keys modeled (empty in original)
+end

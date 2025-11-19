@@ -1,0 +1,131 @@
+Protocol Five:
+
+Declarations:
+    h/1;
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number n,m;
+    Function h;
+    Mapping k
+
+Knowledge:
+    A : A, B, k(A,B);
+    B : A, B, k(A,B);
+
+Public:
+
+Private:
+    k(A,B);
+
+Actions:
+    [p1] A -> B (n) : senc{ A . B . n . h(n) }k(A,B);
+    [p2] B -> A (m) : senc{ m }k(A,B);
+    [p3] A -> B     : senc{ h(m) }k(A,B);
+
+Goals:
+    /* Mutual authentication: A proves knowledge of k(A,B) to B */
+    A -> B : k(A,B);
+    /* Mutual authentication: B proves knowledge of k(A,B) to A */
+    B -> A : k(A,B);
+    /* Freshness and confidentiality of nonce n */
+    n secret between A,B;
+    /* Freshness and confidentiality of nonce m */
+    m secret between A,B;
+    /* Confidentiality of initial message content */
+    A . B . n . h(n) secret between A,B;
+    /* Confidentiality of B's message content */
+    m secret between A,B;
+    /* Confidentiality of A's confirmation content */
+    h(m) secret between A,B;
+
+ChannelKeys:
+
+end
+
+Wait, but the example's Goals are empty. The problem's INPUT may expect the Goals to be as per the security properties. But perhaps the user expects the example's answer. Let me recheck. The problem's INPUT is labeled as "Protocol Five", and the example is also "Protocol Five". But maybe the example is a different protocol. No, the example's steps match the INPUT's steps. So perhaps the intended answer is the example's, but the user's INPUT's security properties require adding Goals. However, the problem's rules say that Goals are optional. But the INPUT's instruction says "normalize a protocol description into a concise ... specification", which should include all necessary parts.
+
+But according to the problem's 14) validation checklist, the Goals must use canonical lines. The example's Goals are empty, which is allowed. But the INPUT's security properties are part of the protocol's specification. However, the problem's output format says Goals are optional. So perhaps the correct answer is the example's, with empty Goals. Because the example is given as a correct one, and the INPUT is the same protocol.
+
+But the user's INPUT includes security properties, but the example's output does not have Goals. Maybe the Goals are not required to be filled unless specified. Let me check the problem's rules again.
+
+Rule 8 says: "Goals: ... ;" is optional. So if the protocol's specification doesn't need to list goals, it can be empty.
+
+The INPUT's security properties are part of the protocol's description but perhaps not required to be in the Goals section. The problem's task is to normalize the protocol description into the specification, which includes the structure, but the Goals are optional. The example's Goals are empty, so perhaps the INPUT's answer should also have empty Goals.
+
+Thus, the correct answer is the example's Protocol Five, which matches the INPUT's steps.
+
+So:
+
+Protocol Five:
+
+Declarations:
+    h/1;
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number n,m;
+    Function h;
+    Mapping k
+
+Knowledge:
+    A : A, B, k(A,B);
+    B : A, B, k(A,B);
+
+Public:
+
+Private:
+    k(A,B);
+
+Actions:
+    [p1] A -> B (n) : senc{ A . B . n . h(n) }k(A,B);
+    [p2] B -> A (m) : senc{ m }k(A,B);
+    [p3] A -> B     : senc{ h(m) }k(A,B);
+
+Goals:
+
+ChannelKeys:
+
+end
+
+But the problem's example's Knowledge section has A : A, B, k(A,B); and B's same. The INPUT says "A knows symmetric key k(A,B), B knows symmetric key k(A,B)", which matches. The Types section has Mapping k, which is correct. All function symbols (h, senc) are declared in Declarations with correct arity. Numbers n and m are declared in Types:Number. Keys: k(A,B) is a mapping, and declared in Private. Fresh variables n and m are in Actions' fresh lists and declared in Types:Number. Public and Private list atoms/terms. Actions are in correct format. Goals are optional and empty. ChannelKeys is empty.
+
+Thus, this satisfies all validation checklist items.
+
+So the final answer is the example's Protocol Five specification, which is:
+
+\boxed{
+Protocol Five:
+
+Declarations:
+    h/1;
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number n,m;
+    Function h;
+    Mapping k
+
+Knowledge:
+    A : A, B, k(A,B);
+    B : A, B, k(A,B);
+
+Public:
+
+Private:
+    k(A,B);
+
+Actions:
+    [p1] A -> B (n) : senc{ A . B . n . h(n) }k(A,B);
+    [p2] B -> A (m) : senc{ m }k(A,B);
+    [p3] A -> B     : senc{ h(m) }k(A,B);
+
+Goals:
+
+ChannelKeys:
+
+end
+}

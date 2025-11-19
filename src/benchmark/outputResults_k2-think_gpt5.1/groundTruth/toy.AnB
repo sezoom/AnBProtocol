@@ -1,0 +1,32 @@
+Protocol Simple-Nonce-KDF:
+
+Declarations:
+    senc/2;
+    kdf/2;
+
+Types:
+    Agent A,B;
+    Number NA,NB,tagACK;
+    Function kdf;
+
+Knowledge:
+    A: B, kdf;
+    B  : A, kdf;
+
+Public:
+
+Private:
+
+Actions:
+    [step1] A -> B (NA) : NA;
+    [step2] B   -> A (NB): NB;
+    [step3] A -> B       : senc{ tagACK }kdf(NA, NB);
+
+Goals:
+
+
+ChannelKeys:
+    K(A,B): kdf(NA,NB);
+    K(B,A): kdf(NA,NB);
+
+end

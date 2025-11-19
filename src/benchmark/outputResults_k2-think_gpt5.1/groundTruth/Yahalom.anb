@@ -1,0 +1,37 @@
+Protocol Yahalom:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B,S;
+    Number Na,Nb;
+    Mapping K
+
+Knowledge:
+    A : A, B, S, K(A,S);
+    B : B, S, K(B,S);
+    S : A, B, S, K(A,S), K(B,S);
+
+Public:
+
+Private:
+
+Actions:
+    [p1] A -> S (Na) : A . B . senc{ Na }K(A,S);
+    [p2] S -> B (Nb) : senc{ A . Na . Nb . senc{ Nb }K(A,S) }K(B,S);
+    [p3] S -> A      : senc{ A . B . Nb }K(A,S);
+    [p4] B -> A      : senc{ Nb }K(A,S);
+
+Goals:
+
+    S ->* A : B . Nb;
+    /* B authenticates S on (A, Na, Nb) */
+    S ->* B : A . Na . Nb;
+
+    Na secret between A,B;
+    Nb secret between A,B;
+
+    /* Known limitation: A does not authenticate B directly (forwardable token). */
+
+end

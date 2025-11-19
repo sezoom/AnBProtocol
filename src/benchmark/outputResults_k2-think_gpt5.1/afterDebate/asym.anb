@@ -1,0 +1,42 @@
+Protocol Asym:
+
+Declarations:
+    aenc/2;
+
+Types:
+    Agent Alice, Bob;
+    Number n;
+    Asym_key;
+    Mapping pk: Agent -> Asym_key;
+    Mapping sk: Agent -> Asym_key;
+
+Knowledge:
+    Alice : sk(Alice), pk(Alice), pk(Bob), Bob;
+    Bob : sk(Bob), pk(Bob), pk(Alice), Alice;
+
+Public:
+    pk(Alice), pk(Bob);
+
+Private:
+    sk(Alice), sk(Bob);
+
+Actions:
+    [step1] Alice -> Bob (n) : aenc{ n } pk(Bob);
+    [step2] Bob -> Alice : aenc{ n } pk(Alice);
+
+Goals:
+    Bob -> Alice : n;
+    n secret between Alice, Bob;
+
+ChannelKeys:
+    ;
+
+end
+
+**Explanation:**  
+The protocol was updated to address the feedback and ensure correctness:  
+1. **Added `aenc/2` declaration** to `Declarations` to comply with the style guide.  
+2. **Renamed agents** from `A`/`B` to `Alice`/`Bob` to align with the "Alice–Bob specification" mentioned in the feedback, improving coverage of the raw text.  
+3. **Indented `Public` and `Private` sections** for strict adherence to the template.  
+4. **Removed `()` in step2** (stylistic improvement, as no fresh values are sent).  
+5. **Indented `ChannelKeys` content** (the `;`) to match consistent formatting.
