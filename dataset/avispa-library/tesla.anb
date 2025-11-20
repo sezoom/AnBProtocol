@@ -1,3 +1,0 @@
-
- 0. S -> R: {N.K_0}inv(k_S)         
- i. S -> R: M_i.hash(K_i,M_i).K_i-1 

@@ -1,3 +1,0 @@
-1. A -> S: A.S.Na.exp(G,X).{A.S.Na.exp(G,X)}_inv(Ka)
-2. S -> A: A.S.Na.Nb.exp(G,Y).{A.S.Na.Nb.exp(G,Y)}_inv(Ks)
-3. A -> S: {login.pwd}_K where K= exp(exp(G,Y),X) = exp(exp(G,X),Y)

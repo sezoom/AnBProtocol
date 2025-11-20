@@ -1,6 +1,0 @@
-
- 1. C -> S: NC
- 2. S -> C: NS
- 3. C -> S: exp(g,X)
- 4. S -> C: k_S.exp(g,Y).{H}_inv(k_S) 
- with K=exp(exp(g,X),Y), H=hash(NC.NS.k_S.exp(g,X).exp(g,Y).K)

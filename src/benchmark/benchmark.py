@@ -171,9 +171,13 @@ if __name__ == "__main__":
 
     ## set up the path to folders
     GT = Path("../dataset/anb")
-    BD = Path("benchmark/outputResults_gemini-2.5-pro_gpt5.1/beforeDebate/")
-    AD = Path("benchmark/outputResults_gemini-2.5-pro_gpt5.1/afterDebate/")
+    # BD = Path("benchmark/outputResults_gemini-2.5-pro_gpt5.1/beforeDebate/")
+    # AD = Path("benchmark/outputResults_gemini-2.5-pro_gpt5.1/afterDebate/")
 
+    # BD = Path("benchmark/outputResults_k2-think_gpt5.1/beforeDebate/")
+    # AD = Path("benchmark/outputResults_k2-think_gpt5.1/afterDebate/")
+    BD = Path("benchmark/outputResults_gpt-5-mini_gpt5.1/beforeDebate/")
+    AD = Path("benchmark/outputResults_gpt-5-mini_gpt5.1/afterDebate/")
     bd_df, bd_agg, bd_details = compute_metrics(GT, BD)
     ad_df, ad_agg, ad_details = compute_metrics(GT, AD)
 

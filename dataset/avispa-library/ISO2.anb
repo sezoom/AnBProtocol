@@ -1,4 +1,0 @@
-
- 1. B -> A : Rb, Text1
- 2. A -> B : {PKa,A}inv(PKs), Ra,Rb, B, Text2,{Ra,Rb,B,Text1}inv(PKa)
- 

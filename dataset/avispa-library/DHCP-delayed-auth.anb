@@ -1,4 +1,0 @@
-
-1. C -> S : C, delayedAuthReq, Time1
-2. S -> C : S, delayedAuthReq, succ(Time1), KeyID(K), 
-            H(S, delayedAuthReq, succ(Time1), K)
