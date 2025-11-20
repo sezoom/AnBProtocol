@@ -2,12 +2,10 @@ from __future__ import annotations
 from typing import List, Optional, Literal, TypedDict, Dict, Any
 from pydantic import BaseModel, Field
 from .llm import make_llm
+import os
 
-
-## models gpt-4.1,gpt-5.1,gpt-5-mini,gemini-2.5-pro
-llm1 = make_llm("gemini-2.5-pro")
-llm2 = make_llm("gpt-5.1")
-
+llm1=make_llm(os.getenv("LLM_OPTIMIZER"))
+llm2=make_llm(os.getenv("LLM_EVALUATOR"))
 
 class Message(BaseModel):
     step: int

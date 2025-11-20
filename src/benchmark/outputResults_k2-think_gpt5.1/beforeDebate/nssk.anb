@@ -1,0 +1,39 @@
+Protocol NSPK:
+
+Declarations:
+    senc/2;
+    pre/1;
+
+Types:
+    Agent A,B,S;
+    Number I_A,I_B;
+    Symmetric_key CK;
+    Function pre;
+    Mapping sk;
+
+Knowledge:
+    A : A, B, S, sk(A);
+    B : A, B, S, sk(B);
+    S : A, B, S, sk(A), sk(B);
+
+Public:
+    A, B, S;
+
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [m1] A -> S (I_A) : A . B . I_A;
+    [m2] S -> A (CK) : senc{ I_A . B . CK . senc{ CK . A } sk(B) } sk(A);
+    [m3] A -> B      : senc{ CK . A } sk(B);
+    [m4] B -> A (I_B) : senc{ I_B } CK;
+    [m5] A -> B      : senc{ pre(I_B) } CK;
+
+Goals:
+    B -> A : I_B;
+    A -> B : pre(I_B);
+    CK secret between A,B;
+
+ChannelKeys:
+
+end

@@ -1,0 +1,51 @@
+Protocol TLS4:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    h/1;
+    prf/3;
+    cert/3;
+
+Types:
+    Agent A,B,s;
+    Number NA,NB,PMS,Sid,tag1,tag2,tag3,tag4,params,fparams;
+    Symmetric_key Kc,Ks;
+    Function h,prf;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, B, s, pk(A), sk(A), pk(s), params;
+    B : A, B, s, pk(B), sk(B), pk(s);
+    s : s, pk(s), sk(s);
+
+Public:
+    pk(A), pk(B), pk(s);
+
+Private:
+    sk(A), sk(B), sk(s);
+
+Actions:
+    [m1] A -> B (NA,Sid) :
+        A . B . Sid . NA . params . tag1;
+    [m2] B -> A (NB) :
+        B . A . Sid . NA . NB . fparams . cert(B,pk(B),s) . tag2;
+    [m3] A -> B (PMS) :
+        cert(A,pk(A),s) .
+        aenc{ PMS }pk(B) .
+        aenc{ h(A . B . Sid . NA . NB . params) }sk(A) .
+        senc{ h(Sid . NA . NB . tag3) }Kc;
+    [m4] B -> A :
+        senc{ h(Sid . NA . NB . tag4) }Ks;
+
+Goals:
+    prf(PMS, NA, NB) secret between A, B;
+    PMS secret between A, B;
+    Kc secret between A, B;
+    Ks secret between A, B;
+
+ChannelKeys:
+    K(A,B): Kc;
+    K(B,A): Ks;
+
+end

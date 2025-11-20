@@ -1,0 +1,38 @@
+Protocol Twelve:
+
+Declarations:
+    senc/2;
+    h/1;
+
+Types:
+    Agent A,B,C;
+    Number Ka,Kb,Kf,N1,N2;
+    Function h;
+
+Knowledge:
+    A: B, C, Ka;
+    B: A, C, Kb;
+    C: A, B, Ka, Kb;
+
+Private:
+    Ka, Kb;
+
+Actions:
+    [m1] A -> C : A . B;
+    [m2] C -> A (Kf): senc{Kf}Ka . senc{Kf}Kb ;
+    [m3] A -> B : senc{Kf}Kb;
+    [m4] B -> A (N2): senc{N2}Kf;
+    [m5] A -> B (N1): senc{N1}Kf;
+    [m6] B -> A : senc{h(N1)}Kf;
+
+Goals:
+    A ->* C : (Kf);
+    B ->* C : (Kf);
+    A ->* B : (Kf, N1);
+    N2 secret between A,B;
+    N1 secret between A,B;
+    kf secret between A,B,C;
+
+ChannelKeys:
+    K(A,B) : kf;
+end

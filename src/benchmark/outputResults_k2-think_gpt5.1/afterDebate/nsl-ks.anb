@@ -1,0 +1,36 @@
+Protocol KeyExchange:
+
+Declarations:
+    aenc/2;
+
+Types:
+    Agent A,B,S;
+    Number NA,NB,tagS1,tagS2,tagA1,tagB1,tagA2;
+    Mapping pk, sk;
+
+Knowledge:
+    A : sk(A), pk(A), pk(S), B;
+    B : sk(B), pk(B), pk(S), A;
+    S : sk(S), pk(A), pk(B), A, B;
+
+Public:
+    pk(A), pk(B), pk(S);
+
+Private:
+    sk(A), sk(B), sk(S);
+
+Actions:
+    [m1] A -> S : B;
+    [m2] S -> A (tagS1) : aenc{ B . pk(B) . tagS1 }sk(S);
+    [m3] A -> B (NA, tagA1) : aenc{ A . NA . tagA1 }pk(B);
+    [m4] B -> S : A;
+    [m5] S -> B (tagS2) : aenc{ A . pk(A) . tagS2 }sk(S);
+    [m6] B -> A (NB, tagB1) : aenc{ NA . NB . B . tagB1 }pk(A);
+    [m7] A -> B (tagA2) : aenc{ A . NB . tagA2 }pk(B);
+
+Goals:
+    B -> A : NA;  /* A authenticates B via echoed NA */
+    A -> B : NB;  /* B authenticates A via returned NB */
+
+ChannelKeys:
+end

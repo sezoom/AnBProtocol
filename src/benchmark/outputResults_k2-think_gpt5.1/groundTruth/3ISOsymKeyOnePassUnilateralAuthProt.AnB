@@ -1,0 +1,20 @@
+Protocol: ISO_onepass_symm # Verified & Certified
+
+# Note that this protocol has a trivial replay attack.  We thus
+# specify only weak authentication as goal (not considering replay).
+# The FP-module of OFMC currently does not handle injective
+# authentication
+
+Types:
+       Agent   A, B;
+       Number  nA, text1;
+       Mapping sk
+
+Knowledge:
+    A : A, B, sk(A,B), text1;
+    B : B, A, sk(A,B);
+
+Actions:
+    [msg1] A -> B (nA) : senc{nA . B . text1}sk(A,B);
+
+end

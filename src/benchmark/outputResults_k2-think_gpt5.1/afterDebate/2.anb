@@ -1,0 +1,34 @@
+Protocol Two:
+
+Declarations:
+   xor/2;
+   senc/2;
+
+Types:
+    Agent Alice, Bob;
+    Number N,M;
+    Function xor;
+    Symmetric_key Ks;
+
+Knowledge:
+    Alice : Alice, Bob, Ks;
+    Bob : Alice, Bob, Ks;
+
+Public:
+    Alice, Bob;
+
+Private:
+    Ks;
+
+Actions:
+    [step1] Alice -> Bob (N) : senc{N}Ks;
+    [step2] Bob -> Alice () : xor(N, Ks);
+    [step3] Alice -> Bob (M) : senc{xor(M, N)}Ks;
+
+Goals:
+    Bob -> Alice : xor(N, Ks);
+    Alice -> Bob : senc{xor(M, N)}Ks;
+    M secret between Alice,Bob;
+
+ChannelKeys:
+end

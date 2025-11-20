@@ -53,13 +53,18 @@ pip install -r requirements.txt
 # Example — include the keys your setup requires
 OPENAI_API_KEY=...
 GOOGLE_API_KEY=...
+K2_THINK_API_KEY=...
+
+### models: gpt-4.1,gpt-5.1,gpt-5-mini,gemini-2.5-pro,k2-think
+LLM_OPTIMIZER="k2-think"
+LLM_EVALUATOR="gpt-5.1"
 ```
 
 2) Run on a single example:
 ```bash
 cd src/
 
-python -m anbProtocol.cli single --in ../examples/tls_like.txt --out out.md
+python -m anbProtocol.cli single --in ../examples/tls_like.txt --out out.txt
 ```
 ---
 
@@ -68,9 +73,9 @@ python -m anbProtocol.cli single --in ../examples/tls_like.txt --out out.md
 ### Single file
 Parse one natural-language description and write the result:
 ```bash
-python -m AnBProtocol.cli single --in <path-to-input>.txt --out <path-to-output>.md
+python -m AnBProtocol.cli single --in <path-to-input>.txt --out <path-to-output>.txt
 # or (depending on package name)
-python -m anbprotocol.cli single --in <path-to-input>.txt --out <path-to-output>.md
+python -m anbprotocol.cli single --in <path-to-input>.txt --out <path-to-output>.txt
 ```
 
 ### Batch over a dataset
@@ -83,7 +88,7 @@ python -m anbprotocol.cli batch \
 
 ### Common arguments
 - `--in` *(single)*: input `.txt` file with the natural-language description  
-- `--out` *(single)*: output file (e.g., `.md`, `.json`)  
+- `--out` *(single)*: output file (e.g., `.md`, `.txt`)  
 - `--dataset` *(batch)*: directory containing input `.txt` files  
 - `--output` *(batch)*: directory to write generated results  
 
@@ -94,10 +99,14 @@ python -m anbprotocol.cli batch \
 This project reads configuration from the environment. A simple `.env` file is supported:
 
 ```dotenv
-# Core
+# Example — include the keys your setup requires
 OPENAI_API_KEY=...
 GOOGLE_API_KEY=...
+K2_THINK_API_KEY=...
 
+### models: gpt-4.1,gpt-5.1,gpt-5-mini,gemini-2.5-pro,k2-think
+LLM_OPTIMIZER="k2-think"
+LLM_EVALUATOR="gpt-5.1"
 ```
 
 

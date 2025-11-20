@@ -1,0 +1,36 @@
+Protocol NonReversible:
+
+Declarations:
+senc/2, f/2, sk/2;
+
+Types:
+Agent A, B;
+Number NB, NA, tag1, tag2, tag3, tag6, tag7;
+Symmetric_key K;
+Mapping sk : (Agent, Agent) -> Symmetric_key;
+
+Knowledge:
+A : A, sk(A,B);
+B : B, sk(A,B);
+
+Public:
+A, B, tag1, tag2, tag3, tag6, tag7;
+
+Private:
+sk(A,B);
+
+Actions:
+[m1] B -> A (NB) : senc{ tag1 . B . NB }sk(A,B);
+[m2] A -> B (NA, K) : senc{ tag2 . f(tag6, NB) . NA . A . K }sk(A,B);
+[m3] B -> A : senc{ tag3 . f(tag7, NA) }K;
+
+Goals:
+Authentication(A, B);
+Authentication(B, A);
+A knows B knows K;
+NA secret between A, B;
+K secret;
+
+ChannelKeys:
+K(A,B): K;
+end

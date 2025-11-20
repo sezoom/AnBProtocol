@@ -1,0 +1,36 @@
+Protocol ISO9798MutualAuth:
+
+Declarations:
+    sign/2;
+
+Types:
+    Agent A,B,T;
+    Number NA,NB,tagInit,tagResp,Dom,Text1,Text3;
+    Function sign/2;
+    Mapping pk/1, sk/1;
+
+Knowledge:
+    A : sk(A), pk(T);
+    B : sk(B), pk(T);
+    T : sk(T);
+
+Public:
+    pk(A), pk(B), pk(T);
+
+Private:
+    sk(A), sk(B), sk(T);
+
+Actions:
+    [m1] A -> B (NA) : sign{ A . pk(A) }sk(T) . sign{ tagInit . NA . B . Text1 . Dom }sk(A);
+    [m2] B -> A (NB) : sign{ B . pk(B) }sk(T) . sign{ tagResp . NB . A . Text3 . Dom }sk(B);
+
+Goals:
+    B authenticates A via (sign{ A . pk(A) }sk(T), sign{ tagInit . NA . B . Text1 . Dom }sk(A));
+    A authenticates B via (sign{ B . pk(B) }sk(T), sign{ tagResp . NB . A . Text3 . Dom }sk(B));
+    B authenticates Text1 origin as A with NA;
+    A authenticates Text3 origin as B with NB;
+
+ChannelKeys:
+;
+
+end
