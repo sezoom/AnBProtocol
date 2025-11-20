@@ -1,8 +1,0 @@
-
- C->SP:{KC.C.SP.URI}_KSP					| Request of a resource
- SP->C:{{C.IDP.AuthReq(ID.SP).URI}_inv(KSP)}_KIDP
- C->IDP:{C.IDP.AuthReq(ID.SP).URI}_KIDP			| Authentication through an identity provider
- IDP->C:{{SP.{C.IDP.SP}_kidp-1.URI)}_inv(KIDP)}_KC
- C->SP:{{{C.IDP.SP}_kidp-1.URI}_inv(KC)}_KSP			| Identity confirmation
- SP->C:{{Resource(URI)}_inv(SP)}_KC
- 

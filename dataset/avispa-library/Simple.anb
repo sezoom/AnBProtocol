@@ -1,9 +1,0 @@
-
-  WR --> PS: SUBSCRIBE
-  PS --> WR: Challenge.realm (a nonce and id of the user domain)
-  WR --> PS: Hash(Username.Challenge.Password)
-  PS --> WR: PresenceInfo
-
-  WR = Watcher
-  PS = Presence Server
- 

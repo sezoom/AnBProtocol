@@ -1,6 +1,0 @@
-
-  A -> B: A, PK_A, hash(PK_A)
-  A -> B: {Msg}_inv(PK_A), hash(PK_A)
-  B -> A: Nonce
-  A -> B: {Nonce}_inv(PK_A)
- 
