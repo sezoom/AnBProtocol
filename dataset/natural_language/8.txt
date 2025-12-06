@@ -3,7 +3,7 @@
 This is a four-step asymmetric-key authentication protocol between A (the initiator) and B (the responder), using public-key encryption (`aenc`), signatures (implicit via private-key encryption with `sk()`), and a hash function `h`.
 
 1. A sends a message M signed with its private key, allowing B to verify A’s identity and message integrity.
-2. B includes its public key and identity, plus a signed nonce N for freshness and authentication.
+2. B sends its public key and identity, plus a signed nonce N for freshness and authentication.
 3. A encrypts B’s nonce N and its own public key under B’s public key, confirming receipt and mutual key knowledge.
 4. B finishes by sending a hash over M, B, and N to confirm both parties share the same session context and message history.
 

@@ -6,18 +6,22 @@ Declarations:
 
 Types:
     Agent A,B,S;
-    Number Kb,M;
-    Mapping pk
+    Number M;
+    Symmetric_key kb;
+    Mapping pk, sk;
+
 
 Knowledge:
-    A : B, S, pk(A), sk(A);
-    B : A, S, pk(S);
-    S : A, B, sk(S), pk(S), pk(A);
+    A : A, B, S, pk(A), sk(A), pk(S);
+    B : A, B, S, pk(B), sk(B), pk(S);
+    S : A, B, S, pk(S), sk(S), pk(A);
 
 Public:
-    pk(A), pk(S);
+    pk(A), pk(B), pk(S);
+
 Private:
-    sk(A), sk(S);
+    sk(A), sk(B), sk(S);
+
 
 Actions:
     [msg1] A -> S      : aenc{ A . pk(A) }sk(A);

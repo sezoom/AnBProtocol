@@ -24,7 +24,10 @@ Actions:
     [p3] A -> B     : senc{ h(m) }k(A,B);
 
 Goals:
-
+    B -> A : n;
+    A -> B : m;
+    n secret between A,B;
+    m secret between A,B;
 ChannelKeys:
 
 end

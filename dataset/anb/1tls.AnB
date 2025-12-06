@@ -5,30 +5,34 @@ Declarations:
     senc/2;
     hash/1;
     prf/3;
-    clientK/3;
-    serverK/3;
 Types:
-    Agent A,B,s;
-    Number NA,NB,Sid,PA,PB,PMS,tagTLS1,tagTLS2,tagTLS3,tagTLS4,tagTLS5,tagTLS6,tagTLS7,tagTLS8,tagTLS9;
+    Agent A,B,S;
+    Number NA,NB,Sid,PA,PB,PMS,tagTLS1,tagTLS2,tagTLS3,tagTLS4;
     Function hash,clientK,serverK,prf;
-    Mapping pk
+    Mapping pk,sk
 Knowledge:
-    A: pk(A), sk(A), pk(B), pk(s);
-    B: pk(B), sk(B), pk(A), pk(s);
+    A : A, B, S, pk(A), sk(A), pk(B), pk(S);
+    B : A, B, S, pk(B), sk(B), pk(A), pk(S);
+    S : S, pk(S), sk(S);
 
 Public:
-    pk(A),pk(B);
+    pk(A),pk(B), pk(S);
 Private:
-    sk(A), sk(B);
+    sk(A), sk(B), sk(S);
 
 Actions:
-    [m1] A -> B (NA, Sid, PA) : A . NA . Sid . PA . tagTLS4;
-    [m2] B -> A (NB)         : NB . Sid . PB . aenc{B . pk(B)}sk(s);
+Actions:
+    [m1] A -> B (NA,Sid,PA) :
+        A . B . Sid . NA . PA . tagTLS1;
+
+    [m2] B -> A (NB,PB) :
+        B . A . Sid . NA . NB . PB . tagTLS2
+        . aenc{ B . pk(B) }sk(S);
     [m3] A -> B (PMS)        : aenc{A . pk(A)}sk(s)
                                . aenc{PMS}pk(B)
-                               . aenc{hash(NB . B . PMS . tagTLS5)}sk(A)
-                               . senc{hash(prf(PMS, NA, NB) . A . B . NA . NB . Sid . PA . PB . PMS . tagTLS3)}clientK(NA, NB, prf(PMS, NA, NB));
-    [m4] B -> A              : senc{hash(prf(PMS, NA, NB) . A . B . NA . NB . Sid . PA . PB . PMS . tagTLS2)}serverK(NA, NB, prf(PMS, NA, NB));
+                               . aenc{hash(NB . B . PMS . tagTLS3)}sk(A)
+                               . senc{ hash( A . B . Sid . NA . NB . PA . PB ) }K(A,B)
+    [m4] B -> A              : senc{hash( A . B . NA . NB . Sid . PA . PB . PMS . tagTLS4)}K(B,A);
 
 Goals:
     /*  B authenticates A on prf(PMS,NA,NB); */
@@ -36,8 +40,8 @@ Goals:
     prf(PMS,NA,NB) secret between A,B;
 
 ChannelKeys:
-    K(A,B): clientK(NA,NB,prf(PMS,NA,NB));
-    K(B,A): serverK(NA,NB,prf(PMS,NA,NB));
+    K(A,B): prf(PMS,NA,NB);
+    K(B,A): prf(PMS,NA,NB);
 
 end
 

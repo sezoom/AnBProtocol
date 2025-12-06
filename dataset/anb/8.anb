@@ -12,7 +12,7 @@ Types:
 
 Knowledge:
     A : sk(A), pk(A), pk(B), B, M;
-    B : sk(B), pk(B), pk(A), A, N;
+    B : sk(B), pk(B), pk(A), A;
 
 Public:
     pk(A), pk(B);
@@ -22,12 +22,12 @@ Private:
 Actions:
     [step1] A -> B (M) : aenc{ M }sk(A);
     [step2] B -> A (N) : pk(B) . B . aenc{ N }sk(B);
-    [step3] A -> B     : aenc{ pk(A) . N . B }pk(B);
+    [step3] A -> B     : aenc{ pk(A) . N }pk(B);
     [step4] B -> A     : h(M . B . N);
 
 Goals:
- B ->* A : (A, M);
- A ->* B : (B, N);
+ B ->* A : A . M;
+ A ->* B : B . N;
 
 ChannelKeys:
 

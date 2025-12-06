@@ -25,6 +25,7 @@ Actions:
 Goals:
     A ->* B : N1
     B ->* A : N2
+    (g()^x)^y secret between A,B;
 
 ChannelKeys:
     K(B,A) = (g()^x)^y;

@@ -5,6 +5,9 @@ Protocol: ISO_onepass_symm # Verified & Certified
 # The FP-module of OFMC currently does not handle injective
 # authentication
 
+Declarations:
+    senc/2;
+
 Types:
        Agent   A, B;
        Number  nA, text1;
@@ -16,5 +19,11 @@ Knowledge:
 
 Actions:
     [msg1] A -> B (nA) : senc{nA . B . text1}sk(A,B);
+
+Goals:
+    M secret between A,B;
+    B ->* A : NA . B . M;
+
+ChannelKeys:
 
 end

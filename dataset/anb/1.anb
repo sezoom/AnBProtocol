@@ -5,15 +5,17 @@ Declarations:
 
 Types:
     Agent A,B;
-    Number Na, M;
+    Number NA,M;
+    Symmetric_key Ks;
 
 Knowledge:
-    A: Ks, M;
-    B: Ks;
+    A : A, B, Ks, M;
+    B : A, B, Ks;
 
 Public:
 
 Private:
+    Ks, M;
 
 Actions:
     [m1] A -> B (Na): Na;
@@ -21,6 +23,8 @@ Actions:
     [m3] A -> B     : senc{M}Ks;
 
 Goals:
+    B -> A : NA;
+    M secret between A,B;
 
 ChannelKeys:
 
