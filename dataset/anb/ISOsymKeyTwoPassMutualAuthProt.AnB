@@ -5,20 +5,22 @@ Declarations:
 
 Types:
     Agent A,B;
-    Number NA,NB,Text1,Text2,Text3,Text4,tag,tagITMS1,tagITMS2;
-    Mapping sk
+    Number NA,NB,Text1,Text2,Text3,tag,tagITMS1,tagITMS2;
+    Symmetric_key skAB;
 
 Knowledge:
-    A: A, B, sk(A,B), tag;
-    B: B, A, sk(A,B), tag;
+    A : A, B, KAB, tagITMS1,tagITMS2,tag;
+    B : A, B, KAB, tagITMS1,tagITMS2,tag;
+
 
 Public:
 
 Private:
+    skAB;
 
 Actions:
-    [m1] A -> B (NA) : senc{ tagITMS1 . NA . B . Text1 . tag }sk(A,B);
-    [m2] B -> A (NB) : senc{ tagITMS2 . NB . A . Text3 }sk(A,B);
+    [m1] A -> B (NA) : senc{ tagITMS1 . NA . B . Text1 . tag }skAB;
+    [m2] B -> A (NB) : senc{ tagITMS2 . NB . A . Text3 }skAB;
 
 Goals:
     B ->* A : Text3;

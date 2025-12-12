@@ -2,13 +2,13 @@ Protocol NonReversible:
 
 Declarations:
     senc/2;
+    f/2
 
 Types:
     Agent A,B;
     Number NA,NB,tagNonReversible1,tagNonReversible2,tagNonReversible3,tagNonReversible4,tagNonReversible5,tagNonReversible6,tagNonReversible7;
-    Symmetric_key K;
+    Symmetric_key K, skAB;
     Function f;
-    Mapping sk
 
 Knowledge:
     A: A, B, sk(A,B), f;
@@ -21,13 +21,14 @@ Private:
 Actions:
     [m1] B -> A (NB)        : tagNonReversible1 . B . NB;
     [m2] A -> B (NA . K)    : tagNonReversible2 . A .
-                               senc{ tagNonReversible3 . f(tagNonReversible6, NB) . NA . A . K }sk(A,B);
+                               senc{ tagNonReversible3 . f{tagNonReversible6, NB} . NA . A . K }skAB;
     [m3] B -> A             : tagNonReversible4 . B .
-                               senc{ tagNonReversible5 . f(tagNonReversible7, NA) }K;
+                               senc{ tagNonReversible5 . f{tagNonReversible7, NA} }K;
 
 Goals:
     A *->* B : NA;
     B *-> A : NB;
+    K secret between A,B;
 
 ChannelKeys:
 

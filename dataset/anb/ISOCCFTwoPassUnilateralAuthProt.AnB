@@ -1,7 +1,7 @@
 Protocol ISO_twopass_CCF:
 
 Declarations:
-    f/4;
+    mac/2;
 
 Types:
     Agent A,B;
@@ -14,12 +14,12 @@ Knowledge:
     B: B, A, sk(A,B), f;
 
 Public:
-
+    A,B;
 Private:
-
+    skAB;
 Actions:
     [m1] B -> A (NB) : tagISOTCCF1 . NB;
-    [m2] A -> B      : f(sk(A,B), NB, B, Text2) . NB . B . Text2;
+    [m2] A -> B      : mac{ NB. B. Text2}skAB . NB . B . Text2;
 
 Goals:
 A *-> B: Text2

@@ -4,19 +4,19 @@ Declarations:
     aenc/2;
 
 Types:
-    Agent A,B,s;
-    Number RA,RB,Text1,Text2,Text3,tagISO_twopass_symm1,tagISO_twopass_symm2;
+    Agent A,B,S;
+    Number RA,RB,Text1,Text2,tagISO_twopass_symm1,tagISO_twopass_symm2;
     Mapping pk,sk
 
 Knowledge:
-    A: A, B, pk(A), sk(A), pk(s);
-    B: B, pk(s);
+    A: A, B, pk(A), sk(A), pk(S);
+    B: B, pk(S);
 
 Public:
-    pk(s);
+    pk(A),pk(B),pk(S);
 
 Private:
-    sk(A), sk(s);
+    sk(A), sk(s),sk(B);
 
 Actions:
     [m1] B -> A (RB) : tagISO_twopass_symm1 . RB;

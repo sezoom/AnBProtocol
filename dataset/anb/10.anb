@@ -12,11 +12,11 @@ Types:
     Mapping pk,sk;
 
 Knowledge:
-    A : A, sk(A), pk(A), M;
-    B : B, sk(B), pk(B);
+    A : A,B, sk(A), pk(A), M;
+    B : B,A, sk(B), pk(B);
 
 Public:
-    pk(A), pk(B);
+    A,B,pk(A), pk(B);
 Private:
     sk(A), sk(B);
 

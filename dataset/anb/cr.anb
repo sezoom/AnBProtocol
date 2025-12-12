@@ -11,7 +11,14 @@ Types:
     Mapping 	pk;
 
 Knowledge:
-    C: pk(R);
+    C: C,R,pk(C),sk(C),pk(R);
+    R: C,R,pk(R),sk(R),pk(C);
+
+Public:
+    pk(C), pk(R);
+
+Private:
+    sk(C), sk(C);
 
 Actions:
     [cr1] C -> R (n) : aenc{n}pk(R);
@@ -20,7 +27,10 @@ Actions:
 Goals:
     /* Goals that hold */
     n secret between C, R;
-    R ->* C : n;
-    R -> C : n;
+    h(n) secret between C,R;
+    R ->* C : h(n);
+
+
+ChannelKeys:
 
 end

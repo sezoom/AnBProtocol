@@ -16,7 +16,7 @@ Knowledge:
     S : S, pk(S), sk(S);
 
 Public:
-    pk(A),pk(B), pk(S);
+    pk(A),pk(B), pk(S), A,B, S;
 Private:
     sk(A), sk(B), sk(S);
 

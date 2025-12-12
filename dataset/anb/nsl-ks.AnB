@@ -4,34 +4,34 @@ Declarations:
     aenc/2;
 
 Types:
-    Agent A,B,s;
+    Agent A,B,S;
     Number NA,NB,tagNSLKeyServer1,tagNSLKeyServer2,tagNSLKeyServer3,tagNSLKeyServer4,tagNSLKeyServer5,tagNSLKeyServer6,tagNSLKeyServer7;
     Mapping pk,sk
 
 Knowledge:
-    A: A, B, s, pk(A), sk(A), pk(s);
-    B: B, s, pk(B), sk(B), pk(s);
-    s: s, pk(A), pk(B), pk(s), sk(s);
+    A: A, B, S, pk(A), sk(A), pk(S);
+    B: A,B, S, pk(B), sk(B), pk(S);
+    S: A,B,S, pk(A), pk(B), pk(S), sk(S);
 
 Public:
-    pk(A), pk(B), pk(s);
+    pk(A), pk(B), pk(S);
 
 Private:
-    sk(A), sk(B), sk(s);
+    sk(A), sk(B), sk(S);
 
 Actions:
-    [m1] A -> s             : tagNSLKeyServer1 . A . B;
-    [m2] s -> A             : aenc{ tagNSLKeyServer2 . B . pk(B) }sk(s);
+    [m1] A -> S             : tagNSLKeyServer1 . A . B;
+    [m2] S -> A             : aenc{ tagNSLKeyServer2 . B . pk(B) }sk(S);
     [m3] A -> B (NA)        : aenc{ tagNSLKeyServer3 . NA . A }pk(B);
-    [m4] B -> s             : tagNSLKeyServer4 . B . A;
-    [m5] s -> B             : aenc{ tagNSLKeyServer5 . A . pk(A) }sk(s);
+    [m4] B -> S             : tagNSLKeyServer4 . B . A;
+    [m5] S -> B             : aenc{ tagNSLKeyServer5 . A . pk(A) }sk(S);
     [m6] B -> A (NB)        : aenc{ tagNSLKeyServer6 . NA . NB . B }pk(A);
     [m7] A -> B             : aenc{ tagNSLKeyServer7 . NB }pk(B);
 
 
-endGoals:
-A *->* B: NA
-B *->* A: NB
+Goals:
+A -> B: NA
+B -> A: NB
 
 ChannelKeys:
 

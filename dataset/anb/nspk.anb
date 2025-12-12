@@ -26,7 +26,7 @@ Actions:
 Goals:
     Na secret between A,B;
     Nb secret between A,B;
-
+    A -> B : Na.Nb;
 ChannelKeys:
 
 end

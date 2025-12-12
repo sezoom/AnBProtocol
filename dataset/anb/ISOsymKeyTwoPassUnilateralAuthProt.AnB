@@ -6,19 +6,20 @@ Declarations:
 Types:
     Agent A,B;
     Number NB,Text2,tagITS1,tagITS2;
-    Mapping sk
+    Symmetric_key skAB;
+
 
 Knowledge:
-    A: A, B, sk(A,B);
-    B: B, A, sk(A,B);
+    A: A, B, skAB;
+    B: B, A, skAB;
 
 Public:
 
 Private:
-
+    skAB;
 Actions:
     [m1] B -> A (NB) : tagITS1 . NB;
-    [m2] A -> B      : senc{ tagITS2 . NB . B . Text2 }sk(A,B);
+    [m2] A -> B      : senc{ tagITS2 . NB . B . Text2 }skAB;
 
 Goals:
     B ->* A : Text2;

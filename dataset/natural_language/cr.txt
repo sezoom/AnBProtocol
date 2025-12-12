@@ -1,12 +1,5 @@
-# CR Protocol
+Protocol CR specifies a very simple two-message challenge–response exchange between a client C and a responder R, using public-key encryption and a hash function to provide basic authentication and secrecy for a single fresh value. Each agent X has a public key pk(X) and corresponding private key sk(X). The public keys pk(C) and pk(R) are available to both parties and to the environment, while each private key is known only to its owner. The cryptographic primitives are public-key encryption aenc{·}pk(X), which ensures that only X (using sk(X)) can decrypt the ciphertext, and a one-way hash function h(·).
 
-This is a simple challenge–response exchange between client C and responder R, using public-key encryption and a hash for verification.
+The protocol consists of two messages. In message cr1, C chooses a fresh nonce n and sends aenc{ n }pk(R) to R. Because this value is encrypted under pk(R), only R, as the holder of sk(R), can recover n. This step ensures that n is initially shared only between C and R, even if the surrounding communication channel is observable. After decrypting cr1 and obtaining n, R responds with message cr2, which consists of the hash of that nonce, h(n), sent back to C in the clear. Since only a party that has seen n can compute h(n), this response demonstrates that R has successfully decrypted C’s message and learned n.
 
-1. C → R: `aenc{ n }_{pk(R)}` — C sends a fresh nonce n encrypted under R’s public key; only R can decrypt it.
-2. R → C: `h(n)` — R replies with the hash of n, proving it successfully decrypted the first message and thus possesses the matching private key.
-
-Security properties:
-
-* Secrecy: n is confidential between C and R (protected by public-key encryption).
-* Authentication: C verifies R’s identity — only R can return `h(n)` correctly.
-* Freshness: ensured by C’s fresh nonce n.
+The intended security goals of Protocol CR are that the nonce n and its hash h(n) remain secrets shared only between C and R, and that C gains (non-injective) authentication evidence about R through the receipt of h(n). In particular, the goal R ->* C : h(n) expresses that whenever C accepts h(n) as a valid response, there exists a corresponding run in which R computed h(n) based on the same nonce n. No session keys or long-lived channel keys are established by this protocol; it serves purely as a minimal challenge–response mechanism in which C proves R’s ability to decrypt under pk(R) by verifying the hash of a value that was initially known only to C.

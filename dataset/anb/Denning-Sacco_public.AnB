@@ -10,9 +10,15 @@ Types:
     Mapping 		pk, sk;
 
 Knowledge:
-    A: B, S, pk(S);
-    B: A, S, pk(S);
-    S: A, B, pk(A), pk(B);
+    A: A,B, S,pk(A),sk(A), pk(S);
+    B: A,B, S,pk(B),sk(B), pk(S);
+    S: S,A, B, pk(A), pk(B);
+
+Public:
+    pk(A), pk(B), pk(S);
+
+Private:
+    sk(A), sk(B), sk(S);
 
 Actions:
     [m1] A -> S            	: A.B;
@@ -25,5 +31,8 @@ Actions:
 Goals:
     B ->* A : kAB;
     kAB secret between A, B;
+
+ChannelKeys:
+    K(A,B): kAB;
 
 end

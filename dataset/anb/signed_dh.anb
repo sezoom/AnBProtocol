@@ -1,30 +1,48 @@
 Protocol SIGNED_DIFFIE_HELLMAN:
-
 Declarations:
     aenc/2;
+    senc/2;
+    hash/1;
     g/0;
+    kdf/2;
 
 Types:
     Agent A,B;
-    Number x,y,tagSDH1,tagSDH2;
-    Mapping pk,sk
+    Number x,y,RA,RB;
+    Symmetric_key K,DHkey;
+    Function hash,kdf;
+    Mapping pk,sk;
 
 Knowledge:
-    A: pk(A), sk(A), pk(B), B;
-    B: pk(B), sk(B), pk(A), A;
-
+    A : A, B, pk(A), sk(A), pk(B);
+    B : A, B, pk(B), sk(B), pk(A);
 Public:
-    pk(A), pk(B);
+    pk(A), pk(B), g();
 
 Private:
     sk(A), sk(B);
 
 Actions:
-    [dh_1] A -> B (x) : aenc{ tagSDH1 . A . B . g()^x }sk(A);
-    [dh_2] B -> A (y) : aenc{ tagSDH2 . B . A . g()^y }sk(B);
+    [step1] A -> B (x) :
+        g()^x;
+
+    [step2] B -> A (y) :
+        g()^y .
+        senc{ aenc{ hash(g()^y . g()^x) }sk(B) }DHkey;
+        /*where DHkey = kdf( (g()^x)^y , "STS" );*/
+
+    [step3] A -> B (DHkey) :
+        senc{ aenc{ hash(g()^x . g()^y) }sk(A) }DHkey;
+        /*where DHkey = kdf( (g()^y)^x , "STS" );*/
 
 Goals:
-    g()^(x*y) secret between A,B;
+    B -> A : hash(g()^x . g()^y);
+    A -> B : hash(g()^x . g()^y);
 
+    DHkey secret between A,B;
+
+ChannelKeys:
+    K(A,B): DHkey;
+    K(B,A): DHkey;
 
 end

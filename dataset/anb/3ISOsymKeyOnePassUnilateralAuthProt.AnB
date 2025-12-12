@@ -11,14 +11,18 @@ Declarations:
 Types:
        Agent   A, B;
        Number  nA, text1;
-       Mapping sk
+       Symmetric_key skAB;
 
 Knowledge:
-    A : A, B, sk(A,B), text1;
-    B : B, A, sk(A,B);
+    A : A, B, skAB, text1;
+    B : B, A, skAB;
 
+Public:
+    A,B;
+Private:
+    skAB;
 Actions:
-    [msg1] A -> B (nA) : senc{nA . B . text1}sk(A,B);
+    [msg1] A -> B (nA) : senc{nA . B . text1}skAB;
 
 Goals:
     M secret between A,B;

@@ -13,7 +13,7 @@ Knowledge:
     B : A, B, Ks;
 
 Public:
-
+    A,B;
 Private:
     Ks, M;
 

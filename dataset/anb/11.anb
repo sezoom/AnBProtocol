@@ -13,11 +13,12 @@ Types:
     Mapping pk
 
 Knowledge:
-    A : pk(B), B;
-    B : pk(A), A;
+    A : A, B, pk(A), sk(A), pk(B), g();
+    B : A, B, pk(A), pk(B), sk(B), g();
+
 
 Public:
-    pk(A), pk(B);
+    pk(A), pk(B), g();
 Private:
     sk(A), sk(B);
 
@@ -32,9 +33,11 @@ Goals:
     A -> B : (A, B, g^na, g^nb, g^(na*nb), N);
 
     N secret between A,B;
-    g^nb*na secret between A,B;
+    g^(nb*na) secret between A,B;
+    g^(na*nb) secret between A,B;
 
 ChannelKeys:
-    K(A,B) : g^na*nb;
+    K(A,B) : g^(nb*na);
+    K(B,A) : g^(na*nb)
 end
 
