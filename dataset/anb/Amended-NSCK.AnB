@@ -7,36 +7,35 @@ Declarations:
 Types:
     Agent 		  A, B, S;
     Number 		  nA, nB, nB0;
-    Symmetric_key kAB;
-    Mapping 	  sk;
+    Symmetric_key SK,KA,KB ;
     Function 	  pre;
 
 Knowledge:
-    A: A, B, sk(A,S), pre;
-    B: B, A, sk(B,S), pre;
-    S: A, B, sk(A,S), sk(B,S), pre;
+    A: A, B, KA;
+    B: B, A, KB;
+    S: A, B, KA, KB;
 
 Actions:
     [m1] A -> B            : A;
-    [m2] B -> A (nB0)      : senc{ A . nB0 }sk(B,S);
-    [m3] A -> S (nA)       : A . B . nA . senc{ A . nB0 }sk(B,S);
-    [m4] S -> A            : senc{ nA . B . kAB . senc{ kAB . nB0 . A }sk(B,S) }sk(A,S);
-    [m5] A -> B            : senc{ kAB . nB0 . A }sk(B,S);
-    [m6] B -> A (nB)       : senc{ nB }kAB;
-    [m7] A -> B            : senc{ pre(nB) }kAB;
+    [m2] B -> A (nB0)      : senc{ A . nB0 }KB;
+    [m3] A -> S (nA)       : A . B . nA . senc{ A . nB0 }KB;
+    [m4] S -> A            : senc{ nA . B . KAB . senc{ KAB . nB0 . A }KB }KA;
+    [m5] A -> B            : senc{ KAB . nB0 . A }KB;
+    [m6] B -> A (nB)       : senc{ nB }KAB;
+    [m7] A -> B            : senc{ pre(nB) }KAB;
 
 Goals:
-    B ->  A : (A, B, kAB, nB);
-    A ->* B : (A, B, kAB, nB);
-    A ->  S : (A, B, kAB, nA);
-    B ->* S : (A, B, kAB, nB0);
+    B ->  A : (A, B, KAB, nB);
+    A ->* B : (A, B, KAB, nB);
+    A ->  S : (A, B, KAB, nA);
+    B ->* S : (A, B, KAB, nB0);
 
-    kAB secret between A,B,S;
+    KAB secret between A,B,S;
     nB secret between A,B;
     nB0 secret between B,S;
 
 ChannelKeys:
-    K(A,S) : sk(A,S);
-    K(B,S) : sk(B,S);
+    K(A,B) : KAB;
+    K(B,A) : KAB;
 
 end

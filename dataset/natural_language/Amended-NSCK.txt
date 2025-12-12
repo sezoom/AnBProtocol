@@ -1,30 +1,13 @@
-# Amended Needham–Schroeder with Key Confirmation (AmendedNSCK)
+Protocol AmendedNSCK specifies a symmetric-key establishment and mutual authentication protocol between two principals, A and B, assisted by a trusted server S acting as a key distribution center. A shares a long-term symmetric key KA with S, and B shares a long-term symmetric key KB with S. The session key to be established between A and B is denoted KAB. The protocol also uses nonces nA, nB, and nB0 for freshness, and a unary function pre(·) applied to nB for key confirmation. Symmetric encryption under a key K is denoted senc{·}K.
 
-Three roles: A (initiator), B (responder), and S (trusted key server). Each shares a long-term symmetric key with S: `sk(A,S)` and `sk(B,S)`. The goal is to establish a fresh session key kAB for secure communication between A and B.
+The protocol begins when A initiates contact with B by sending message m1, which contains only A’s identity (A). Upon receiving this, B generates a fresh nonce nB0 and replies in message m2 with senc{ A . nB0 }KB, i.e., a value containing A’s identity and nB0, encrypted under KB. This message serves as a challenge token tied to both A and B and is readable only by B and the server S, since only they know KB. A cannot decrypt this value, but uses it as evidence of B’s participation in the next step.
 
-Flow
+In message m3, A requests a session key from S to communicate with B. A sends to S the tuple A . B . nA . senc{ A . nB0 }KB, where nA is a fresh nonce chosen by A. This message identifies both endpoints, carries A’s own freshness value nA, and forwards the encrypted token from B unchanged, enabling S to verify that B has contributed a fresh challenge nB0 specific to A. Upon receiving m3, S decrypts the component under KB, recovers A . nB0, checks that it matches the rest of the request, and then generates a fresh session key KAB for A and B.
 
-1. A → B: `A` — A announces its identity to B.
-2. B → A: `senc{ A · nB0 }_{sk(B,S)}` — B responds with a nonce nB0, encrypted for S, which A cannot read.
-3. A → S: `A · B · nA · senc{ A · nB0 }_{sk(B,S)}` — A requests a key from S to communicate with B, forwarding B’s encrypted blob and its own nonce nA.
-4. S → A: `senc{ nA · B · kAB · senc{ kAB · nB0 · A }_{sk(B,S)} }_{sk(A,S)}` — S issues a fresh session key kAB, binding it to both identities and the nonces, and includes a “ticket” for B encrypted under `sk(B,S)`.
-5. A → B: `senc{ kAB · nB0 · A }_{sk(B,S)}` — A forwards the ticket, enabling B to obtain kAB.
-6. B → A: `senc{ nB }_{kAB}` — B challenges A with a fresh nonce nB using the new key.
-7. A → B: `senc{ pre(nB) }_{kAB}` — A replies with a one-way transformation of nB to confirm possession of kAB.
+S responds to A with message m4: senc{ nA . B . KAB . senc{ KAB . nB0 . A }KB }KA. This message, encrypted under KA, assures A that it originates from S and is intended for A. Inside, S includes the nonce nA to bind the response to A’s request, the identity of B, the newly generated session key KAB, and an inner “ticket” senc{ KAB . nB0 . A }KB intended for B. A decrypts m4 using KA, verifies that the included nA matches its own challenge, and accepts KAB as the session key for communication with B. A does not modify the inner ticket.
 
-Goals & Security Properties
+In message m5, A forwards the ticket senc{ KAB . nB0 . A }KB to B. B decrypts this ticket using its long-term key KB and obtains KAB, along with nB0 and A’s identity. By checking that the nB0 inside the ticket equals the nonce sent earlier in m2, B confirms that this key is fresh and linked to the ongoing run with A. Both A and B now share the session key KAB, which is designated as the channel key K(A,B) and K(B,A) for secure communication.
 
-* Mutual authentication:
+The final part of the protocol provides mutual key confirmation and authentication between A and B under KAB. In message m6, B sends senc{ nB }KAB to A, where nB is a fresh nonce chosen by B. This proves that B possesses KAB and initiates a challenge to A. In message m7, A responds with senc{ pre(nB) }KAB, applying the function pre(·) to B’s nonce and encrypting the result under the same session key. Successful decryption and verification of pre(nB) assures B that A received nB and that A also holds KAB.
 
-  * `B -> A : (A,B,kAB,nB)` — B authenticates A (strong).
-  * `A ->* B : (A,B,kAB,nB)` — A weakly authenticates B.
-  * `A -> S : (A,B,kAB,nA)` — A authenticates S on the issued key.
-  * `B ->* S : (A,B,kAB,nB0)` — B weakly authenticates S.
-* Secrecy:
-
-  * `kAB` is secret among A, B, and S.
-  * `nB` remains secret between A and B.
-  * `nB0` remains secret between B and S.
-
-Summary:
-AmendedNSCK securely distributes a fresh session key via a trusted server, includes explicit key confirmation steps (6–7), and mitigates replay attacks found in the classic Needham–Schroeder protocol. It achieves mutual authentication and key freshness with confidentiality across all subchannels.
+The intended security goals of AmendedNSCK are that B explicitly authenticates A on the tuple (A, B, KAB, nB) and that A weakly authenticates B on the same tuple; similarly, A explicitly authenticates S on (A, B, KAB, nA), and B weakly authenticates S on (A, B, KAB, nB0). The session key KAB is required to remain secret between A, B, and S, while nB remains secret between A and B, and nB0 remains secret between B and S. The bidirectional channel keys K(A,B) and K(B,A) are both instantiated as the established session key KAB.

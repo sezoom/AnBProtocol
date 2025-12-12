@@ -1,15 +1,13 @@
-# Denning-Sacco protocol
+Protocol DenningSacco specifies a symmetric key–distribution and data-protection mechanism in which a trusted server S provides a fresh session key kAB for use between two agents A and B. A and S share a long-term symmetric key skAS, and B and S share a long-term symmetric key skBS. These long-term keys are used only to protect communication with S and are assumed to be known exclusively to the respective pairs (A,S) and (B,S). The session key kAB is intended to be used subsequently by A and B as a bidirectional channel key. A timestamp or validity parameter t is included in the server’s messages to constrain the lifetime of the session key. Symmetric encryption under a key K is written as senc{…}K.
 
-Three roles: A (initiator), B (responder), and trusted server S. A and B each share a long-term key with S: `sk(A,S)` and `sk(B,S)`. The aim is to get a fresh session key kAB for A↔B.
+The protocol begins when A requests a key for communication with B. In message m1, A sends A.B to S, identifying itself and the intended peer B. This request does not need to be confidential, but it informs S that A wishes to establish a fresh session key with B.
 
-Flow
+Upon receiving the request, S generates a session key kAB and associates it with a validity parameter t (for example, a timestamp or an expiration time). S then constructs message m2, sent to A as
+senc{ B . kAB . t . senc{ A . kAB . t }skBS }skAS.
+The outer encryption under skAS ensures that only A can read this response. Inside, S includes the identity of B, the session key kAB, the validity parameter t, and a “ticket” for B: senc{ A . kAB . t }skBS, which is encrypted under the long-term key skBS known only to B (and S). On decrypting m2 using skAS, A learns kAB, confirms that the ticket is for B, and obtains the validity information t. A does not modify the ticket itself.
 
-1. A → S: `A · B` — A requests a key to talk to B.
-2. S → A: `senc{ B · kAB · t · senc{ A · kAB · t }_{sk(B,S)} }_{sk(A,S)}` — S creates kAB and timestamp t, returning them to A along with a ticket for B (the inner part encrypted under `sk(B,S)`).
-3. A → B: `senc{ A · kAB · t }_{sk(B,S)}` — A forwards the ticket so B can recover kAB and learn A’s identity.
-4. B → A: `senc{ payload }_{kAB}` — B uses kAB to send protected application data (or an ack).
+In message m3, A forwards the ticket senc{ A . kAB . t }skBS to B. Since this component is encrypted under skBS, A cannot read or alter its contents beyond forwarding it. B decrypts the ticket with skBS and thus recovers A’s identity, the session key kAB, and the associated parameter t. At this point, both A and B share the session key kAB, which they may use for secure communication in both directions; it is designated as K(A,B) and K(B,A).
 
-Assurances
+Once kAB is established, B can send application data securely to A. In message m4, B sends senc{ payload }kAB, where payload represents the data B wishes to deliver to A. Because this message is encrypted under kAB, only a party that knows kAB—intended to be A—can recover the payload. When A successfully decrypts m4 and obtains payload, A gains assurance that the data came from someone who knows kAB, which, given the preceding key distribution steps, should be B.
 
-* Secrecy: `kAB` is secret between A and B (issued by S).
-* Authentication: `B ->* A : payload` — B (weakly) authenticates A on the delivered `payload`, since it’s protected under the server-issued kAB bound to A in the ticket.
+The intended security goals are that kAB remains secret between A and B and is not disclosed to other parties, and that B non-injectively authenticates to A on the value payload (expressed as B ->* A : payload). In other words, whenever A accepts a payload protected under kAB, there exists a corresponding run in which B sent that payload encrypted with the same session key. The session key kAB is used as the channel key in both directions for subsequent secure communication.

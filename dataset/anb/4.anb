@@ -9,11 +9,11 @@ Types:
     Number x, y, N1, N2;
 
 Knowledge:
-    A: g();
-    B: g();
+    A: A,B, g();
+    B: A,B,g();
 
 Public:
-    g();
+    g(),A,B;
 
 Private:
 
@@ -25,6 +25,7 @@ Actions:
 Goals:
     A ->* B : N1
     B ->* A : N2
+    (g()^x)^y secret between A,B;
 
 ChannelKeys:
     K(B,A) = (g()^x)^y;

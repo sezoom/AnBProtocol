@@ -6,13 +6,16 @@ Declarations:
 
 Types:
     Agent A,B,C;
-    Number Ka,Kb,Kf,N1,N2;
+    Number N1,N2;
+    Symmetric_key Ka,Kb,Kf;
     Function h;
 
 Knowledge:
-    A: B, C, Ka;
-    B: A, C, Kb;
+    A: A, B, C, Ka;
+    B: A, B, C, Kb;
     C: A, B, Ka, Kb;
+
+Public:
 
 Private:
     Ka, Kb;
@@ -34,5 +37,5 @@ Goals:
     kf secret between A,B,C;
 
 ChannelKeys:
-    K(A,B) : kf;
+    K(A,B) : Kf;
 end

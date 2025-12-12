@@ -4,23 +4,23 @@ Declarations:
     aenc/2;
 
 Types:
-    Agent A,B,s;
+    Agent A,B;
     Number NA,Text1,tagISO_onepass_pk1,tagISO_onepass_pk2;
     Mapping pk,sk
 
 Knowledge:
-    A: A, B, pk(A), sk(A), pk(s);
-    B: B, pk(s);
+    A: A, B, pk(A), sk(A), pk(B);
+    B: B,A, pk(B),sk(B), pk(A);
 
 Public:
-    pk(A), pk(s);
+    pk(A), pk(B);
 
 Private:
-    sk(A), sk(s);
+    sk(A), sk(B);
 
 Actions:
     [m1] A -> B (NA) :
-        aenc{ tagISO_onepass_pk1 . A . pk(A) }sk(s) .
+        aenc{ tagISO_onepass_pk1 . A . pk(A) }sk(A) .
         aenc{ tagISO_onepass_pk2 . NA . B . Text1 }sk(A);
 
 Goals:

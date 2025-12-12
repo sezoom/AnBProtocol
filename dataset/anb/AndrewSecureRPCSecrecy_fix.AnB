@@ -10,9 +10,13 @@ Types:
     Function succ;
 
 Knowledge:
-    A: B, sk(A,B), succ;
-    B: A, sk(A,B), succ;
+    A: B, sk(A,B);
+    B: A, sk(A,B);
 
+Public:
+
+Private:
+    sk(A,B);
 Actions:
     [m1] A -> B (nA)   : A . senc{ nA }sk(A,B);
     [m2] B -> A (nB)   : senc{ succ(nA) . nB }sk(A,B);
@@ -28,4 +32,5 @@ Goals:
     nB  secret between A,B;
     nB2 secret between A,B;
 
+ChannelKeys:
 end

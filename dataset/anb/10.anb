@@ -9,14 +9,14 @@ Types:
     Agent A,B;
     Number Kf,M;
     Function h;
-    Mapping pk
+    Mapping pk,sk;
 
 Knowledge:
-    A : A, sk(A), pk(A), M;
-    B : B, sk(B), pk(B);
+    A : A,B, sk(A), pk(A), M;
+    B : B,A, sk(B), pk(B);
 
 Public:
-    pk(A), pk(B);
+    A,B,pk(A), pk(B);
 Private:
     sk(A), sk(B);
 
@@ -26,7 +26,7 @@ Actions:
     [msg3] A -> B      : aenc{ senc{ M }Kf . A . B }pk(B);
 
 Goals:
-    B ->* A : (A, Kf);
+    B ->* A : Kf;
 
 ChannelKeys:
 

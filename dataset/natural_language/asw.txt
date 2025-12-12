@@ -1,19 +1,13 @@
-# ASW Protocol
+Protocol ASW specifies a public-key–based authentication mechanism between two agents, A and B, aimed at providing (at least) non-injective agreement on a message m, with the option of stronger agreement for A. Each agent X has a public key pk(X) and a corresponding private key sk(X). The keys sk(A) and sk(B) are private to A and B respectively, while the public keys pk(A) and pk(B) are available to both parties and to the environment. The protocol uses aenc{·}sk(X) to denote a public-key signature by X (i.e., encryption with the private key, verifiable using the public key), and a hash function h(·) applied to nonces n_1 and n_2 for freshness and binding.
 
-Two agents A and B use public-key encryption and hashes to authenticate and agree on a message m.
+The protocol assumes that A initially knows the message m it wishes to agree on with B. To start, in message asw1, A sends to B a signature over the tuple consisting of both parties’ public keys, the message m, and the hash of a nonce n_1:
+aenc{ pk(A) . pk(B) . m . h(n_1) }sk(A).
+This binds m and h(n_1) to the identities of A and B, and proves that the sender is in possession of A’s private key. The nonce n_1 itself is not yet revealed; only its hash appears inside the signed structure.
 
-Flow:
+Upon receiving asw1, B verifies the signature using pk(A) and extracts the values pk(A), pk(B), m, and h(n_1). B then chooses its own fresh nonce n_2 and constructs message asw2:
+aenc{ aenc{ pk(A) . pk(B) . m . h(n_1) }sk(A) . h(n_2) }sk(B).
+This is a signature by B over the entire signed message received from A together with h(n_2). In doing so, B explicitly acknowledges A’s signed data and binds its own fresh contribution h(n_2) to the same message m and the same pair of principals A and B.
 
-1. A → B: `aenc{ pk(A) · pk(B) · m · h(n₁) }_{sk(A)}` — A signs (encrypts with its private key) a tuple containing both identities, m, and a hash of a fresh nonce n₁, proving origin and binding the message to both parties.
-2. B → A: `aenc{ aenc{ pk(A) · pk(B) · m · h(n₁) }_{sk(A)} · h(n₂) }_{sk(B)}` — B confirms receipt by signing the entire first message along with a hash of its own nonce n₂, thus acknowledging A’s message.
-3. A → B: sends n₁ in the clear so B can verify `h(n₁)`.
-4. B → A: sends n₂ in the clear so A can verify `h(n₂)`.
+In message asw3, A reveals the original nonce n_1 in the clear to B. Because B already holds h(n_1) from asw1/asw2, it can verify that the received n_1 matches the previously hashed value, thus confirming that A is the party that chose n_1 and sent the initial signature. Similarly, in message asw4, B sends the nonce n_2 in the clear to A. A can then compute h(n_2) and verify that it matches the hash value inside B’s signed message asw2. This confirms to A that B indeed generated n_2 and signed the acknowledgement of A’s data.
 
-Goals:
-
-* Weak (non-injective) agreement: both A and B agree on m (A→*B:m, B→*A:m).
-* Injective agreement: A strongly authenticates B on m (A→B:m).
-* Unmet goals: B does *not* achieve injective authentication of A, and m is *not confidential* (revealed by signatures).
-
-Summary:
-ASW provides mutual but asymmetric authentication on m using nested signed encryptions and nonces for freshness. However, it does not guarantee secrecy of m, and B’s authentication of A is only weak (non-injective).
+The intended security goals are expressed as agreement properties on the message m. First, A is intended to non-injectively agree with B on m, meaning that whenever A completes the protocol believing it has run with B, there exists a corresponding run by B in which B also believes the same message m was agreed (but multiple A-runs could correspond to the same B-run). This is written as A ->* B : m. Symmetrically, B non-injectively agrees with A on m, expressed as B ->* A : m. Additionally, a stronger property is stated for A: A injectively agrees with B on m, written as A -> B : m, which means that each completed run of A with message m corresponds to a unique matching run of B on the same message. No channel keys are derived by this protocol; instead, its purpose is to provide mutual authentication and agreement on m using signatures and challenge–response based on the nonces n_1 and n_2.

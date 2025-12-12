@@ -7,5 +7,5 @@ Three roles: A (sender), B (receiver), and a trusted server S.
 3. S → B: `senc{ pk(A) }_{Kb}` — S returns A’s public key protected under Kb, attesting to it for B.
 4. B → A: `aenc{ M }_{pk(A)}` — Using that key, B sends an encrypted message M to A.
 
-Goal (as specified): `B ->* S : pk(A)` — B (weakly) authenticates that S vouches for pk(A) (i.e., B accepts pk(A) as S’s assertion).
+Goal: `B ->* S : pk(A)` — B (weakly) authenticates that S vouches for pk(A) (i.e., B accepts pk(A) as S’s assertion).
 Notes: This is essentially a directory/PK distribution service; confidentiality of `pk(A)` is ensured toward B via Kb, and authenticity relies on A’s signed submission to S and S’s trusted role. Freshness hinges on B choosing a fresh Kb.

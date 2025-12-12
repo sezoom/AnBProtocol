@@ -1,15 +1,9 @@
-# Protocol Twelve
+Protocol Twelve specifies a symmetric-key establishment and mutual authentication protocol between two agents, A and B, mediated by a trusted key-distribution server C. Each of A and B shares a distinct long-term symmetric key with C: agent A shares Ka with C, and agent B shares Kb with C. These keys Ka and Kb are considered private and are not known to any other party. All agents know each other’s identities A, B, and C. The protocol uses symmetric encryption senc{·}K under key K, and a hash function h(·) for deriving confirmation values.
 
-Three roles: A and B are peers; C is a key-distribution server (KDC).
+The protocol begins when A requests a fresh session key to communicate securely with B by sending message m1, which consists only of the identities of the participants, A . B, to C. On receiving this request, C generates a fresh session key Kf to be used between A and B. C then sends message m2 back to A, consisting of two encrypted components: senc{Kf}Ka, which A can decrypt using the long-term key Ka, and senc{Kf}Kb, which is intended for B and is protected under the long-term key Kb. At this point, A can recover Kf from the component encrypted under Ka, and holds an opaque “ticket” for B containing the same session key under Kb.
 
-1. A asks C to set up with B by sending identities of A and B.
-2. C creates a fresh session key Kf and returns two encrypted copies of Kf to A: one is encrypted with A's key Ka, and the other is encrypted with B's key Kb.
-3. A decrypts its copy to learn Kf, and forwards B's sealed copy `senc{Kf}Kb` to B so B can obtain Kf
-4. Then they confirm the key with a nonce exchange protected by Kf: B sends `senc{N2}Kf`, and A sends `senc{N1}Kf`, and B sends `senc{h(N1)}Kf` to prove decryption.
+In message m3, A forwards the second component senc{Kf}Kb to B. Upon receipt, B decrypts this component using its long-term key Kb and thereby recovers the same session key Kf. At the end of this key-distribution phase, A, B, and C all share knowledge of Kf, while no other party should know it. The agreed session key Kf is designated as the channel key K(A,B) for secure communication between A and B.
 
-Intended guarantees:
+The subsequent messages implement mutual authentication and key confirmation between A and B using Kf. First, in message m4, B sends to A an encrypted nonce N2 as senc{N2}Kf, demonstrating that B possesses Kf and initiating a challenge. A then responds with message m5, sending its own nonce N1 encrypted as senc{N1}Kf. Finally, in message m6, B sends back senc{h(N1)}Kf, which is the hash of A’s nonce protected under the same session key. By verifying that the value decrypts correctly and matches h(N1), A becomes convinced that B both received N1 and holds the session key Kf. Similarly, B’s successful processing of messages m4 and m5 assures B that it is communicating with the holder of Kf on A’s side.
 
-* Weak auth of C: A and B each accept Kf as issued by C.
-* Weak auth of B to A on key+nonce: `A ->* B : (Kf, N1)`.
-* Secrecy: `N1` and `N2` are secret between A and B; Kf is secret among A, B, and C.
-* Channel key: `K(A,B) = Kf` for subsequent protected communication.
+The intended security goals of Protocol Twelve are that both A and B accept the fresh session key Kf as provided by C, and that Kf remains secret between A, B, and C. Additionally, A and B are intended to agree on the pair (Kf, N1) as part of their shared session state, with the nonces N1 and N2 remaining secret between A and B. The final channel key for communication between A and B is Kf, and the protocol’s authentication properties rely on the secrecy of the long-term keys Ka and Kb and on the integrity of the encrypted and hashed values exchanged under Kf.

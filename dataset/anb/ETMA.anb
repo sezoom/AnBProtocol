@@ -1,0 +1,40 @@
+Protocol OTWAY_REES:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B,S;
+    Number n1,n2,i;
+    Symmetric_key K1,K2,KC;
+
+Knowledge:
+    A: K1, A, B, S;
+    B: K2, A,B,S;
+    S: K1,K2,A,B,S;
+
+Public:
+    A,B,S;
+Private:
+    K1,K2,KC;
+Actions:
+    [step1] A -> B (n1, i) :
+        i . A . B . senc{ n1 . i . A . B }K1;
+    [step2] B -> S (n2) :
+        i . A . B . senc{ n1 . i . A . B }K1 .
+        senc{ n2 . i . A . B }K2;
+    [step3] S -> B (KC) :
+        i . senc{ n1 . KC }K1 .
+        senc{ n2 . KC }K2;
+    [step4] B -> A :
+        i . senc{ n1 . KC }K1;
+
+Goals:
+  A -> B : KC.i.n1.n2;
+  B -> A :KC.i.n1.n2;
+  KC secret between A,B;
+
+ChannelKeys:
+    K(A,B): KC;
+    K(B,A): KC;
+end

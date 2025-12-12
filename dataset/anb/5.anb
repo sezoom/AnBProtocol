@@ -8,23 +8,26 @@ Types:
     Agent A,B;
     Number n,m;
     Function h;
-    Mapping k
+    Symmetric_key kAB; 
 
 Knowledge:
-    A : A, B, k(A,B);
-    B : A, B, k(A,B);
+    A : A, B, kAB;
+    B : A, B, kAB;
 Public:
-
+    A,B;
 Private:
-    k(A,B);
+    kAB;
 
 Actions:
-    [p1] A -> B (n) : senc{ A . B . n . h(n) }k(A,B);
-    [p2] B -> A (m) : senc{ m }k(A,B);
-    [p3] A -> B     : senc{ h(m) }k(A,B);
+    [p1] A -> B (n) : senc{ A . B . n . h(n) }kAB;
+    [p2] B -> A (m) : senc{ m }kAB;
+    [p3] A -> B     : senc{ h(m) }kAB;
 
 Goals:
-
+    B -> A : n;
+    A -> B : m;
+    n secret between A,B;
+    m secret between A,B;
 ChannelKeys:
 
 end

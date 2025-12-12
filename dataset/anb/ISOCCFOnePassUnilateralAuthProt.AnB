@@ -1,28 +1,28 @@
 Protocol ISO_onepass_CCF:
 
 Declarations:
-    f/5;
+    mac/2;
 
 Types:
     Agent A,B;
     Number NA,Text1,Text2,tagISO_onepass_CCF1,tagISO_onepass_CCF2;
-    Function f;
-    Mapping sk
+    Function mac;
+    Symmetric_key skAB;
 
 Knowledge:
-    A: A, B, sk(A,B), f;
-    B: B, A, sk(A,B), f;
+    A: A, B, skAB;
+    B: B, A, skAB;
 
 Public:
-
+    A,B;
 Private:
-
+    skAB;
 Actions:
-    [m1] A -> B : tagISO_onepass_CCF1 . NA . B . Text2 .
-                  f(tagISO_onepass_CCF2, sk(A,B), NA, B, Text1) . Text1;
+    [m1] A -> B (NA) : tagISO_onepass_CCF1 . NA . B . Text2 .
+                  mac{tagISO_onepass_CCF2. NA. B. Text1}skAB . Text1;
 
 Goals:
-    B ->* A : Text1;
+    B ->* A : NA. B . Text1;
 
 ChannelKeys:
 

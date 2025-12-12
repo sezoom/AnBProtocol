@@ -6,22 +6,26 @@ Declarations:
 Types:
     Agent 	      A, B, S;
     Number 		  t, payload;
-    Symmetric_key kAB;
-    Mapping 	  sk
+    Symmetric_key kAB , skAS, skBS;
+
 
 Knowledge:
-    A: B, S, sk(A,S);
-    B: A, S, sk(B,S);
-    S: A, B, sk(A,S), sk(B,S);
+    A: A,B, S, skAS;
+    B: A, B,S, skBS;
+    S: S, A, B, skAS, skBS;
 
 Actions:
     [m1] A -> S             : A.B;
-    [m2] S -> A (kAB, t)    : senc{B.kAB.t.senc{A.kAB.t}sk(B,S)}sk(A,S);
-    [m3] A -> B             : senc{A.kAB.t}sk(B,S);
+    [m2] S -> A (kAB, t)    : senc{B.kAB.t.senc{A.kAB.t}skBS}skAS;
+    [m3] A -> B             : senc{A.kAB.t}skBS;
     [m4] B -> A (payload)	: senc{payload}kAB;
 
 Goals:
     kAB secret between A,B;
     B ->* A : payload
+
+ChannelKeys:
+    K(A,B): kAB;
+    K(B,A): kAB;
 
 end

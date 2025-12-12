@@ -9,13 +9,14 @@ Types:
     Number N, M;
 
 Knowledge:
-    A: Ks;
-    B: Ks;
+    A : A, B, Ks;
+    B : A, B, Ks;
+
 
 Public:
-
+    A, B;
 Private:
-
+    ks;
 
 Actions:
     [m1] A -> B (N) : N;
@@ -23,6 +24,7 @@ Actions:
     [m3] A -> B (M) : senc{xor(M, N)}Ks;
 
 Goals:
+    M secret between A,B;
 
 ChannelKeys:
 

@@ -9,17 +9,20 @@ Types:
     Mapping pk
 
 Knowledge:
-    B : pk(A);
+    A: A, pk(A), sk(A);
+    B : B, pk(B),sk(B),pk(A);
 
 Public:
-    pk(A);
+    A,B, pk(B), pk(A);
 Private:
-    sk(A);
+    sk(A), sk(B);
 
 Actions:
     [a1] A -> B (n) : aenc{ n }sk(A);
 
 Goals:
-    n secret between A,B;
+    B -> A: n;
+
+ChannelKeys:
 
 end

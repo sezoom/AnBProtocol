@@ -11,8 +11,8 @@ Types:
     Mapping pk
 
 Knowledge:
-    A : m, pk(B), B;
-    B : pk(A), A;
+    A : A, pk(A) , sk(A), m, pk(B), B;
+    B : B, pk(B), sk(B), pk(A), A;
 
 Public:
     pk(A), pk(B);
@@ -33,10 +33,7 @@ Goals:
     B ->* A : m
     /* [strongA] A injectively agrees with B on m; */
     A -> B : m
-    /* Goals that do not hold */
-    /* [strongB] B injectively agrees with A on m; */
-    B -> A : m
-    /* [secrecy] m secret between A,B; */
-     m secret between A,B;
+
+ChannelKeys:
 
 end
