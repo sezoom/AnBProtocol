@@ -93,18 +93,18 @@ Types:
 **Example**
 ```text
 Knowledge:
-    A : pk(A), sk(A), pk(B), B, NA0;
-    B : pk(B), sk(B), pk(A), A;
-    S : sk(S), pk(S), A, B;
+    A : A, B, S, pk(A), sk(A), pk(B), B, pk(S), NA0;
+    B : A, B,S, pk(B), sk(B), pk(A), pk(S);
+    S : S, sk(S), pk(S), A, B, pk(A), pk(B);
 ```
 
 ---
 
 ## 5) Public / Private
 
-- **Public:** terms initially known to the adversary (e.g., public keys).
-- **Private:** terms initially unknown to the adversary (e.g., private keys).
-- Keep sections empty if unused (optional), but preserve headers if you want the full skeleton.
+- **Public:** terms initially known to the adversary (e.g., public keys, identities).
+- **Private:** terms initially unknown to the adversary (e.g., private keys, secret keys).
+- Keep sections empty if unused, but preserve headers.
 
 ---
 
@@ -181,7 +181,7 @@ ChannelKeys:
 - **Nonces/Numbers:** `NA, NB, n, n_1, nb0`
 - **Tags:** `tag<Proto><#>` (e.g., `tagTLS1`)
 - **Keys:** `sk(A,B)`, `KAB`; public/private as `pk(A)`, `sk(A)`
-- **Functions:** `prf`, `succ`, `pre`, `h`
+- **Functions:** `f`, `pre`, `h`, `mac`
 
 ---
 
@@ -228,14 +228,14 @@ Types:
     Mapping pk,sk
 
 Knowledge:
-    A : pk(A), sk(A), pk(B), B;
-    B : pk(B), sk(B), pk(A), A;
+    A : pk(A), sk(A), pk(B), A,B;
+    B : pk(B), sk(B), pk(A), A,B;
 
 Public:
-    pk(A), pk(B);
+    A,B,pk(A), pk(B);
 
 Private:
-    sk(A), sk(B);
+    sk(A), sk(B), KAB;
 
 Actions:
     [e1] A -> B (NA) : aenc{ A . B . Sid . NA . tagE1 }sk(A);
