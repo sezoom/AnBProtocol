@@ -6,7 +6,7 @@ Declarations:
 
 Types:
     Agent A,B,S;
-    Number M;
+    Data M;
     Symmetric_key kb;
     Mapping pk, sk;
 

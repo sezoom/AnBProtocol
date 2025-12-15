@@ -6,7 +6,8 @@ Declarations:
 
 Types:
     Agent A,B;
-    Number N, M;
+    Number N;
+    Data M;
 
 Knowledge:
     A : A, B, Ks;

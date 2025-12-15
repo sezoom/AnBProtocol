@@ -79,6 +79,7 @@ Declarations:
 Types:
     Agent A,B,S;
     Number NA,NB,Sid,tagP1,tagP2;
+    Data M1,M2;
     Symmetric_key KAB;
     Function h,prf,pre;
     Mapping pk,sk
@@ -123,7 +124,7 @@ Knowledge:
   - **Symmetric:** `senc{ <term> }K` or `senc{ <term> }sk(A,B)`
   - **Hash:** `h(<term>)` (or `hash(<term>)`)
   - **Nesting:** allowed (e.g., `aenc{ X . senc{Y}K }pk(B)`)
-  - **DH/exponent:** `g()^na`, `g()^(na*nb)` (parenthesize as needed)
+  - **DH/exponent:** `g()^na`, `(g()^(na)^nb)` (parenthesize as needed)
 - **Multiple payloads:** prefer a single concatenated term using `.`
 
 **Examples**

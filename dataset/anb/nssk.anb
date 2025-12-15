@@ -2,13 +2,13 @@ Protocol nssk:
 
 Declarations:
     senc/2;
-    dec/1;
+    f/1;
 
 Types:
     Agent A,B,S;
     Number Na,Nb,tagNSSK1,tagNSSK2,tagNSSK3,tagNSSK4,tagNSSK5;
     Symmetric_key KAB,kBS,kAS;
-
+    Function f;
 Knowledge:
     A: kAS, B, A,S;
     B: kBS, A, S, A;

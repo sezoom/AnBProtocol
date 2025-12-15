@@ -6,7 +6,8 @@ Declarations:
 
 Types:
     Agent A,B;
-    Number n,m;
+    Number n;
+    Data m;
     Function h;
     Symmetric_key kAB; 
 

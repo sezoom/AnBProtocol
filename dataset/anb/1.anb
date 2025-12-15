@@ -5,7 +5,8 @@ Declarations:
 
 Types:
     Agent A,B;
-    Number NA,M;
+    Number NA;
+    Data M;
     Symmetric_key Ks;
 
 Knowledge:
