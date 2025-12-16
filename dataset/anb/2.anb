@@ -8,6 +8,8 @@ Types:
     Agent A,B;
     Number N;
     Data M;
+    Symmetric_key Ks;
+    Function xor;
 
 Knowledge:
     A : A, B, Ks;

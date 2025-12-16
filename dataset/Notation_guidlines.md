@@ -71,9 +71,10 @@ Declarations:
 - **Agent:** role/principal atoms, e.g., `Agent A,B,S;`
 - **Number:** nonces, tags, SIDs, payload atoms, exponents, e.g., `Number NA,NB,Sid,tagX1;`
 - **Symmetric_key:** named shared keys: `Symmetric_key KAB,KCG,KCS;`
-- **Function:** uninterpreted functions: `Function h,prf,pre;`
+- **Function:** uninterpreted functions: `Function h,prf,pre,xor;`
 - **Mapping:** maps like `pk/1`, `sk/1` (or `sk/2` for shared secrets)
 
+Any function other than aenc,senc shall be declared in Functions.
 **Example**
 ```text
 Types:
@@ -81,7 +82,7 @@ Types:
     Number NA,NB,Sid,tagP1,tagP2;
     Data M1,M2;
     Symmetric_key KAB;
-    Function h,prf,pre;
+    Function h,prf,pre, xor;
     Mapping pk,sk
 ```
 

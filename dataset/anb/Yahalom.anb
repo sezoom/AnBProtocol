@@ -6,11 +6,11 @@ Declarations:
 Types:
     Agent A,B,S;
     Number Na,Nb;
-    Symmetric_keys KAS,KBS,KAB;
+    Symmetric_key KAS,KBS,KAB;
 
 Knowledge:
     A : A, B, S, KAS;
-    B : B, S, KBS;
+    B : B, S, A, KBS;
     S : A, B, S, KAS, KBS;
 
 Public:
