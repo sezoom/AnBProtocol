@@ -1,4 +1,4 @@
-# Create the Markdown file with the unified style guide
+# Unified style guide
 
 
 ---
@@ -52,7 +52,7 @@ end
 ## 2) Declarations (Function Symbols)
 
 - List **all** term constructors with **arity**:
-  - `aenc/2`, `senc/2`, `hash/1` or `h/1`, `prf/3`, `pre/1`, `g/0`, etc.
+  - `aenc/2`, `senc/2`, `hash/1` or `h/1`, `prf/3`, `pre/1`, `g/0`,`kdf/2`, etc.
 - Declare only **symbols** here (no agents/variables).
 
 **Example**
@@ -69,7 +69,8 @@ Declarations:
 ## 3) Types
 
 - **Agent:** role/principal atoms, e.g., `Agent A,B,S;`
-- **Number:** nonces, tags, SIDs, payload atoms, exponents, e.g., `Number NA,NB,Sid,tagX1;`
+- **Number:** nonces, SIDs, payload atoms, exponents, e.g., `Number NA,NB;`
+- **Data:** messages, tags, ACK, e.g, `Data M,tag1,ACK;`
 - **Symmetric_key:** named shared keys: `Symmetric_key KAB,KCG,KCS;`
 - **Function:** uninterpreted functions: `Function h,prf,pre,xor;`
 - **Mapping:** maps like `pk/1`, `sk/1` (or `sk/2` for shared secrets)
@@ -82,7 +83,7 @@ Types:
     Number NA,NB,Sid,tagP1,tagP2;
     Data M1,M2;
     Symmetric_key KAB;
-    Function h,prf,pre, xor;
+    Function h,prf,pre, xor,kdf;
     Mapping pk,sk
 ```
 

@@ -1,10 +1,13 @@
 from pathlib import Path
 import re, pandas as pd, numpy as np
+import math
+from collections import Counter
 
 # ---------------- Normalization (full) ----------------
 _comment_block_re = re.compile(r"/\*.*?\*/", re.S)
 _comment_line1_re = re.compile(r"//.*?$", re.M)
 _comment_line2_re = re.compile(r"#.*?$", re.M)
+_comment_line3_re = re.compile(r"%.*?$", re.M)
 
 HEADER_KEYS = (
     "declarations","types","knowledge","public","private",
@@ -15,16 +18,17 @@ HEADER_KEYS = (
 KEYWORDS = set(HEADER_KEYS) | {
     "protocol", "end",
     "agent", "number", "nonce","data",
-     "symmetric_key", "function",
+    "symmetric_key", "function",
     "secret", "between",
     "public", "private", "knowledge", "actions", "goals", "channelkeys",
-    "senc", "aenc", "hash","pk", "sk"
+    "senc", "aenc", "hash","pk", "sk","k","g","kdf","K"
 }
 
 def strip_comments(s: str) -> str:
     s = _comment_block_re.sub(" ", s)
     s = _comment_line1_re.sub("", s)
     s = _comment_line2_re.sub("", s)
+    s = _comment_line3_re.sub("", s)
     return s
 
 def canonical_whitespace_and_tokens(s: str) -> str:
@@ -33,7 +37,7 @@ def canonical_whitespace_and_tokens(s: str) -> str:
     s = re.sub(r"\[\s*(?:m|step)\s*(\d+)\s*\]", r"[m\1]", s)
     s = strip_comments(s)
     s = re.sub(r"\s+", " ", s)
-    s = re.sub(r"\s*([,:;{}()\[\].])\s*", r"\1", s)  # tighten punctuation spacing
+    s = re.sub(r"\s*([,:;{}()\[\].])\s*", r"\1", s)  # tighten punctuation spacing (incl '.')
     s = re.sub(r"\s*->\s*\*\s*", "->*", s)
     s = re.sub(r"\s*->\s*", "->", s)
     return s.strip()
@@ -41,6 +45,7 @@ def canonical_whitespace_and_tokens(s: str) -> str:
 # ---------------- Helpers for structured normalization ----------------
 
 _id_re = re.compile(r"[a-z_][a-z0-9_]*")
+
 
 def split_top_level(s: str, seps: str = ",", openers: str = "{([", closers: str = "})]") -> list[str]:
     """
@@ -69,12 +74,54 @@ def split_top_level(s: str, seps: str = ",", openers: str = "{([", closers: str 
         res.append(seg)
     return res
 
+def strip_outer_parens(expr: str) -> str:
+    """
+    Remove redundant outer parentheses that wrap the whole expression.
+    E.g.  '((f1(n1,n2)))' -> 'f1(n1,n2)'
+          '(x)'           -> 'x'
+          'f1(n1,n2)'     -> 'f1(n1,n2)'  (unchanged)
+    """
+    expr = expr.strip()
+    while expr.startswith("(") and expr.endswith(")"):
+        depth = 0
+        ok = True
+        for i, ch in enumerate(expr):
+            if ch == "(":
+                depth += 1
+            elif ch == ")":
+                depth -= 1
+                # if we close the outermost paren before the end, we can't strip
+                if depth == 0 and i != len(expr) - 1:
+                    ok = False
+                    break
+        if not ok:
+            break
+        # outer parens wrap whole expr; strip them and repeat
+        expr = expr[1:-1].strip()
+    return expr
+
+def normalize_senc_payload(payload: str) -> str:
+    """
+    Normalize 'senc{X}(Y)', 'senc{X}((Y))', 'senc{X}Y' to the same form:
+       'senc{X}Y'
+    Only touches patterns starting with 'senc{...}'.
+    """
+    m = re.match(r"^(senc\{[^{}]*\})(.*)$", payload.strip())
+    if not m:
+        return payload
+    prefix, rest = m.groups()
+    rest = rest.strip()
+    if not rest:
+        return payload
+    rest_norm = strip_outer_parens(rest)
+    return prefix + rest_norm
+
 def parse_types_line(content: str, type_map: dict[str,str]) -> None:
     """
     Parse a single Types line, e.g.:
       'agent a,b,s'
       'number na,nb'
-      'symmetric_keys kas,kbs,kab'
+      'symmetric_key kas,kbs,kab'
     Fill type_map[name] = typename.
     """
     m = re.match(r"^([a-z_][a-z0-9_]*)\s+(.+)$", content)
@@ -93,10 +140,11 @@ def parse_types_line(content: str, type_map: dict[str,str]) -> None:
 def build_rename_map(type_map: dict[str,str]) -> dict[str,str]:
     """
     Build canonical abstract names per type:
-      agent -> ag1, ag2, ...
+      agent -> a1, a2, ...
       number/nonce -> n1, n2, ...
-      symmetric_keys/asymmetric_keys -> k1, k2, ...
-      text -> t1, ...
+      symmetric_key -> k1, k2, ...
+      data -> m1, ...
+      function -> f1, ...
     """
     names_by_type: dict[str, list[str]] = {}
     for name, typ in type_map.items():
@@ -107,15 +155,21 @@ def build_rename_map(type_map: dict[str,str]) -> dict[str,str]:
         "number": "n",
         "symmetric_key": "k",
         "data": "m",
-        "function":"f"
+        "function": "f"
     }
 
     rename_map: dict[str,str] = {}
     for typ, names in names_by_type.items():
         base = prefix_by_type.get(typ, "id")
-        #for idx, n in enumerate(sorted(set(names)), start=1):
-        for idx, n in enumerate(set(names), start=1):
-                rename_map[n] = f"{base}{idx}"
+        # preserve first-occurrence order per type
+        seen = set()
+        ordered = []
+        for n in names:
+            if n not in seen:
+                seen.add(n)
+                ordered.append(n)
+        for idx, n in enumerate(ordered, start=1):
+            rename_map[n] = f"{base}{idx}"
     return rename_map
 
 def make_abstractifier(rename_map: dict[str,str]):
@@ -179,36 +233,53 @@ def canonicalize_action_line(line: str) -> str:
     """
     For Actions:
       [p] A->B(Na,Nb):payload
-      - sort fresh identifiers (inside ())
-      - sort top-level payload components (after ':') by '.'
+
+      - We IGNORE the fresh list in the canonical form so
+        '[i3]a1->a2:senc{n3}f1(n1,n2)' and
+        '[i3]a1->a2(n3):senc{n3}f1(n1,n2)' are treated as equal.
+
+      - We normalize payloads of the form:
+          senc{n3}(f1(n1,n2)), senc{n3}((f1(n1,n2))), senc{n3}f1(n1,n2)
+        to a single canonical form:
+          senc{n3}f1(n1,n2)
+
+      - We sort top-level payload components (split by '.').
     """
     m = _action_re.match(line)
     if not m:
         return line  # fallback
-    label = (m.group("label") or "").strip()
-    src   = m.group("src").strip()
-    dst   = m.group("dst").strip()
-    fresh = (m.group("fresh") or "").strip()
+
+    label   = (m.group("label") or "").strip()
+    src     = m.group("src").strip()
+    dst     = m.group("dst").strip()
+    fresh   = (m.group("fresh") or "").strip()
     payload = m.group("payload").strip()
 
-    # Sort fresh identifiers (Na, Nb, ...) – treat ',' or '.' as separators
-    fresh_sorted = ""
+    # (1) Normalize payload around senc{...} to remove redundant parentheses
+    payload = normalize_senc_payload(payload)
+
+    # (2) (optional) still sort fresh identifiers internally,
+    #     but we DO NOT include them in the output string.
+    #     This makes '[i3]a1->a2:senc{n3}...' and
+    #     '[i3]a1->a2(n3):senc{n3}...' identical.
     if fresh:
         f_items = [x.strip() for x in split_top_level(fresh, seps=",.") if x.strip()]
         f_items = sorted(f_items)
         fresh_sorted = ",".join(f_items)
+    else:
+        fresh_sorted = ""
 
-    # Sort payload at top-level by '.'
+    # (3) Sort payload at top-level by '.'
     p_items = [x.strip() for x in split_top_level(payload, seps=".") if x.strip()]
     p_items = sorted(p_items)
     payload_sorted = ".".join(p_items)
 
+    # (4) Build canonical form (NO fresh list in header)
     out = ""
     if label:
         out += label
     out += f"{src}->{dst}"
-    if fresh_sorted:
-        out += f"({fresh_sorted})"
+    # We intentionally drop the '(fresh_sorted)' part here
     out += f":{payload_sorted}"
     return out
 
@@ -278,7 +349,7 @@ def clauses_from_text(s: str) -> list[str]:
         ln = re.sub(r"\[\s*(?:m|step)\s*(\d+)\s*\]", r"[m\1]", ln)
         # collapse whitespace
         ln = re.sub(r"\s+", " ", ln)
-        # tighten punctuation spacing
+        # tighten punctuation spacing (incl '.')
         ln = re.sub(r"\s*([,:;{}()\[\]\.])\s*", r"\1", ln)
         # normalize arrows
         ln = re.sub(r"\s*->\s*\*\s*", "->*", ln)
@@ -360,15 +431,7 @@ def clauses_from_text(s: str) -> list[str]:
 
     clauses: list[str] = []
 
-    # ---------- (2)+(3): aggregate Types section as linked-lists, sorted ----------
-    # if type_map:
-    #     names_by_type: dict[str, list[str]] = {}
-    #     for name, typ in type_map.items():
-    #         names_by_type.setdefault(typ, []).append(name)
-    #     for typ in sorted(names_by_type):
-    #         canon_names = sorted(rename_map[n] for n in set(names_by_type[typ]))
-    #         # single canonical clause per type
-    #         clauses.append(f"types:{typ}:{','.join(canon_names)}")
+    # ---------- (2)+(3): aggregate Types section as linked-lists, in order ----------
     if type_map:
         names_by_type: dict[str, list[str]] = {}
         for name, typ in type_map.items():
@@ -384,6 +447,7 @@ def clauses_from_text(s: str) -> list[str]:
                 seen.add(n)
                 canon_names.append(rename_map[n])
             clauses.append(f"types:{typ}:{','.join(canon_names)}")
+
     # ---------- Second pass (2)-(5): all other sections ----------
     for sec, content in structured:
         # Types already handled globally above
@@ -452,6 +516,42 @@ def load_clauses(path: Path) -> list[str]:
     with open(path, "r", errors="ignore") as f:
         return clauses_from_text(f.read())
 
+# ---------------- ROUGE implementations ----------------
+
+def _lcs_length(a, b) -> int:
+    """
+    Longest common subsequence length between sequences a and b.
+    """
+    m, n = len(a), len(b)
+    if m == 0 or n == 0:
+        return 0
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    for i in range(m):
+        ai = a[i]
+        row = dp[i]
+        row_next = dp[i + 1]
+        for j in range(n):
+            if ai == b[j]:
+                row_next[j + 1] = row[j] + 1
+            else:
+                row_next[j + 1] = max(row[j + 1], row_next[j])
+    return dp[m][n]
+
+def rouge_l_f1(reference_tokens, candidate_tokens) -> float:
+    """
+    ROUGE-L F1 based on LCS between reference_tokens and candidate_tokens.
+    """
+    ref = list(reference_tokens)
+    hyp = list(candidate_tokens)
+    if not ref or not hyp:
+        return 0.0
+    lcs_len = _lcs_length(ref, hyp)
+    r = lcs_len / len(ref)
+    p = lcs_len / len(hyp)
+    if r + p == 0:
+        return 0.0
+    return 2 * r * p / (r + p)
+
 # ---------------- IO helpers ----------------
 def build_name_map(d, allowed_ext={".anb"}):
     """
@@ -479,12 +579,12 @@ def build_name_map(d, allowed_ext={".anb"}):
 # ---------------- Metrics ----------------
 def compute_metrics(gt_dir, pred_dir):
     """
-    Compute EC & BER between GT and a prediction directory, using full normalization.
+    Compute EC, BER, Jaccard,  ROUGE-L between GT and a prediction directory,
+    using full normalization.
     Returns: df (per-file), agg (dict), details (dict)
     """
     gt_map  = build_name_map(gt_dir)
     pred_map = build_name_map(pred_dir)
-
 
     common = sorted(set(gt_map) & set(pred_map))
     if not common:
@@ -510,20 +610,29 @@ def compute_metrics(gt_dir, pred_dir):
         ec  = tp / gtn if gtn else np.nan
         ber = (fp + fn) / (gtn + pn) if (gtn + pn) else np.nan
         jac = tp / (tp + fp + fn) if (tp + fp + fn) else np.nan
+
+        #  ROUGE on tokenized normalized clauses
+        gt_tokens = " ".join(sorted(gt)).split()
+        pr_tokens = " ".join(sorted(pr)).split()
+        rougeL = rouge_l_f1(gt_tokens, pr_tokens)
+
         rows.append({
             "file": key,
             "gt_clauses": gtn, "pred_clauses": pn,
             "TP": tp, "FN": fn, "FP": fp,
-            "ExactCoverage_EC": ec, "BoundedErrorRate_BER": ber, "JaccardIndex": jac
+            "ExactCoverage_EC": ec,
+            "BoundedErrorRate_BER": ber,
+            "JaccardIndex": jac,
+            "ROUGE_L": rougeL,
         })
         details[key] = {
             "gt_only": sorted(gt - pr),
             "pred_only": sorted(pr - gt),
             "intersection": sorted(gt & pr),
         }
-        ######Debut:
-        if  key == "10.anb":
-            print(key)
+######Debug example################################
+        if 1 or key == "signed_dh.anb":
+            print("\n>>>",key)
             for i in details[key]:
                 print(f"\n{i}: {details[key][i]}")
             print("TP:",tp)
@@ -532,10 +641,11 @@ def compute_metrics(gt_dir, pred_dir):
             print("|gt|",len(gt))
             print("|pr|",len(pr))
             print("ExactCoverage_EC:",ec)
-            exit()
+            print("ROUGE_L:", rougeL)
+            # exit()
 
     cols = ["file","gt_clauses","pred_clauses","TP","FN","FP",
-            "ExactCoverage_EC","BoundedErrorRate_BER","JaccardIndex"]
+            "ExactCoverage_EC","BoundedErrorRate_BER","JaccardIndex","ROUGE_L"]
     df = pd.DataFrame(rows, columns=cols).sort_values("file").reset_index(drop=True)
 
     total_tp = int(df["TP"].sum())
@@ -552,6 +662,7 @@ def compute_metrics(gt_dir, pred_dir):
         "BER_macro_avg": float(df["BoundedErrorRate_BER"].mean()),
         "Jaccard_weighted": float(total_tp / (total_tp + total_fp + total_fn)) if (total_tp + total_fp + total_fn) else np.nan,
         "Jaccard_macro": float(df["JaccardIndex"].mean()),
+        "ROUGE_L_macro_avg": float(df["ROUGE_L"].mean()),
     }
     return df, agg, details
 
@@ -563,12 +674,12 @@ if __name__ == "__main__":
     GT = Path("../dataset/anb")
     # BD = Path("benchmark/outputResults_gemini-2.5-pro_gpt5.1/beforeDebate/")
     # AD = Path("benchmark/outputResults_gemini-2.5-pro_gpt5.1/afterDebate/")
-    # BD = Path("benchmark/outputResults_gpt4.1_gpt5.1_run2/beforeDebate/")
-    # AD = Path("benchmark/outputResults_gpt4.1_gpt5.1_run2/afterDebate/")
+    # BD = Path("benchmark/outputResults_gpt4.1_gpt5.1_run3/beforeDebate/")
+    # AD = Path("benchmark/outputResults_gpt4.1_gpt5.1_run3/afterDebate/")
     # BD = Path("benchmark/outputResults_k2-think_gpt5.1/beforeDebate/")
-    # AD = Path("benchmark/outputResults_k2-think_gpt5.1/afterDebate/")
-    BD = Path("benchmark/outputResults_k2-think_gpt5.1_run2/beforeDebate/")
-    AD = Path("benchmark/outputResults_k2-think_gpt5.1_run2/afterDebate/")
+    # AD = Path("benchmark/outputResults_k2-think_gpt5.1/beforeDebate/")
+    BD = Path("benchmark/outputResults_k2-think_gpt5.1_run3/beforeDebate/")
+    AD = Path("benchmark/outputResults_k2-think_gpt5.1_run3/afterDebate/")
     # BD = Path("benchmark/outputResults_gpt-5-mini_gpt5.1/beforeDebate/")
     # AD = Path("benchmark/outputResults_gpt-5-mini_gpt5.1/afterDebate/")
 

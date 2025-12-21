@@ -28,12 +28,10 @@ Actions:
 
     [step2] B -> A (y) :
         g()^y .
-        senc{ aenc{ hash(g()^y . g()^x) }sk(B) }DHkey;
-        /*where DHkey = kdf( (g()^x)^y , "STS" );*/
+        senc{ aenc{ hash(g()^y . g()^x) }sk(B) }kdf( (g()^x)^y , "STS" );
 
     [step3] A -> B (DHkey) :
-        senc{ aenc{ hash(g()^x . g()^y) }sk(A) }DHkey;
-        /*where DHkey = kdf( (g()^y)^x , "STS" );*/
+        senc{ aenc{ hash(g()^x . g()^y) }sk(A) }kdf( (g()^y)^x , "STS" );
 
 Goals:
     B -> A : hash(g()^x . g()^y);

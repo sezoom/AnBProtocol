@@ -17,6 +17,7 @@ Declarations:
 Types:
     Agent A,B,...;
     Number ...;
+    Data ...;
     Function ...;
     Mapping ...
 

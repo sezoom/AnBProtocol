@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Tuple, List, Dict, Callable
 import re
-from .state import Flow, Message,llm2
+from .state import Flow, Message,llm2,GUIDELINES
 from pathlib import Path
 from langchain_core.prompts import PromptTemplate
 from rich.console import Console
@@ -100,7 +100,7 @@ def MAD_score(state: GraphState) -> Tuple[float, list]:
         template=PROMPT_PATH.read_text(),
         input_variables=["flow_text"],
     )
-    feedback1 = (prompt | llm2).invoke({"flow_text": flow_raw}).content
+    feedback1 = (prompt | llm2).invoke({"flow_text": flow_raw,"guidelines":GUIDELINES}).content
 
     Console().print(Panel.fit(f"[bold]Agent 2:[/bold] {feedback1}", border_style="blue"))
     feedback.append(feedback1)

@@ -6,7 +6,8 @@ Declarations:
 
 Types:
     Agent A,B;
-    Number NA,NB,tagACK;
+    Number NA,NB;
+    Data tagACK;
     Function kdf;
 
 Knowledge:
