@@ -91,7 +91,7 @@ def batch(
             console.print(Panel.fit(f"[{i}/{len(files)}] Wrote [bold]{out_path}[/bold]", border_style="blue"))
         except Exception as e:
             console.print(Panel.fit(f"Error on {inp} -> {e}", border_style="red"))
-    os.system(f"mv ./src/outputWithoutDebate/ {output / 'beforeDebate'}")
+    os.system(f"mv ./outputWithoutDebate/* {output / 'beforeDebate/'}")
 
 if __name__ == "__main__":
     app()

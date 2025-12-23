@@ -6,22 +6,22 @@ Declarations:
 Types:
     Agent 	A, B;
     Number 	nA, nB, nB2;
-    Mapping sk;
+    Symmetric_key kAB;
     Function succ;
 
 Knowledge:
-    A: B, sk(A,B);
-    B: A, sk(A,B);
+    A: B, kAB;
+    B: A, kAB;
 
 Public:
 
 Private:
-    sk(A,B);
+    kAB;
 Actions:
-    [m1] A -> B (nA)   : A . senc{ nA }sk(A,B);
-    [m2] B -> A (nB)   : senc{ succ(nA) . nB }sk(A,B);
-    [m3] A -> B        : senc{ succ(nB) }sk(A,B);
-    [m4] B -> A (nB2)  : senc{ nB2 }sk(A,B);
+    [m1] A -> B (nA)   : A . senc{ nA }kAB;
+    [m2] B -> A (nB)   : senc{ succ(nA) . nB }kAB;
+    [m3] A -> B        : senc{ succ(nB) }kAB;
+    [m4] B -> A (nB2)  : senc{ nB2 }kAB;
 
 Goals:
     B ->  A : (A, B, nA, nB);
@@ -33,4 +33,5 @@ Goals:
     nB2 secret between A,B;
 
 ChannelKeys:
+
 end

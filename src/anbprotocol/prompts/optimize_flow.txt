@@ -1,4 +1,4 @@
-Read the feedback and double check if the protocol flow is correct or not. if not then update alice and bob to cover the raw_text. .
+Read the feedback and update the protocol accordingly.
 The protocol flow:
 {flow_text}
 
@@ -7,7 +7,7 @@ Given feedback:
 
 
 ==== Output Format (Restricted) ====
-Return Updated Alice and Bob protocol with respect to the template only. No other details.
+Return Updated notation with respect to the following template only. No other details or feedback.
 === Template ===
 Protocol <shortname>:
 
@@ -18,14 +18,15 @@ Types:
     Agent A,B,...;
     Number ...;
     Data ...;
-    Function ...;
-    Mapping ...
+    Function ....;
+    Mapping ....;
+
 
 Knowledge:
     A : ...;
     B : ...;
 Public:
-
+    ...;
 Private:
     ...;
 

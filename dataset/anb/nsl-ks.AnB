@@ -5,7 +5,8 @@ Declarations:
 
 Types:
     Agent A,B,S;
-    Number NA,NB,tagNSLKeyServer1,tagNSLKeyServer2,tagNSLKeyServer3,tagNSLKeyServer4,tagNSLKeyServer5,tagNSLKeyServer6,tagNSLKeyServer7;
+    Number NA,NB;
+    Data    tagNSLKeyServer1,tagNSLKeyServer2,tagNSLKeyServer3,tagNSLKeyServer4,tagNSLKeyServer5,tagNSLKeyServer6,tagNSLKeyServer7;
     Mapping pk,sk
 
 Knowledge:

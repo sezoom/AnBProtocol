@@ -1,5 +1,5 @@
 # Protocol ISO_onepass_symm
 
 This protocol is a one-pass symmetric key exchange between A and B.
-A sends a single encrypted message to B. A uses the shared secret key sk(A,B) to encrypt a fresh nonce nA, B’s identity, and a message m.
-This provides confidentiality and weak assurance that the message came from someone knowing sk(A,B).
+A sends a single encrypted message to B. A uses the shared secret key kAB to encrypt a fresh nonce nA, B’s identity, and a message m.
+This provides confidentiality and weak assurance that the message came from someone knowing kAB.

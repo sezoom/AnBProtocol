@@ -7,7 +7,8 @@ Declarations:
 
 Types:
     Agent C,ath,g,s;
-    Number N1,N2,T0,T1,T2,Payload,tag,
+    Number N1,N2,T0,T1,T2;
+    Data Payload,tag,
            tagKPKI1,tagKPKI2,tagKPKI3,tagKPKI4,tagKPKI5,tagKPKI6,tagKPKI7,
            tagKPKI8,tagKPKI9,tagKPKI10,tagKPKI11,tagKPKI12,tagKPKI13,tagKPKI14;
     Symmetric_key KCG,KCS,Ktemp,skag,skgs;

@@ -5,7 +5,8 @@ Declarations:
 
 Types:
     Agent A,B;
-    Number Na,Nb,tagNSPK1,tagNSPK2,tagNSPK3;
+    Number Na,Nb;
+    Data    tagNSPK1,tagNSPK2,tagNSPK3;
     Mapping pk,sk
 
 Knowledge:

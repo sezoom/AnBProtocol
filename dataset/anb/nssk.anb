@@ -6,8 +6,9 @@ Declarations:
 
 Types:
     Agent A,B,S;
-    Number Na,Nb,tagNSSK1,tagNSSK2,tagNSSK3,tagNSSK4,tagNSSK5;
-    Symmetric_key KAB,kBS,kAS;
+    Number Na,Nb;
+    Data tagNSSK1,tagNSSK2,tagNSSK3,tagNSSK4,tagNSSK5;
+    Symmetric_key kAS,kBS,KAB;
     Function f;
 Knowledge:
     A: kAS, B, A,S;
@@ -15,7 +16,7 @@ Knowledge:
     S: kAS, kBS, A, B, S;
 
 Public:
-
+    A,B,S;
 Private:
     kAS, kBS;
 Actions:

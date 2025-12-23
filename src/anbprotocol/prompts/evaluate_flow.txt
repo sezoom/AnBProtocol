@@ -4,12 +4,13 @@ You are an expert cryptographer. evaluate the Alice–Bob notation for the given
 ======= Guidelines ===
 {guidelines}
 
-Given Alice and bob protocol:
-{flow_text}
 
 Protocol description:
 <raw_text>
 
+======= Input ===
+Alice and bob protocol:
+{flow_text}
 
 
 ==== Output Format (Restricted) ====

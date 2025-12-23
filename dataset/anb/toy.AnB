@@ -11,8 +11,8 @@ Types:
     Function kdf;
 
 Knowledge:
-    A: B, kdf;
-    B  : A, kdf;
+    A:  A, B, tagACK;
+    B  : A, B;
 
 Public:
 

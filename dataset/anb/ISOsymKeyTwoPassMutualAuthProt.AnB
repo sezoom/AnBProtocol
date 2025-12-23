@@ -5,7 +5,8 @@ Declarations:
 
 Types:
     Agent A,B;
-    Number NA,NB,Text1,Text2,Text3,tag,tagITMS1,tagITMS2;
+    Number NA,NB;
+    Data    Text1,Text2,Text3,tag,tagITMS1,tagITMS2;
     Symmetric_key skAB;
 
 Knowledge:
@@ -14,7 +15,7 @@ Knowledge:
 
 
 Public:
-
+    A,B;
 Private:
     skAB;
 

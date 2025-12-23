@@ -4,13 +4,14 @@ Declarations:
     mac/2
 Types:
     Agent A,B;
-    Number NA,NB,Text2,Text4,tagISOTMC1;
+    Number NA,NB;
+    Data    Text2,Text4,tagISOTMC1;
     Symmetric_key skAB;
     Function mac;
 
 Knowledge:
-    A: A, B, skAB;
-    B: B, A, skAB;
+    A: A, B, skAB, Text2,Text4,tagISOTMC1;
+    B: B, A, skAB, Text2,Text4,tagISOTMC1;
 
 Public:
     A,B;

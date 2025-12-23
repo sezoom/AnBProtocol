@@ -1,12 +1,12 @@
 # Protocol Five
 
-This is a three-pass symmetric-key authentication and confirmation protocol between A and B, using their shared secret key k(A,B) and a hash function h.
+This is a three-pass symmetric-key authentication and confirmation protocol between A and B, using their shared secret key kAB and a hash function h.
 
 1. A initiates the exchange by sending A and B identities, a nonce n, and its hash h(n), encrypted under the shared key.
 2. B responds with a nonce m, encrypted with the same key, to provide freshness and confirm shared-key possession.
-3. A returns the hash of B’s nonce m, encrypted under k(A,B), confirming it received and correctly decrypted B’s message.
+3. A returns the hash of B’s nonce m, encrypted under kAB, confirming it received and correctly decrypted B’s message.
 
 Security properties:
-* Ensures mutual authentication, each party proves knowledge of k(A,B).
+* Ensures mutual authentication, each party proves knowledge of kAB.
 * Provides freshness via nonces n and m.
 * Maintains confidentiality and integrity of exchanged values through symmetric encryption and hashing.

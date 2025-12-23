@@ -9,7 +9,6 @@ Declarations:
 Types:
     Agent A,B;
     Number x,y,RA,RB;
-    Symmetric_key K,DHkey;
     Function hash,kdf;
     Mapping pk,sk;
 
@@ -30,7 +29,7 @@ Actions:
         g()^y .
         senc{ aenc{ hash(g()^y . g()^x) }sk(B) }kdf( (g()^x)^y , "STS" );
 
-    [step3] A -> B (DHkey) :
+    [step3] A -> B () :
         senc{ aenc{ hash(g()^x . g()^y) }sk(A) }kdf( (g()^y)^x , "STS" );
 
 Goals:
@@ -40,7 +39,7 @@ Goals:
     DHkey secret between A,B;
 
 ChannelKeys:
-    K(A,B): DHkey;
-    K(B,A): DHkey;
+    K(A,B): kdf( (g()^x)^y , "STS" );
+    K(B,A): kdf( (g()^x)^y , "STS" );
 
 end
