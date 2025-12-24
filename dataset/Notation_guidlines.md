@@ -86,7 +86,7 @@ Types:
     Function h,prf,pre, xor,kdf;
     Mapping pk,sk
 ```
-
+- if any type is empty, then omit the line.
 ---
 
 ## 4) Knowledge
@@ -128,7 +128,7 @@ Knowledge:
   - **Nesting:** allowed (e.g., `aenc{ X . senc{Y}K }pk(B)`)
   - **DH/exponent:** `g()^na`, `(g()^(na)^nb)` (parenthesize as needed)
 - **Multiple payloads:** prefer a single concatenated term using `.`
-
+ 
 **Examples**
 ```text
 [m1] A -> B (NA)        : aenc{ A . pk(A) . NA }sk(A);
