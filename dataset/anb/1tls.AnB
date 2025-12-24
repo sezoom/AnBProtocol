@@ -14,14 +14,13 @@ Types:
 Knowledge:
     A : A, B, S, pk(A), sk(A), pk(B), pk(S);
     B : A, B, S, pk(B), sk(B), pk(A), pk(S);
-    S : S, pk(S), sk(S);
+    S : S, pk(S), sk(S), B, A, pk(A),  pk(B);
 
 Public:
     pk(A),pk(B), pk(S), A,B, S;
 Private:
     sk(A), sk(B), sk(S);
 
-Actions:
 Actions:
     [m1] A -> B (NA,Sid,PA) :
         A . B . Sid . NA . PA . tagTLS1;

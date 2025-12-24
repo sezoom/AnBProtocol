@@ -309,7 +309,7 @@ def canonicalize_goal_line(line: str) -> str:
 def canonicalize_channelkey_line(line: str) -> str:
     """
     For ChannelKeys:
-      - Sort identifiers after ':' only (treat ',' or '.' as separators)
+      - Sort identifiers after ':' only (treat ','  as separator)
         e.g., K(A,B): K1.K2  -> K(A,B):K1,K2 (sorted)
     """
     if ":" not in line:
@@ -329,9 +329,7 @@ def clauses_from_text(s: str) -> list[str]:
       3) sorts sub-lists for sections except Actions/Goals/ChannelKeys,
       4) in Actions, sorts fresh IDs and payload only,
       5) in Goals & ChannelKeys, sorts IDs after ':' only.
-
-    IMPORTANT: Handles empty sections correctly, e.g.:
-
+      6) Handles empty sections correctly, e.g.:
         Public:
 
         Private:

@@ -11,11 +11,11 @@ Types:
     Function kdf;
 
 Knowledge:
-    A:  A, B, tagACK;
+    A:  A, B;
     B  : A, B;
 
 Public:
-
+A,B;
 Private:
 
 Actions:

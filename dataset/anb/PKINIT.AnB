@@ -16,13 +16,13 @@ Types:
     Mapping pk,sk
 
 Knowledge:
-    C   : C, ath, g, s, pk(ath), pk(C), sk(C), hash, tag;
-    ath : ath, g, pk(ath), sk(ath), skag, hash, tag;
-    g   : ath, g, skag, skgs, hash, tag;
-    s   : g, s, skgs, hash, tag;
+    C   : C, ath, g, s, pk(ath), pk(C), sk(C);
+    ath : ath, g, pk(ath), sk(ath), skag;
+    g   : ath, g, skag, skgs;
+    s   : g, s, skgs;
 
 Public:
-    pk(ath), pk(C);
+    C,ath,g,s,pk(ath), pk(C);
 
 Private:
     sk(ath), sk(C);

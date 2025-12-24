@@ -21,7 +21,7 @@ Knowledge:
 Public:
     A,B;
 Private:
-    kAB;
+    kAB, text1;
 Actions:
     [msg1] A -> B (nA) : senc{nA . B . text1}kAB;
 

@@ -16,7 +16,7 @@ Knowledge:
     B: B, A, skAB;
 
 Public:
-
+A,B;
 Private:
 
 Actions:

@@ -5,9 +5,6 @@ You are an expert cryptographer. evaluate the Alice–Bob notation for the given
 {guidelines}
 
 
-Protocol description:
-<raw_text>
-
 ======= Input ===
 Alice and bob protocol:
 {flow_text}

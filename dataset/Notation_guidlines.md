@@ -15,6 +15,7 @@ Declarations:
 Types:
     Agent A,B[, ...];
     Number <list of atoms>;
+    Data   <list of atoms>;
     Symmetric_key <list>;
     Function <list of function symbols>;
     Mapping <list of mapping symbols>
@@ -44,8 +45,7 @@ ChannelKeys:
 end
 ```
 
-- **Required:** `Protocol`, `Declarations`, `Types`, `Knowledge`, `Actions`, `end`  
-- **Optional:** `Public`, `Private`, `Goals`, `ChannelKeys`
+- **Required:** `Protocol`, `Declarations`, `Types`, `Knowledge`, `Actions`,  `Public`, `Private`, `Goals`, `ChannelKeys`, `end`
 
 ---
 
@@ -140,7 +140,7 @@ Knowledge:
 
 ## 7) Tags & Sessions
 
-- **Tags:** atoms under `Number` (e.g., `tagTLS3`, `tagANSCK4`) included as concatenands: `tagTLS3 . ...`
+- **Tags:** atoms under `Data` (e.g., `tagTLS3`, `tagANSCK4`) included as concatenands: `tagTLS3 . ...`
 - **Session IDs:** declare `Number Sid` and include in all messages for binding (optional):
   `A . B . Sid . NA . ...`
 
@@ -181,16 +181,17 @@ ChannelKeys:
 ## 10) Identifiers & Naming
 
 - **Agents:** `A,B,S` or descriptive role names
-- **Nonces/Numbers:** `NA, NB, n, n_1, nb0`
-- **Tags:** `tag<Proto><#>` (e.g., `tagTLS1`)
-- **Keys:** `sk(A,B)`, `KAB`; public/private as `pk(A)`, `sk(A)`
+- **Numbers:** `NA, NB, n, n_1, nb0`
+- **Data:** `tag<Proto><#>` (e.g., `tagTLS1`), `M1, M2..`
+- **Symmetric_key:**  `KAB`;
+- **Mapping*** public/private as `pk(A)`, `sk(A)`
 - **Functions:** `f`, `pre`, `h`, `mac`
 
 ---
 
 ## 11) Comments
 
-- Use block `/* ... */` or hash `# ...` comments **outside** terms/messages.
+- Use block `/* ... */` or hash `# ...` or `%...` comments **outside** terms/messages.
 
 **Examples**
 ```text
@@ -225,7 +226,8 @@ Declarations:
 
 Types:
     Agent A,B,S;
-    Number NA,NB,Sid,tagE1,tagE2,tagE3;
+    Number NA,NB,Sid;
+    Data  tagE1,tagE2,tagE3;
     Symmetric_key KAB;
     Function h,prf;
     Mapping pk,sk

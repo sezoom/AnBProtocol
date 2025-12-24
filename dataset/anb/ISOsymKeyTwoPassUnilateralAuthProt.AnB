@@ -11,8 +11,8 @@ Types:
 
 
 Knowledge:
-    A: A, B, skAB,tagITS1,tagITS2;
-    B: B, A, skAB,tagITS1,tagITS2;
+    A: A, B, skAB;
+    B: B, A, skAB;
 
 Public:
     A,B;

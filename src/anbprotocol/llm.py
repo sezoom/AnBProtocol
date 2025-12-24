@@ -18,16 +18,26 @@ K2_THINK_API_KEY=os.getenv("K2_THINK_API_KEY")
 ANSWER_OPEN_RE  = re.compile(r"<answer\b[^>]*>", re.IGNORECASE)
 ANSWER_CLOSE_RE = re.compile(r"</answer\s*>", re.IGNORECASE)
 THINK_BLOCK_RE  = re.compile(r"<think\b[^>]*>.*?</think\s*>", re.IGNORECASE | re.DOTALL)
-
+CODE_BLOCK_RE = re.compile(
+    r"```(?:plaintext|anb|text)?\s*(.*?)```",
+    re.IGNORECASE | re.DOTALL,
+)
 def extract_k2_think_answer(text: str) -> str:
 
     opens = list(ANSWER_OPEN_RE.finditer(text))
-    if opens:
-        start = opens[-1].end()
-        close = ANSWER_CLOSE_RE.search(text, start)
-        body = text[start: close.start()] if close else text[start:]
+    if not opens:
+        return "Answer not found"
+    start = opens[-1].end()
+    close = ANSWER_CLOSE_RE.search(text, start)
+    body = text[start: close.start()] if close else text[start:]
+    m = CODE_BLOCK_RE.search(body)
+    if m:
+        # if  the content inside the first ```...``` block
+        code = m.group(1)
+        return code
+    else:
         return body
-    return "Answer not found"
+
 
 
 def make_llm(model: Optional[str] = None, temperature: float = 0.1) -> ChatOpenAI:

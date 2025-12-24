@@ -10,8 +10,8 @@ Types:
     Symmetric_key skAB;
 
 Knowledge:
-    A : A, B, KAB, tagITMS1,tagITMS2,tag;
-    B : A, B, KAB, tagITMS1,tagITMS2,tag;
+    A : A, B, skAB;
+    B : A, B, skAB;
 
 
 Public:

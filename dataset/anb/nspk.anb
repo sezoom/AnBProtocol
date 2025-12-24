@@ -14,7 +14,7 @@ Knowledge:
     B: B, A, pk(B), sk(B), pk(A);
 
 Public:
-    pk(A), pk(B);
+    A,B,pk(A), pk(B);
 
 Private:
     sk(A), sk(B);

@@ -11,8 +11,8 @@ Types:
     Function f;
 
 Knowledge:
-    A: A, B, skAB,Text2,tagISOTCCF1;
-    B: B, A, skAB,Text2,tagISOTCCF1;
+    A: A, B, skAB;
+    B: B, A, skAB;
 
 Public:
     A,B;

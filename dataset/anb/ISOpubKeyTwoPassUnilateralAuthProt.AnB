@@ -11,7 +11,7 @@ Types:
 
 Knowledge:
     A: A, B, pk(A), sk(A), pk(S);
-    B: B, pk(S);
+    B: A, B,sk(B) pk(S),pk(A);
 
 Public:
     pk(A),pk(B),pk(S);

@@ -9,8 +9,8 @@ Types:
     Data Text2,Text4,tagITMS1,tagITMS2,tagITMS3;
 
 Knowledge:
-    A: A, B, kAB, tagITMS1,tagITMS2,tagITMS3;
-    B: B, A, kAB, tagITMS1,tagITMS2,tagITMS3;
+    A: A, B, kAB;
+    B: B, A, kAB;
 
 Public:
     A,B;
