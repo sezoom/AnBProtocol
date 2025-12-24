@@ -1,4 +1,4 @@
-# Create the Markdown file with the unified style guide
+# Unified style guide
 
 
 ---
@@ -15,6 +15,7 @@ Declarations:
 Types:
     Agent A,B[, ...];
     Number <list of atoms>;
+    Data   <list of atoms>;
     Symmetric_key <list>;
     Function <list of function symbols>;
     Mapping <list of mapping symbols>
@@ -44,15 +45,14 @@ ChannelKeys:
 end
 ```
 
-- **Required:** `Protocol`, `Declarations`, `Types`, `Knowledge`, `Actions`, `end`  
-- **Optional:** `Public`, `Private`, `Goals`, `ChannelKeys`
+- **Required:** `Protocol`, `Declarations`, `Types`, `Knowledge`, `Actions`,  `Public`, `Private`, `Goals`, `ChannelKeys`, `end`
 
 ---
 
 ## 2) Declarations (Function Symbols)
 
 - List **all** term constructors with **arity**:
-  - `aenc/2`, `senc/2`, `hash/1` or `h/1`, `prf/3`, `pre/1`, `g/0`, etc.
+  - `aenc/2`, `senc/2`, `hash/1` or `h/1`, `prf/3`, `pre/1`, `g/0`,`kdf/2`, etc.
 - Declare only **symbols** here (no agents/variables).
 
 **Example**
@@ -69,21 +69,24 @@ Declarations:
 ## 3) Types
 
 - **Agent:** role/principal atoms, e.g., `Agent A,B,S;`
-- **Number:** nonces, tags, SIDs, payload atoms, exponents, e.g., `Number NA,NB,Sid,tagX1;`
+- **Number:** nonces, SIDs, payload atoms, exponents, e.g., `Number NA,NB;`
+- **Data:** messages, tags, ACK, e.g, `Data M,tag1,ACK;`
 - **Symmetric_key:** named shared keys: `Symmetric_key KAB,KCG,KCS;`
-- **Function:** uninterpreted functions: `Function h,prf,pre;`
+- **Function:** uninterpreted functions: `Function h,prf,pre,xor;`
 - **Mapping:** maps like `pk/1`, `sk/1` (or `sk/2` for shared secrets)
 
+Any function other than aenc,senc shall be declared in Functions.
 **Example**
 ```text
 Types:
     Agent A,B,S;
     Number NA,NB,Sid,tagP1,tagP2;
+    Data M1,M2;
     Symmetric_key KAB;
-    Function h,prf,pre;
+    Function h,prf,pre, xor,kdf;
     Mapping pk,sk
 ```
-
+- if any type is empty, then omit the line.
 ---
 
 ## 4) Knowledge
@@ -123,9 +126,9 @@ Knowledge:
   - **Symmetric:** `senc{ <term> }K` or `senc{ <term> }sk(A,B)`
   - **Hash:** `h(<term>)` (or `hash(<term>)`)
   - **Nesting:** allowed (e.g., `aenc{ X . senc{Y}K }pk(B)`)
-  - **DH/exponent:** `g()^na`, `g()^(na*nb)` (parenthesize as needed)
+  - **DH/exponent:** `g()^na`, `(g()^(na)^nb)` (parenthesize as needed)
 - **Multiple payloads:** prefer a single concatenated term using `.`
-
+ 
 **Examples**
 ```text
 [m1] A -> B (NA)        : aenc{ A . pk(A) . NA }sk(A);
@@ -137,7 +140,7 @@ Knowledge:
 
 ## 7) Tags & Sessions
 
-- **Tags:** atoms under `Number` (e.g., `tagTLS3`, `tagANSCK4`) included as concatenands: `tagTLS3 . ...`
+- **Tags:** atoms under `Data` (e.g., `tagTLS3`, `tagANSCK4`) included as concatenands: `tagTLS3 . ...`
 - **Session IDs:** declare `Number Sid` and include in all messages for binding (optional):
   `A . B . Sid . NA . ...`
 
@@ -178,16 +181,17 @@ ChannelKeys:
 ## 10) Identifiers & Naming
 
 - **Agents:** `A,B,S` or descriptive role names
-- **Nonces/Numbers:** `NA, NB, n, n_1, nb0`
-- **Tags:** `tag<Proto><#>` (e.g., `tagTLS1`)
-- **Keys:** `sk(A,B)`, `KAB`; public/private as `pk(A)`, `sk(A)`
+- **Numbers:** `NA, NB, n, n_1, nb0`
+- **Data:** `tag<Proto><#>` (e.g., `tagTLS1`), `M1, M2..`
+- **Symmetric_key:**  `KAB`;
+- **Mapping*** public/private as `pk(A)`, `sk(A)`
 - **Functions:** `f`, `pre`, `h`, `mac`
 
 ---
 
 ## 11) Comments
 
-- Use block `/* ... */` or hash `# ...` comments **outside** terms/messages.
+- Use block `/* ... */` or hash `# ...` or `%...` comments **outside** terms/messages.
 
 **Examples**
 ```text
@@ -222,7 +226,8 @@ Declarations:
 
 Types:
     Agent A,B,S;
-    Number NA,NB,Sid,tagE1,tagE2,tagE3;
+    Number NA,NB,Sid;
+    Data  tagE1,tagE2,tagE3;
     Symmetric_key KAB;
     Function h,prf;
     Mapping pk,sk

@@ -5,8 +5,9 @@ Declarations:
 
 Types:
     Agent 	      A, B, S;
-    Number 		  t, payload;
-    Symmetric_key kAB , skAS, skBS;
+    Number 		  t;
+    Data payload;
+    Symmetric_key skAS, skBS,kAB;
 
 
 Knowledge:

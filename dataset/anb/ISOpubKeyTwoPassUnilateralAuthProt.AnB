@@ -5,12 +5,13 @@ Declarations:
 
 Types:
     Agent A,B,S;
-    Number RA,RB,Text1,Text2,tagISO_twopass_symm1,tagISO_twopass_symm2;
+    Number RA,RB;
+    Data Text1,Text2,tagISO_twopass_symm1,tagISO_twopass_symm2;
     Mapping pk,sk
 
 Knowledge:
     A: A, B, pk(A), sk(A), pk(S);
-    B: B, pk(S);
+    B: A, B,sk(B) pk(S),pk(A);
 
 Public:
     pk(A),pk(B),pk(S);

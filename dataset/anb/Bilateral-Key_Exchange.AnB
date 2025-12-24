@@ -17,7 +17,8 @@ Knowledge:
 
 Public:
     pk(A), pk(B);
-
+Private:
+    sk(A),sk(B);
 Actions:
     [m1] B -> A (nB) 	: aenc{nB.B}pk(A);
     [m2] A -> B (nA, k) : aenc{h(nB).nA.A.k}pk(B);

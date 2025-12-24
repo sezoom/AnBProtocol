@@ -6,11 +6,11 @@ Declarations:
 Types:
     Agent A,B;
     Number n;
-    Mapping pk
+    Mapping pk,sk;
 
 Knowledge:
-    A: A, pk(A), sk(A);
-    B : B, pk(B),sk(B),pk(A);
+    A: A,B,  pk(A), sk(A), pk(B);
+    B : B,A, pk(B),sk(B),pk(A);
 
 Public:
     A,B, pk(B), pk(A);

@@ -5,7 +5,8 @@ Declarations:
 
 Types:
     Agent A,B;
-    Number Na,Nb,tagNSPK1,tagNSPK2,tagNSPK3;
+    Number Na,Nb;
+    Data    tagNSPK1,tagNSPK2,tagNSPK3;
     Mapping pk,sk
 
 Knowledge:
@@ -13,7 +14,7 @@ Knowledge:
     B: B, A, pk(B), sk(B), pk(A);
 
 Public:
-    pk(A), pk(B);
+    A,B,pk(A), pk(B);
 
 Private:
     sk(A), sk(B);

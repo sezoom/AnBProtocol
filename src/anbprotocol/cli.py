@@ -6,6 +6,7 @@ import typer
 from rich.console import Console
 from rich.panel import Panel
 from .graph import build_graph
+import os
 
 
 
@@ -62,6 +63,8 @@ def batch(
     """Process all files in a dataset folder and write .anb outputs to /output."""
 
     output.mkdir(parents=True, exist_ok=True)
+    (output / "afterDebate").mkdir(parents=True, exist_ok=True)
+    (output/"beforeDebate").mkdir(parents=True, exist_ok=True)
 
     graph = build_graph()
     files = sorted(dataset.rglob(pattern))
@@ -82,12 +85,13 @@ def batch(
             result = graph.invoke(state, config={"configurable": {"thread_id": thread_id}})
             rendered = result["rendered"]
 
-            out_path = output / (inp.stem + ".anb")
+            out_path = output/ "afterDebate" / (inp.stem + ".anb")
             out_path.write_text(rendered.ascii, encoding="utf-8")
 
             console.print(Panel.fit(f"[{i}/{len(files)}] Wrote [bold]{out_path}[/bold]", border_style="blue"))
         except Exception as e:
             console.print(Panel.fit(f"Error on {inp} -> {e}", border_style="red"))
+    os.system(f"mv ./outputWithoutDebate/* {output / 'beforeDebate/'}")
 
 if __name__ == "__main__":
     app()

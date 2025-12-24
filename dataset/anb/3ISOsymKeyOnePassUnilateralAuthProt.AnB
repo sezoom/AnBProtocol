@@ -10,19 +10,20 @@ Declarations:
 
 Types:
        Agent   A, B;
-       Number  nA, text1;
-       Symmetric_key skAB;
+       Number  nA;
+       Data text1;
+       Symmetric_key kAB;
 
 Knowledge:
-    A : A, B, skAB, text1;
-    B : B, A, skAB;
+    A : A, B, kAB, text1;
+    B : B, A, kAB;
 
 Public:
     A,B;
 Private:
-    skAB;
+    kAB, text1;
 Actions:
-    [msg1] A -> B (nA) : senc{nA . B . text1}skAB;
+    [msg1] A -> B (nA) : senc{nA . B . text1}kAB;
 
 Goals:
     M secret between A,B;

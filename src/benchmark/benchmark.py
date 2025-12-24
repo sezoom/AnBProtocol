@@ -9,7 +9,7 @@ _comment_line2_re = re.compile(r"#.*?$", re.M)
 
 HEADER_KEYS = (
     "declarations","types","knowledge","public","private",
-    "actions","goals","channelkeys","types/roles"
+    "actions","goals","channelkeys"
 )
 
 def strip_comments(s: str) -> str:
@@ -173,9 +173,12 @@ if __name__ == "__main__":
     GT = Path("../dataset/anb")
     # BD = Path("benchmark/outputResults_gemini-2.5-pro_gpt5.1/beforeDebate/")
     # AD = Path("benchmark/outputResults_gemini-2.5-pro_gpt5.1/afterDebate/")
-
-    BD = Path("benchmark/outputResults_k2-think_gpt5.1/beforeDebate/")
-    AD = Path("benchmark/outputResults_k2-think_gpt5.1/afterDebate/")
+    # BD = Path("benchmark/outputResults_gpt4.1_gpt5.1_run2/beforeDebate/")
+    # AD = Path("benchmark/outputResults_gpt4.1_gpt5.1_run2/afterDebate/")
+    # BD = Path("benchmark/outputResults_k2-think_gpt5.1/beforeDebate/")
+    # AD = Path("benchmark/outputResults_k2-think_gpt5.1/afterDebate/")
+    BD = Path("benchmark/outputResults_k2-think_gpt5.1_run3/beforeDebate/")
+    AD = Path("benchmark/outputResults_k2-think_gpt5.1_run3/afterDebate/")
     # BD = Path("benchmark/outputResults_gpt-5-mini_gpt5.1/beforeDebate/")
     # AD = Path("benchmark/outputResults_gpt-5-mini_gpt5.1/afterDebate/")
     bd_df, bd_agg, bd_details = compute_metrics(GT, BD)

@@ -1,3 +1,3 @@
 # Protocol Two
 
-This protocol involves two agents, A and B, who share a secret key Ks. The exchange begins with A sending a fresh nonce N to B. To confirm possession of the shared secret, B replies with xor(N, Ks). Finally, A sends a message M encrypted as senc{xor(M, N)}Ks, using both the shared key and the nonce to ensure confidentiality and freshness. The protocol provides mutual assurance that both parties know Ks and protects the message M against eavesdropping or replay.
+This protocol involves two agents, A and B, who share a secret key Ks. The exchange begins with A sending a fresh nonce N to B. To confirm possession of the shared secret, B replies with xor(N, Ks). Finally, A sends a message M of type Data encrypted as senc{xor(M, N)}Ks, using both the shared key and the nonce to ensure confidentiality and freshness. The protocol provides mutual assurance that both parties know Ks and protects the message M against eavesdropping or replay.

@@ -5,7 +5,8 @@ Declarations:
 
 Types:
     Agent A,B;
-    Number NA,Text1,Text2,tagISO_onepass_CCF1,tagISO_onepass_CCF2;
+    Number NA;
+    Data    Text1,Text2,tagISO_onepass_CCF1,tagISO_onepass_CCF2;
     Function mac;
     Symmetric_key skAB;
 

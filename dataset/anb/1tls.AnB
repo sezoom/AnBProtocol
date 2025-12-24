@@ -7,20 +7,20 @@ Declarations:
     prf/3;
 Types:
     Agent A,B,S;
-    Number NA,NB,Sid,PA,PB,PMS,tagTLS1,tagTLS2,tagTLS3,tagTLS4;
+    Number NA,NB,Sid,PA,PB,PMS;
+    Data tagTLS1,tagTLS2,tagTLS3,tagTLS4;
     Function hash,clientK,serverK,prf;
     Mapping pk,sk
 Knowledge:
     A : A, B, S, pk(A), sk(A), pk(B), pk(S);
     B : A, B, S, pk(B), sk(B), pk(A), pk(S);
-    S : S, pk(S), sk(S);
+    S : S, pk(S), sk(S), B, A, pk(A),  pk(B);
 
 Public:
     pk(A),pk(B), pk(S), A,B, S;
 Private:
     sk(A), sk(B), sk(S);
 
-Actions:
 Actions:
     [m1] A -> B (NA,Sid,PA) :
         A . B . Sid . NA . PA . tagTLS1;
@@ -31,12 +31,12 @@ Actions:
     [m3] A -> B (PMS)        : aenc{A . pk(A)}sk(s)
                                . aenc{PMS}pk(B)
                                . aenc{hash(NB . B . PMS . tagTLS3)}sk(A)
-                               . senc{ hash( A . B . Sid . NA . NB . PA . PB ) }K(A,B)
-    [m4] B -> A              : senc{hash( A . B . NA . NB . Sid . PA . PB . PMS . tagTLS4)}K(B,A);
+                               . senc{ hash( A . B . Sid . NA . NB . PA . PB ) }prf(PMS,NA,NB);
+    [m4] B -> A              : senc{hash( A . B . NA . NB . Sid . PA . PB . PMS . tagTLS4)}prf(PMS,NA,NB);
 
 Goals:
     /*  B authenticates A on prf(PMS,NA,NB); */
-    B -> A : prf(PMS, NA, NB)
+    B -> A : prf(PMS, NA, NB);
     prf(PMS,NA,NB) secret between A,B;
 
 ChannelKeys:

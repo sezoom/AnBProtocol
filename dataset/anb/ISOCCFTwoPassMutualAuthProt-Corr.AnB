@@ -10,8 +10,8 @@ Types:
     Function mac;
 
 Knowledge:
-    A: A, B, skAB, tag;
-    B: B, A, skAB, tag;
+    A: A, B,skAB;
+    B: B, A,skAB;
 
 Public:
     A,B;

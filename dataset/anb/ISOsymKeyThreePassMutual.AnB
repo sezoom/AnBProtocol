@@ -5,21 +5,21 @@ Declarations:
 
 Types:
     Agent A,B;
-    Number NA,NB,Text2,Text4,tagITMS1,tagITMS2,tagITMS3;
-    Mapping k
+    Number NA,NB;
+    Data Text2,Text4,tagITMS1,tagITMS2,tagITMS3;
 
 Knowledge:
-    A: A, B, k(A,B);
-    B: B, A, k(A,B);
+    A: A, B, kAB;
+    B: B, A, kAB;
 
 Public:
-
+    A,B;
 Private:
-
+    kAB;
 Actions:
     [m1] B -> A (NB) : tagITMS1 . NB;
-    [m2] A -> B (NA) : senc{ tagITMS3 . NA . NB . B . Text2 }k(A,B);
-    [m3] B -> A      : senc{ tagITMS2 . NB . NA . Text4 }k(A,B);
+    [m2] A -> B (NA) : senc{ tagITMS3 . NA . NB . B . Text2 }kAB;
+    [m3] B -> A      : senc{ tagITMS2 . NB . NA . Text4 }kAB;
 
 Goals:
     B ->* A : Text2;

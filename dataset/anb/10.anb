@@ -7,13 +7,14 @@ Declarations:
 
 Types:
     Agent A,B;
-    Number Kf,M;
+    Symmetric_key Kf;
+    Data M;
     Function h;
     Mapping pk,sk;
 
 Knowledge:
-    A : A,B, sk(A), pk(A), M;
-    B : B,A, sk(B), pk(B);
+    A : A,B, sk(A), pk(A),pk(B), M;
+    B : B,A, sk(B), pk(B), pk(A);
 
 Public:
     A,B,pk(A), pk(B);
@@ -29,5 +30,6 @@ Goals:
     B ->* A : Kf;
 
 ChannelKeys:
-
+    K(A,B): Kf;
+    K(B,A): Kf;
 end

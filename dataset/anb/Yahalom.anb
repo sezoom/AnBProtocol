@@ -6,11 +6,11 @@ Declarations:
 Types:
     Agent A,B,S;
     Number Na,Nb;
-    Symmetric_keys KAS,KBS,KAB;
+    Symmetric_key KAS,KBS,KAB;
 
 Knowledge:
     A : A, B, S, KAS;
-    B : B, S, KBS;
+    B : B, S, A, KBS;
     S : A, B, S, KAS, KBS;
 
 Public:
@@ -20,14 +20,13 @@ Private:
 Actions:
     [p1] A -> B (Na) : A . Na;
     [p2] B -> S (Nb) : B. senc{ A . Na . Nb  }KBS;
-    [p3] S -> A (KAB)     : senc{ B . NA . Nb . KAB }KAS . senc{A.KAB}KBS;
+    [p3] S -> A (KAB): senc{ B . NA . Nb . KAB }KAS . senc{A.KAB}KBS;
     [p4] A -> B      : senc{ A . KAB }KBS . senc{Nb}KAB;
 
 Goals:
-    A -> B : KAB . NA . NB;
-    B -> A : KAB . NA . NB;
+    A -> B : KAB . Na . Nb;
+    B -> A : KAB . Na . Nb;
     KAB secret between A,B,S;
-
 
 ChannelKeys:
     K(A,B): KAB;

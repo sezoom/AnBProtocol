@@ -5,7 +5,8 @@ Declarations:
 
 Types:
     Agent A,B,S;
-    Number NA,NB,Text1,Text2,tagisopubkeytwopmauth1,tagisopubkeytwopmauth2;
+    Number NA,NB;
+    Data    Text1,Text2,tagisopubkeytwopmauth1,tagisopubkeytwopmauth2;
     Mapping pk,sk
 
 Knowledge:

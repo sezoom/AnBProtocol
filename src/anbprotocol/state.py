@@ -3,9 +3,15 @@ from typing import List, Optional, Literal, TypedDict, Dict, Any
 from pydantic import BaseModel, Field
 from .llm import make_llm
 import os
+from pathlib import Path
 
 llm1=make_llm(os.getenv("LLM_OPTIMIZER"))
 llm2=make_llm(os.getenv("LLM_EVALUATOR"))
+
+GUIDELINES_PATH = Path(__file__).resolve().parent.parent.parent / "dataset" / "Notation_guidlines.md"
+
+GUIDELINES = GUIDELINES_PATH.read_text()
+
 
 class Message(BaseModel):
     step: int

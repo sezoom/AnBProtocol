@@ -6,7 +6,8 @@ Declarations:
 
 Types:
     Agent A,B;
-    Number m,n_1,n_2;
+    Number n_1,n_2;
+    Data m;
     Function h;
     Mapping pk
 

@@ -6,16 +6,17 @@ Declarations:
 
 Types:
     Agent A,B;
-    Number NA,NB,tagNonReversible1,tagNonReversible2,tagNonReversible3,tagNonReversible4,tagNonReversible5,tagNonReversible6,tagNonReversible7;
-    Symmetric_key K, skAB;
+    Number NA,NB;
+    Data    tagNonReversible1,tagNonReversible2,tagNonReversible3,tagNonReversible4,tagNonReversible5,tagNonReversible6,tagNonReversible7;
+    Symmetric_key skAB;
     Function f;
 
 Knowledge:
-    A: A, B, sk(A,B), f;
-    B: B, A, sk(A,B), f;
+    A: A, B, skAB;
+    B: B, A, skAB;
 
 Public:
-
+A,B;
 Private:
 
 Actions:

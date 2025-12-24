@@ -6,7 +6,10 @@ Declarations:
 
 Types:
     Agent A,B;
-    Number N, M;
+    Number N;
+    Data M;
+    Symmetric_key Ks;
+    Function xor;
 
 Knowledge:
     A : A, B, Ks;

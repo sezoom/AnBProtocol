@@ -5,7 +5,8 @@ Declarations:
     pre/2
 Types:
     Agent A,B,S;
-    Number NA,NB,NB2,tagnsck1,tagnsck2,tagnsck3,tagnsck4,tagnsck5,tagnsck6,tagnsck7;
+    Number NA,NB,NB2;
+    Data    tagnsck1,tagnsck2,tagnsck3,tagnsck4,tagnsck5,tagnsck6,tagnsck7;
     Symmetric_key KAB;
     Function pre;
     Symmetric_key skAS,skBS,KAB;
@@ -16,7 +17,7 @@ Knowledge:
     S: A, B,S, skAS, skBS;
 
 Public:
-    A,B,S,tagnsck1,tagnsck2,tagnsck3,tagnsck4,tagnsck5,tagnsck6,tagnsck7;
+    A,B,S;
 Private:
     skAS,skBS,KAB;
 Actions:

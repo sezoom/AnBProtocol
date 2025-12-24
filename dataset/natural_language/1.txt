@@ -4,5 +4,5 @@ A and B are two agents. They share a symmetric key Ks, known to both A and B. A 
 
 1. A initiates the protocol by sending a fresh random number Na (nonce) to B.
 2. B encrypts the received nonce Na using the shared key Ks and sends it back to A.
-3. Upon verifying that B knows Ks, A sends the secret message M, encrypted with Ks.
+3. Upon verifying that B knows Ks, A sends the secret message M of type Data, encrypted with Ks.
 

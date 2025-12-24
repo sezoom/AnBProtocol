@@ -5,7 +5,8 @@ Declarations:
 
 Types:
     Agent A,B,S;
-    Number NA,NB,tagNSLKeyServer1,tagNSLKeyServer2,tagNSLKeyServer3,tagNSLKeyServer4,tagNSLKeyServer5,tagNSLKeyServer6,tagNSLKeyServer7;
+    Number NA,NB;
+    Data    tagNSLKeyServer1,tagNSLKeyServer2,tagNSLKeyServer3,tagNSLKeyServer4,tagNSLKeyServer5,tagNSLKeyServer6,tagNSLKeyServer7;
     Mapping pk,sk
 
 Knowledge:
@@ -14,7 +15,7 @@ Knowledge:
     S: A,B,S, pk(A), pk(B), pk(S), sk(S);
 
 Public:
-    pk(A), pk(B), pk(S);
+    A,B,S,pk(A), pk(B), pk(S);
 
 Private:
     sk(A), sk(B), sk(S);

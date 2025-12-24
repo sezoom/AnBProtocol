@@ -6,15 +6,16 @@ Declarations:
 
 Types:
     Agent A,B;
-    Number NA,NB,tagACK;
+    Number NA,NB;
+    Data tagACK;
     Function kdf;
 
 Knowledge:
-    A: B, kdf;
-    B  : A, kdf;
+    A:  A, B;
+    B  : A, B;
 
 Public:
-
+A,B;
 Private:
 
 Actions:

@@ -9,7 +9,6 @@ Declarations:
 Types:
     Agent A,B;
     Number x,y,RA,RB;
-    Symmetric_key K,DHkey;
     Function hash,kdf;
     Mapping pk,sk;
 
@@ -17,7 +16,7 @@ Knowledge:
     A : A, B, pk(A), sk(A), pk(B);
     B : A, B, pk(B), sk(B), pk(A);
 Public:
-    pk(A), pk(B), g();
+   A,B, pk(A), pk(B), g();
 
 Private:
     sk(A), sk(B);
@@ -28,12 +27,10 @@ Actions:
 
     [step2] B -> A (y) :
         g()^y .
-        senc{ aenc{ hash(g()^y . g()^x) }sk(B) }DHkey;
-        /*where DHkey = kdf( (g()^x)^y , "STS" );*/
+        senc{ aenc{ hash(g()^y . g()^x) }sk(B) }kdf( (g()^x)^y , "STS" );
 
-    [step3] A -> B (DHkey) :
-        senc{ aenc{ hash(g()^x . g()^y) }sk(A) }DHkey;
-        /*where DHkey = kdf( (g()^y)^x , "STS" );*/
+    [step3] A -> B () :
+        senc{ aenc{ hash(g()^x . g()^y) }sk(A) }kdf( (g()^y)^x , "STS" );
 
 Goals:
     B -> A : hash(g()^x . g()^y);
@@ -42,7 +39,7 @@ Goals:
     DHkey secret between A,B;
 
 ChannelKeys:
-    K(A,B): DHkey;
-    K(B,A): DHkey;
+    K(A,B): kdf( (g()^x)^y , "STS" );
+    K(B,A): kdf( (g()^x)^y , "STS" );
 
 end

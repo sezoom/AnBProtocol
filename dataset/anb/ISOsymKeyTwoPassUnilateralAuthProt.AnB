@@ -5,7 +5,8 @@ Declarations:
 
 Types:
     Agent A,B;
-    Number NB,Text2,tagITS1,tagITS2;
+    Number NB;
+    Data    Text2,tagITS1,tagITS2;
     Symmetric_key skAB;
 
 
@@ -14,7 +15,7 @@ Knowledge:
     B: B, A, skAB;
 
 Public:
-
+    A,B;
 Private:
     skAB;
 Actions:

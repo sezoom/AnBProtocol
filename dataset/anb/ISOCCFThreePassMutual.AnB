@@ -4,7 +4,8 @@ Declarations:
     mac/2
 Types:
     Agent A,B;
-    Number NA,NB,Text2,Text4,tagISOTMC1;
+    Number NA,NB;
+    Data    Text2,Text4,tagISOTMC1;
     Symmetric_key skAB;
     Function mac;
 

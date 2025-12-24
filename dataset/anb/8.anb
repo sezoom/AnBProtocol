@@ -6,12 +6,13 @@ Declarations:
 
 Types:
     Agent A,B;
-    Number M,N;
+    Number N;
+    Data M;
     Function h;
     Mapping pk
 
 Knowledge:
-    A : A, sk(A), pk(A), pk(B), B, M;
+    A : A, sk(A), pk(A), pk(B), B;
     B : B, sk(B), pk(B), pk(A), A;
 
 Public:

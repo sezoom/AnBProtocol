@@ -2,7 +2,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import List
 from langchain_core.prompts import PromptTemplate
-from ..state import GraphState, Message, Flow,llm1,Flow_raw
+from ..state import GraphState, Message, Flow,llm1,Flow_raw,GUIDELINES
 from rich.console import Console
 from rich.panel import Panel
 import os
@@ -123,7 +123,7 @@ def generate_flow_node(state: GraphState,config) -> GraphState:
     raw_text = state["raw_text"]
     #print("DebugMSG_prompt:",prompt)
     #print("DebugMSG_spec:",raw_text)
-    text = (prompt | llm1).invoke({"raw_text": raw_text}).content
+    text = (prompt | llm1).invoke({"raw_text": raw_text,"guidelines":GUIDELINES}).content
     #incase we use k2-think then we need to seperate chain-of-thought from the final answer
     if "k2-think" in os.getenv("LLM_OPTIMIZER"):
         text= extract_k2_think_answer(text)
