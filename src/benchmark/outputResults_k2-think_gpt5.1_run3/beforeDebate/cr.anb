@@ -1,0 +1,172 @@
+Protocol ExampleProto:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    h/1;
+    prf/3;
+    g/0;
+    kdf/2;
+
+Types:
+    Agent A,B,S;
+    Number NA,NB,Sid;
+    Data tagE1,tagE2,tagE3;
+    Symmetric_key KAB;
+    Function h,prf,kdf;
+    Mapping pk/1, sk/1;
+
+Knowledge:
+    A : A, B, S, pk(A), sk(A), pk(B), Sid, NA0;
+    B : A, B, S, pk(B), sk(B), pk(A), Sid;
+    S : S, sk(S), pk(S), A, B, pk(A), pk(B);
+
+Public:
+    A,B,S,pk(A), pk(B), Sid;
+
+Private:
+    sk(A), sk(B), sk(S), KAB;
+
+Actions:
+    [e1] A -> B (NA) : aenc{ A . B . Sid . NA . tagE1 }sk(A);
+    [e2] B -> A (NB) : aenc{ B . A . Sid . NB . tagE2 }pk(A);
+    [e3] A -> B      : senc{ h(NA . NB . Sid . tagE3) }KAB;
+
+Goals:
+    /* B authenticates A on the hash of nonces and SID */
+    B -> A : h(NA . NB . Sid);
+    /* The hash value must remain secret between A and B */
+    h(NA . NB . Sid) secret between A,B;
+
+ChannelKeys:
+    K(A,B): prf(NA, NB, g()^sk(A)^sk(B));
+    K(B,A): kdf(prf(NA, NB, Sid), tagE3);
+
+end
+
+Wait, but earlier I thought the minimal template might be the answer, but perhaps I need to ensure that all guidelines are followed. Let's check:
+
+1. File Skeleton & Section Order: All required sections are present (Protocol, Declarations, Types, Knowledge, Actions, Public, Private, Goals, ChannelKeys, end). Correct.
+
+2. Declarations: Lists all term constructors with arity. Includes aenc/2, senc/2, h/1, prf/3, g/0, kdf/2. Correct. The example in guidelines includes aenc/2 etc., and this adds prf/3, g/0, kdf/2 as per possible usage.
+
+3. Types:
+
+- Agent A,B,S; Correct.
+
+- Number NA,NB,Sid; NA and NB are nonces, Sid is session ID. Correct.
+
+- Data tagE1,tagE2,tagE3; Tags are data atoms. Correct.
+
+- Symmetric_key KAB; Named shared key. Correct.
+
+- Function h,prf,kdf; Uninterpreted functions. h is declared in Declarations (as h/1), but also here. Correct per example.
+
+- Mapping pk/1, sk/1; Explicitly states arity for mappings. The original minimal template said "Mapping pk,sk" but guideline 3 says "Mapping <list of mapping symbols>", but perhaps arity should be specified. Wait, guideline 3 example:
+
+Types:
+    ...
+    Mapping pk,sk
+
+But the "Mapping" line in the example doesn't include arity. However, guideline 10 says: "Mapping* (maybe a typo). The 10th point says: "Mapping: maps like pk/1, sk/1 (or sk/2 for shared secrets)". So the correct syntax is to declare mappings with their arity, like pk/1, sk/1. So the Types section's Mapping line should be "Mapping pk/1, sk/1;" which I added. That's better.
+
+4. Knowledge:
+
+Each role's initial knowledge. A knows its own keys, B's public key, identities, and NA0 (maybe initial nonce). B knows similar but perhaps not NA0. S knows its own keys and others' public keys. Correct, as per guideline 4 (no message structures, just atoms/terms).
+
+5. Public / Private:
+
+Public lists terms known to adversary: identities A,B,S, public keys pk(A), pk(B), session ID Sid. Private lists private keys sk(A), sk(B), sk(S), and shared key KAB. Correct.
+
+6. Actions:
+
+Each action has label, sender, receiver, fresh list, message term.
+
+[e1]: A sends to B, fresh NA. Message is aenc{ ... }sk(A) (signature). Correct.
+
+[e2]: B sends to A, fresh NB. Message encrypted with pk(A) (A's public key). Correct.
+
+[e3]: A sends to B, no fresh. Message is senc{ h(...) }KAB. Correct.
+
+7. Tags & Sessions: Tags tagE1, etc. are in Data. Session ID Sid is in Number and included in messages. Correct.
+
+8. Goals:
+
+Authentication goal B -> A : h(...). Secrecy goal for h(...). Correct.
+
+9. ChannelKeys:
+
+Defines directional keys K(A,B) and K(B,A). K(A,B) derived from prf with NA, NB, and g^sk(A)^sk(B) (assuming that's the DH shared secret). K(B,A) derived via kdf with prf result and tagE3. Correct per guideline 9.
+
+But wait, the original minimal template's ChannelKeys was:
+
+ChannelKeys:
+    K(A,B): prf(NA,NB,Sid);
+
+I added more here for demonstration, but perhaps the user wants the minimal one. However, since the task is to normalize a protocol, but no specific protocol is given, this is a sample.
+
+But maybe I should stick closer to the minimal template but fix the arity in Mapping.
+
+Original minimal template's Types:
+
+Mapping pk,sk
+
+But according to guideline 10, mappings are like pk/1, sk/1. So the correct line is "Mapping pk/1, sk/1;".
+
+Also, in the Knowledge section of the minimal template:
+
+A : pk(A), sk(A), pk(B), A,B;
+
+But A's own identity A is already listed, but perhaps it's redundant. But guideline 4 says to list atoms/terms, so including A,B is okay.
+
+Another point: in the Actions of the minimal template, [e1] uses sk(A) as the encryption key for aenc. But aenc is asymmetric encryption. Typically, aenc{msg}pk(K) encrypts msg with K's public key. Encrypting with sk(A) (private key) would be signing. So the message [e1] is a signature by A of (A . B . Sid . NA . tagE1), since sk(A) is A's private key. Then B can decrypt using pk(A) to verify the signature. That's acceptable as per guideline 6's example, which includes "aenc{ <term> }sk(A)" as signature-style.
+
+So the minimal template's Actions are correct.
+
+But in my earlier correction, I added prf/3 and kdf/2 to Declarations, which may not be necessary if the protocol doesn't use them. But since the user didn't provide a specific protocol, perhaps the answer should be the minimal template as given, but with corrected Mapping arity.
+
+Let me re-present the minimal template with corrections:
+
+Protocol ExampleProto:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    h/1;
+
+Types:
+    Agent A,B,S;
+    Number NA,NB,Sid;
+    Data tagE1,tagE2,tagE3;
+    Symmetric_key KAB;
+    Function h,prf;
+    Mapping pk/1, sk/1;
+
+Knowledge:
+    A : pk(A), sk(A), pk(B), A,B;
+    B : pk(B), sk(B), pk(A), A,B;
+    S : sk(S), pk(S), A, B, pk(A), pk(B);
+
+Public:
+    A,B,pk(A), pk(B);
+
+Private:
+    sk(A), sk(B), sk(S), KAB;
+
+Actions:
+    [e1] A -> B (NA) : aenc{ A . B . Sid . NA . tagE1 }sk(A);
+    [e2] B -> A (NB) : aenc{ B . A . Sid . NB . tagE2 }pk(A);
+    [e3] A -> B      : senc{ h(NA . NB . Sid . tagE3) }KAB;
+
+Goals:
+    B -> A : h(NA . NB . Sid);
+    h(NA . NB . Sid) secret between A,B;
+
+ChannelKeys:
+    K(A,B): prf(NA,NB,Sid);
+
+end
+
+But the original minimal template's Function section was "Function h,prf;", which matches. Declarations has h/1, which is correct. Mapping now includes pk/1 and sk/1, which is per guideline 10.
+
+I think this is a correctly formatted Alicebob specification following the guidelines. Since the user didn't provide a specific protocol, but asked to normalize "a protocol description", and the only provided protocol is the minimal template, I'll present this corrected version as the answer.

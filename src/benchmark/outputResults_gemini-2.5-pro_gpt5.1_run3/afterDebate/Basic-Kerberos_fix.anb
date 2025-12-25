@@ -1,0 +1,39 @@
+Protocol Basic_Kerberos:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B,S;
+    Number NA,TA,TL;
+    Symmetric_key KAS,KBS,KAB;
+
+Knowledge:
+    A : A, B, S, KAS;
+    B : A, B, S, KBS;
+    S : A, B, S, KAS, KBS;
+
+Public:
+    A,B,S;
+
+Private:
+    KAS,KBS,KAB;
+
+Actions:
+    [m1] A -> S (NA) : A . B . NA;
+    [m2] S -> A (KAB, TL) : senc{ KAB . B . NA . TL . senc{ KAB . A . TL }KBS }KAS;
+    [m3] A -> B (TA) : senc{ KAB . A . TL }KBS . senc{ A . TA }KAB;
+    [m4] B -> A : senc{ TA }KAB;
+
+Goals:
+    /* Mutual authentication on the session key and timestamp */
+    A -> B : A . B . KAB . TA;
+    B -> A : A . B . KAB . TA;
+    /* Session key secrecy */
+    KAB secret between A,B,S;
+
+ChannelKeys:
+    K(A,B): KAB;
+    K(B,A): KAB;
+
+end

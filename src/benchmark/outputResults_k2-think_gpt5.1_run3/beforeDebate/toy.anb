@@ -1,0 +1,37 @@
+Protocol Handshake:
+
+Declarations:
+    senc/2;
+    kdf/2;
+
+Types:
+    Agent A,B;
+    Number NA,NB;
+    Data ACK;
+    Symmetric_key KAB;
+    Function kdf;
+    Mapping ;
+
+Knowledge:
+    A : A, B;
+    B : A, B;
+
+Public:
+    A, B;
+
+Private:
+    KAB;
+
+Actions:
+    [m1] A -> B (NA) : NA;
+    [m2] B -> A (NB) : NB;
+    [m3] A -> B      : senc{ACK}KAB;
+
+Goals:
+    A -> B : ACK;
+    KAB secret between A,B;
+
+ChannelKeys:
+    KAB: kdf(NA, NB);
+
+end

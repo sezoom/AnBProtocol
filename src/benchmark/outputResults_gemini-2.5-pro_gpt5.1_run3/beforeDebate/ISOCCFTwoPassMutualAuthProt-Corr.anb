@@ -1,0 +1,34 @@
+Protocol ISO_twopass_CCF:
+
+Declarations:
+    mac/2;
+
+Types:
+    Agent A,B;
+    Number NB;
+    Data tagISOTCCF1, Text2;
+    Symmetric_key skAB;
+    Function mac;
+
+Knowledge:
+    A : A, B, skAB, Text2;
+    B : A, B, skAB;
+
+Public:
+    A, B;
+
+Private:
+    skAB;
+
+Actions:
+    [m1] B -> A (NB) : tagISOTCCF1 . NB;
+    [m2] A -> B      : mac(NB . B . Text2, skAB) . NB . B . Text2;
+
+Goals:
+    /* B non-injectively authenticates A on the data Text2 */
+    B *-> A : Text2;
+
+ChannelKeys:
+    /* No channel keys are established */
+
+end

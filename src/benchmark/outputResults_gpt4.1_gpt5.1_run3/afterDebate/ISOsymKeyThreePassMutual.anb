@@ -1,0 +1,36 @@
+Protocol ITMS3:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number NA,NB;
+    Data tagITMS3,tagITMS2,Text2,Text4;
+    Symmetric_key KAB;
+
+Knowledge:
+    A : A, B, KAB;
+    B : A, B, KAB;
+
+Public:
+
+Private:
+    KAB;
+
+Actions:
+    [m1] B -> A (NB) : B . tagITMS3 . NB;
+    [m2] A -> B (NA) : senc{ tagITMS3 . NA . NB . B . Text2 }KAB;
+    [m3] B -> A      : senc{ tagITMS2 . NB . NA . Text4 }KAB;
+
+Goals:
+    /* B authenticates A on (NA,NB,Text2) */
+    B -> A : NA . NB . Text2;
+    /* A authenticates B on (NB,NA,Text4) */
+    A -> B : NB . NA . Text4;
+    NA secret between A,B;
+    NB secret between A,B;
+
+ChannelKeys:
+
+end

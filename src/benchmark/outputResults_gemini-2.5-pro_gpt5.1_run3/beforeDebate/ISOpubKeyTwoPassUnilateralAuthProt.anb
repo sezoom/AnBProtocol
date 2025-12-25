@@ -1,0 +1,36 @@
+Protocol ISO_TwoPass_Unilateral:
+
+Declarations:
+    aenc/2;
+
+Types:
+    Agent A,B,S;
+    Number RA,RB;
+    Data   tagISO_twopass_symm1, tagISO_twopass_symm2, Text2;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, B, S, pk(A), sk(A), pk(S), Text2, aenc{ tagISO_twopass_symm2 . A . pk(A) }sk(S);
+    B : B, A, S, pk(S);
+    S : S, A, pk(S), sk(S), pk(A);
+
+Public:
+    A, B, S, pk(S);
+
+Private:
+    sk(A), sk(S), pk(A);
+
+Actions:
+    /* Verifier B sends a challenge with a fresh nonce RB */
+    [m1] B -> A (RB) : tagISO_twopass_symm1 . RB;
+
+    /* Claimant A responds with its credential and a signature */
+    [m2] A -> B (RA) : aenc{ tagISO_twopass_symm2 . A . pk(A) }sk(S) . aenc{ RA . RB . B . Text2 }sk(A);
+
+Goals:
+    /* Verifier B authenticates claimant A on the session data */
+    B -> A : RA . RB . B . Text2;
+
+ChannelKeys:
+
+end

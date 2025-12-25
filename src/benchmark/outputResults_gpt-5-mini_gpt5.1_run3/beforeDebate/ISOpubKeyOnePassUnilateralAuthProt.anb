@@ -1,0 +1,30 @@
+Protocol ISO_onepass_pk:
+
+Declarations:
+    aenc/2;
+
+Types:
+    Agent A,B;
+    Number NA;
+    Data Text1, tagISO_onepass_pk1, tagISO_onepass_pk2;
+    Mapping pk,sk
+
+Knowledge:
+    A : A, pk(A), sk(A), pk(B), B;
+    B : B, pk(B), sk(B), pk(A), A;
+
+Public:
+    A, B, pk(A), pk(B), tagISO_onepass_pk1, tagISO_onepass_pk2;
+
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [m1] A -> B (NA) : aenc{ tagISO_onepass_pk1 . A . pk(A) }sk(A) . aenc{ tagISO_onepass_pk2 . NA . B . Text1 }sk(A);
+
+Goals:
+    B ->* A : Text1;
+
+ChannelKeys:
+
+end

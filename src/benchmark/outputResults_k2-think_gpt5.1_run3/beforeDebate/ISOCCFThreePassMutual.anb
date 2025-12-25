@@ -1,0 +1,93 @@
+**Protocol Specification: ISO Three-Pass Mutual CCF (ISO_threepass_mutual_CCF)**  
+
+### **Parties**  
+- **Alice (A):** Claimant/respondent.  
+- **Bob (B):** Initiator/verifier.  
+
+### **Pre-Shared Secret**  
+- Symmetric key `skAB` known to both Alice and Bob.  
+
+### **Cryptographic Primitive**  
+- MAC function `mac`, where `mac(K, D)` computes a MAC tag over data tuple `D` using key `K`.  
+
+### **Authentication Goals**  
+1. **Mutual Entity Authentication:** Alice and Bob confirm each other’s identity.  
+2. **Data-Origin Authentication:**  
+   - Bob authenticates `Text2` as originating from Alice (denoted `B ->* A : Text2`).  
+   - Alice authenticates `Text4` as originating from Bob (denoted `A ->* B : Text4`).  
+3. **Freshness (Aliveness):** Each party demonstrates aliveness via fresh nonce generation.  
+
+---
+
+### **Protocol Steps**  
+
+#### **Step 1: Bob Initiates (m1)**  
+Bob (initiator) generates a fresh nonce `NB` (freshness challenge). He constructs message `m1` as:  
+`m1 = tagISOTMC1 || NB`  
+Bob sends `m1` to Alice.  
+
+**Purpose:** Identify the protocol mechanism (`tagISOTMC1`) and provide Bob’s freshness challenge (`NB`).  
+
+---
+
+#### **Step 2: Alice Responds (m2)**  
+Alice receives `m1`, verifies `tagISOTMC1` to confirm the protocol, and extracts `NB`.  
+Alice:  
+- Generates a fresh nonce `NA` (her freshness challenge).  
+- Selects application-specific data `Text2`.  
+- Computes MAC tag `Tag2` over the tuple `(NA, NB, B, Text2)` using `skAB`:  
+  `Tag2 = mac(skAB, (NA, NB, B, Text2))`  
+- Constructs message `m2` as:  
+  `m2 = Tag2 || NA || NB || B || Text2`  
+
+Alice sends `m2` to Bob.  
+
+**Purpose:** Authenticate Alice’s identity, nonce `NA`, intended partner `B`, and `Text2` to Bob.  
+
+---
+
+#### **Step 3: Bob Verifies m2 and Authenticates Text2**  
+Bob receives `m2`, extracts `Tag2, NA, NB', B', Text2` from `m2`.  
+Bob verifies:  
+1. `B'` matches his own identifier (ensures Alice intended to authenticate to Bob).  
+2. `NB'` matches the nonce `NB` he generated in Step 1 (ensures freshness; prevents replay of old `m1`).  
+3. Recomputes `Tag2' = mac(skAB, (NA, NB', B', Text2))` and checks `Tag2' == Tag2`.  
+
+If all checks pass:  
+- Bob authenticates that Alice knows `skAB`.  
+- Bob confirms Alice’s aliveness (via fresh `NA`).  
+- Bob accepts `Text2` as authentic and originating from Alice (achieves `B ->* A : Text2`).  
+
+---
+
+#### **Step 4: Bob Sends Reciprocal Authentication (m3)**  
+Bob selects application-specific data `Text4`.  
+Bob computes MAC tag `Tag3` over the tuple `(NB, NA, Text4)` using `skAB`:  
+`Tag3 = mac(skAB, (NB, NA, Text4))`  
+Bob constructs message `m3` as:  
+`m3 = Tag3 || NB || NA || Text4`  
+
+Bob sends `m3` to Alice.  
+
+**Purpose:** Authenticate Bob’s identity, nonce `NB`, and `Text4` to Alice using the shared nonce pair `(NA, NB)`.  
+
+---
+
+#### **Step 5: Alice Verifies m3 and Authenticates Text4**  
+Alice receives `m3`, extracts `Tag3, NB', NA', Text4` from `m3`.  
+Alice verifies:  
+1. `NA'` matches the nonce `NA` she generated in Step 2 (ensures freshness; prevents replay of `m3` from unrelated runs).  
+2. `NB'` matches the nonce `NB` she received in Step 1 (ensures `m3` refers to the current protocol run).  
+3. Recomputes `Tag3' = mac(skAB, (NB', NA', Text4))` and checks `Tag3' == Tag3`.  
+
+If all checks pass:  
+- Alice authenticates that Bob knows `skAB`.  
+- Alice confirms Bob’s aliveness (via reference to the fresh nonce pair `(NA, NB)`).  
+- Alice accepts `Text4` as authentic and originating from Bob (achieves `A ->* B : Text4`).  
+
+---
+
+### **Summary**  
+The protocol provides mutual authentication, data-origin authentication for `Text2` (A→B) and `Text4` (B→A), and freshness guarantees using nonces `NB` (Bob’s) and `NA` (Alice’s). No new keys are derived; security relies on the pre-shared `skAB` and MAC verification.  
+
+**End of Protocol.**

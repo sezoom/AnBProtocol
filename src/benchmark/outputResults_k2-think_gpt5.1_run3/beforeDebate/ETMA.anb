@@ -1,0 +1,41 @@
+Protocol OtwayRees:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B,S;
+    Number C,R1,R2,KC;
+    Data ;
+    Symmetric_key K1,K2;
+    Function ;
+    Mapping ;
+
+Knowledge:
+    A : A, K1, B;
+    B : B, K2, A;
+    S : A, K1, B, K2;
+
+Public:
+    A,B,S;
+
+Private:
+    K1,K2;
+
+Actions:
+    [m1] A -> B (C, R1) : C . A . B . senc{ R1 . C . A . B } K1;
+    [m2] B -> S (R2) : C . A . B . senc{ R1 . C . A . B } K1 . senc{ R2 . C . A . B } K2;
+    [m3] S -> B (KC) : C . senc{ R1 . KC } K1 . senc{ R2 . KC } K2;
+    [m4] B -> A : C . senc{ R1 . KC } K1;
+
+Goals:
+    /* B authenticates A using R1 */
+    B -> A : R1;
+    /* A authenticates B using R2 */
+    A -> B : R2;
+    /* KC must remain secret between A and B */
+    KC secret between A,B;
+
+ChannelKeys:
+
+end

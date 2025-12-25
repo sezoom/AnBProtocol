@@ -1,0 +1,42 @@
+Protocol SIGNED_DIFFIE_HELLMAN:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    hash/1;
+    kdf/2;
+    g/0;
+    exp/2;
+    Mapping pk,sk;
+
+Types:
+    Agent A,B;
+    Number x,y;
+    Data tagSTS;
+    // No Function line needed (all functions declared above)
+
+Knowledge:
+    A : A, B, pk(A), sk(A), pk(B), g();
+    B : A, B, pk(B), sk(B), pk(A), g();
+
+Public:
+    A, B, pk(A), pk(B), g();
+
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [m1] A -> B (x) : exp(g(),x);
+    [m2] B -> A (y) : exp(g(),y) . senc{ aenc{ hash( exp(g(),x) . exp(g(),y) ) }sk(B) }kdf( exp(exp(g(),x),y), tagSTS );
+    [m3] A -> B     : senc{ aenc{ hash( exp(g(),x) . exp(g(),y) ) }sk(A) }kdf( exp(exp(g(),y),x), tagSTS );
+
+Goals:
+    B -> A : hash( exp(g(),x) . exp(g(),y) );
+    A -> B : hash( exp(g(),x) . exp(g(),y) );
+    kdf( exp(exp(g(),x),y), tagSTS ) secret between A,B;
+
+ChannelKeys:
+    K(A,B): kdf( exp(exp(g(),x),y), tagSTS );
+    K(B,A): kdf( exp(exp(g(),x),y), tagSTS );
+
+end

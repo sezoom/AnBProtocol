@@ -1,0 +1,40 @@
+Protocol Four:
+
+Declarations:
+    senc/2;
+    g/0;
+    h/1;
+
+Types:
+    Agent A,B;
+    Number x,y,N1,N2;
+    Data tagF1,tagF2,tagF3;
+    Symmetric_key K;
+    Function h;
+    Mapping
+
+Knowledge:
+    A : A, B, g(), x;
+    B : A, B, g(), y;
+
+Public:
+    A, B, g();
+
+Private:
+
+Actions:
+    [f1] A -> B (x,N1) : tagF1 . g()^x . N1;
+    [f2] B -> A (y,N2) : tagF2 . g()^y . senc{ N1 }h(g()^(x)^y) . N2;
+    [f3] A -> B        : tagF3 . senc{ N2 }h(g()^(y)^x);
+
+Goals:
+    /* Mutual authentication on session key */
+    B -> A : h(g()^(x)^y);
+    A -> B : h(g()^(x)^y);
+    h(g()^(x)^y) secret between A,B;
+
+ChannelKeys:
+    K(A,B): h(g()^(x)^y);
+    K(B,A): h(g()^(x)^y);
+
+end

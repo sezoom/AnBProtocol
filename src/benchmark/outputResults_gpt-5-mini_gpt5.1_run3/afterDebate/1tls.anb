@@ -1,0 +1,42 @@
+Protocol TLS_AB:
+
+Declarations:
+   aenc/2;
+   senc/2;
+   h/1;
+   prf/3;
+
+Types:
+    Agent A,B,S;
+    Number NA,NB,Sid,PMS;
+    Data PA,PB,tagTLS1,tagTLS2,tagTLS3,tagTLS4;
+    Symmetric_key KAB,KBA;
+    Function ;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, B, pk(A), sk(A), pk(B), pk(S), KAB;
+    B : A, B, pk(B), sk(B), pk(A), pk(S), KBA;
+    S : S, sk(S), pk(S), pk(A), pk(B);
+
+Public:
+    A, B, pk(A), pk(B), pk(S), tagTLS1, tagTLS2, tagTLS3, tagTLS4;
+
+Private:
+    sk(A), sk(B), sk(S), KAB, KBA;
+
+Actions:
+    [m1] A -> B (Sid, NA) : A . B . Sid . NA . PA . tagTLS1;
+    [m2] B -> A (NB) : B . A . Sid . NA . NB . PB . tagTLS2 . aenc{ B . pk(B) }sk(S);
+    [m3] A -> B (PMS) : aenc{ A . pk(A) }sk(S) . aenc{ PMS }pk(B) . aenc{ h( NB . B . PMS . tagTLS3 ) }sk(A) . senc{ h( A . B . Sid . NA . NB . PA . PB ) }KAB;
+    [m4] B -> A : senc{ h( A . B . NA . NB . Sid . PA . PB . PMS . tagTLS4 ) }KBA;
+
+Goals:
+    /* B authenticates A on the derived key */
+    B -> A : prf(PMS,NA,NB);
+    prf(PMS,NA,NB) secret between A,B;
+
+ChannelKeys:
+    K(A,B): prf(PMS,NA,NB);
+    K(B,A): prf(PMS,NA,NB);
+end

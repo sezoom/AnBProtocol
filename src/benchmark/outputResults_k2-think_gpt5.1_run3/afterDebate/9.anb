@@ -1,0 +1,33 @@
+Protocol WeakAuth:
+
+Declarations:
+    senc/2;
+    sig/2;
+
+Types:
+    Agent A, B, S;
+    Symmetric_key Kb;
+    Mapping pk, sk;
+
+Knowledge:
+    A : sk(A), pk(A), A;
+    B : sk(B), pk(B), B;
+    S : sk(S), pk(S), S, A, B, pk(A), pk(B);
+
+Public:
+    A, B, S, pk(A), pk(B), pk(S);
+
+Private:
+    sk(A), sk(B), sk(S);
+
+Actions:
+    [step1] A -> S () : A . pk(A) . sig(A . pk(A), sk(A));
+    [step2] B -> S (Kb) : B . A . Kb . sig(B . A . Kb, sk(B));
+    [step3] S -> B () : senc{ pk(A) }Kb;
+
+Goals:
+    B ->* S : senc{ pk(A) }Kb;
+
+ChannelKeys:
+
+end

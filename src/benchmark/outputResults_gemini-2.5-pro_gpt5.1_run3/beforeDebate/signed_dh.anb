@@ -1,0 +1,41 @@
+Protocol SignedDH:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    h/1;
+    g/0;
+    kdf/2;
+
+Types:
+    Agent A,B;
+    Number x,y;
+    Data tagSTS;
+    Function h,kdf;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, B, pk(A), sk(A), pk(B), g();
+    B : B, A, pk(B), sk(B), pk(A), g();
+
+Public:
+    A, B, pk(A), pk(B), g();
+
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [m1] A -> B (x) : g()^x;
+    [m2] B -> A (y) : g()^y . senc{ aenc{ h(g()^y . g()^x) }sk(B) }kdf(g()^x^y, tagSTS);
+    [m3] A -> B      : senc{ aenc{ h(g()^x . g()^y) }sk(A) }kdf(g()^x^y, tagSTS);
+
+Goals:
+    A -> B : h(g()^y . g()^x);
+    B -> A : h(g()^x . g()^y);
+    kdf(g()^x^y, tagSTS) secret between A,B;
+
+ChannelKeys:
+    K(A,B): kdf(g()^x^y, tagSTS);
+    K(B,A): kdf(g()^x^y, tagSTS);
+
+end

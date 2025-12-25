@@ -1,0 +1,35 @@
+Protocol ISO_onepass_symm:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number nA;
+    Data m;
+    Symmetric_key kAB;
+
+Knowledge:
+    A : A, B, kAB, m;
+    B : A, B, kAB;
+
+Public:
+    A, B;
+
+Private:
+    kAB, m;
+
+Actions:
+    [m1] A -> B (nA) : senc{ nA . B . m }kAB;
+
+Goals:
+    /* B authenticates A on the fresh nonce and message */
+    B -> A : nA . B . m;
+
+    /* The nonce and message should remain confidential */
+    nA secret between A,B;
+    m secret between A,B;
+
+ChannelKeys:
+
+end

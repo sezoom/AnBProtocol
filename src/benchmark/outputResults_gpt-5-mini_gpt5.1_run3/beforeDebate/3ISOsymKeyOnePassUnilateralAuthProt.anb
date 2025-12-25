@@ -1,0 +1,34 @@
+Protocol ISO_onepass_symm:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number nA;
+    Data m;
+    Symmetric_key KAB;
+
+Knowledge:
+    A : A, B, KAB, m;
+    B : A, B, KAB;
+
+Public:
+    A, B;
+
+Private:
+    KAB, m;
+
+Actions:
+    [m1] A -> B (nA) : senc{ A . B . nA . m }KAB;
+
+Goals:
+    /* B obtains non-injective authentication that m originates from A (weak assurance) */
+    B ->* A : m;
+    m secret between A,B;
+    nA secret between A,B;
+
+ChannelKeys:
+    K(A,B): KAB;
+    K(B,A): KAB;
+end

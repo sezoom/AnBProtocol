@@ -1,0 +1,40 @@
+```text
+Protocol Two:
+
+Declarations:
+    senc/2;
+    xor/2;
+
+Types:
+    Agent A,B;
+    Number N;
+    Data M;
+    Symmetric_key Ks;
+    Function xor;
+
+Knowledge:
+    A : A, B, Ks, M;
+    B : A, B, Ks;
+
+Public:
+    A, B;
+
+Private:
+    Ks, M;
+
+Actions:
+    [m1] A -> B (N) : N;
+    [m2] B -> A      : xor(N, Ks);
+    [m3] A -> B      : senc{ xor(M, N) }Ks;
+
+Goals:
+    /* Mutual authentication on the nonce N */
+    A -> B : N;
+    B -> A : N;
+    /* Secrecy of the message M */
+    M secret between A,B;
+
+ChannelKeys:
+
+end
+```

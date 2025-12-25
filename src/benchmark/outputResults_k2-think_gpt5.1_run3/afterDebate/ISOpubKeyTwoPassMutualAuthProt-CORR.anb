@@ -1,0 +1,35 @@
+Protocol ISO_twopass_mutual_CORR:
+
+Declarations:
+    aenc/2;  % Asymmetric encryption: aenc(message, public_key) → ciphertext
+    sign/2;  % Asymmetric signature: sign(message, private_key) → signature
+
+Types:
+    Agent A,B;
+    Number NA,NB;
+    Data tagisopubkeytwopmauth1, tagisopubkeytwopmauth2, tag, Text1, Text2;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, B, pk(A), pk(B), sk(A), tag;
+    B : A, B, pk(A), pk(B), sk(B), tag;
+
+Public:
+    A,B,pk(A),pk(B),tag;
+
+Private:
+    sk(A),sk(B);
+
+Actions:
+    [m1] A -> B (NA) : sign{(A . pk(A))}sk(A) . aenc{(tagisopubkeytwopmauth1 . NA . B . Text1 . tag)}pk(B);
+    [m2] B -> A (NB) : sign{(B . pk(B))}sk(B) . aenc{(tagisopubkeytwopmauth2 . NB . NA . A . Text2 . tag)}pk(A);
+
+Goals:
+    B ->* A : tagisopubkeytwopmauth1 . NA . B . Text1 . tag;
+    A ->* B : tagisopubkeytwopmauth2 . NB . NA . A . Text2 . tag;
+    Text1 secret between A,B;
+    Text2 secret between A,B;
+
+ChannelKeys:
+
+end

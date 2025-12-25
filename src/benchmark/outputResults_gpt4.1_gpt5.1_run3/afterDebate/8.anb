@@ -1,0 +1,36 @@
+Protocol Eight:
+
+Declarations:
+    aenc/2;
+    sig/2;
+    h/1;
+
+Types:
+    Agent A,B;
+    Number N, Sid;
+    Data M, tagE8_1, tagE8_2, tagE8_3, tagE8_4;
+    Function h, sig;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, B, pk(A), sk(A), pk(B), M, tagE8_1, tagE8_2, tagE8_3, tagE8_4;
+    B : A, B, pk(A), pk(B), sk(B), tagE8_1, tagE8_2, tagE8_3, tagE8_4;
+
+Public:
+    A, B, pk(A), pk(B), tagE8_1, tagE8_2, tagE8_3, tagE8_4;
+
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [e1] A -> B (Sid)         : tagE8_1 . Sid . sig{ A . M . Sid . tagE8_1 }sk(A);
+    [e2] B -> A (N)           : tagE8_2 . Sid . B . pk(B) . sig{ N . Sid . tagE8_2 }sk(B);
+    [e3] A -> B               : tagE8_3 . Sid . aenc{ N . pk(A) . Sid . tagE8_3 }pk(B);
+    [e4] B -> A               : tagE8_4 . Sid . h(M . B . N . Sid . tagE8_4);
+
+Goals:
+    B *->* A : A . M . Sid;
+    A *->* B : B . N . Sid;
+
+ChannelKeys:
+end

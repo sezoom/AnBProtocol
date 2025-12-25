@@ -1,0 +1,37 @@
+Protocol Nine:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    sig/2;
+    h/1;
+
+Types:
+    Agent A,B,S;
+    Symmetric_key Kb;
+    Data M, tagN4;
+    Function h;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, pk(A), sk(A), S, pk(S);
+    B : B, S, pk(S);
+    S : S, pk(S), sk(S), A, pk(A), B;
+
+Public:
+    A,B,S,pk(S),pk(A);
+
+Private:
+    sk(A), sk(S);
+
+Actions:
+    [n1] A -> S : sig{ A . pk(A) }sk(A);
+    [n2] B -> S (Kb) : B . A . Kb;
+    [n3] S -> B : senc{ pk(A) }Kb;
+    [n4] B -> A : aenc{ tagN4 . M }pk(A);
+
+Goals:
+    B ->* S : pk(A);
+
+ChannelKeys:
+end

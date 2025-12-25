@@ -1,0 +1,37 @@
+Protocol Ten:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    h/1;
+
+Types:
+    Agent A,B;
+    Number Kf;
+    Data M;
+    Function h;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, B, pk(A), sk(A), pk(B), M;
+    B : A, B, pk(B), sk(B), pk(A);
+
+Public:
+    A, B, pk(A), pk(B);
+
+Private:
+    sk(A), sk(B), M, Kf;
+
+Actions:
+    [step1] A -> B (Kf) : A . pk(A) . aenc{ Kf }sk(A);
+    [step2] B -> A       : B . pk(B) . h(Kf);
+    [step3] A -> B       : aenc{ A . B . senc{ M }Kf }pk(B);
+
+Goals:
+    /* B weakly authenticates A on the value Kf (non-injective) */
+    B ->* A : Kf;
+    M secret between A,B;
+
+ChannelKeys:
+
+end

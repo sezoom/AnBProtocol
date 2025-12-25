@@ -1,0 +1,39 @@
+Protocol BilateralKeyExchange:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    h/1;
+
+Types:
+    Agent A,B;
+    Number nB,nA;
+    Data ;
+    Symmetric_key k;
+    Function h;
+    Mapping pk,sk
+
+Knowledge:
+    A : A, pk(A), sk(A), pk(B), B;
+    B : B, pk(B), sk(B), pk(A), A;
+
+Public:
+    A,B,pk(A),pk(B);
+
+Private:
+    sk(A),sk(B),k;
+
+Actions:
+    [m1] B -> A (nB) : aenc{ nB . B }pk(A);
+    [m2] A -> B (nA) : aenc{ h(nB) . nA . A . k }pk(B);
+    [m3] B -> A : senc{ h(nA) }k;
+
+Goals:
+    A *->* B : k;
+    k secret between A,B;
+
+ChannelKeys:
+    K(A,B): k;
+    K(B,A): k;
+
+end

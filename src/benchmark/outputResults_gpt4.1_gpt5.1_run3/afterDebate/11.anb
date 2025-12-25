@@ -1,0 +1,53 @@
+Protocol Eleven:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    h/1;
+    exp/2;
+    mul/2;
+    pk/1;
+    sk/1;
+    g/0;
+
+Types:
+    Agent A,B;
+    Number na,nb,N;
+    Function h,exp,mul,g;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, B, pk(A), sk(A), pk(B), g();
+    B : A, B, pk(B), sk(B), pk(A), g();
+
+Public:
+    A, B, pk(A), pk(B), g();
+
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [m1] A -> B (na) :
+        aenc{ exp(g(),na) . A . pk(A) }sk(A) . pk(A);
+
+    [m2] B -> A (nb,N) :
+        aenc{ N . exp(g(),nb) . B . pk(B) }pk(A);
+
+    [m3] A -> B :
+        senc{ h(N) }exp(g(),mul(nb,na));
+
+    [m4] B -> A :
+        aenc{ exp(g(),mul(na,nb)) }sk(B);
+
+Goals:
+    /* Mutual authentication and secrecy of N and shared key */
+    B -> A : A . B . exp(g(),na) . exp(g(),nb) . exp(g(),mul(na,nb)) . N;
+    A -> B : A . B . exp(g(),na) . exp(g(),nb) . exp(g(),mul(na,nb)) . N;
+    N secret between A,B;
+    exp(g(),mul(na,nb)) secret between A,B;
+
+ChannelKeys:
+    K(A,B): exp(g(),mul(nb,na));
+    K(B,A): exp(g(),mul(na,nb));
+
+end

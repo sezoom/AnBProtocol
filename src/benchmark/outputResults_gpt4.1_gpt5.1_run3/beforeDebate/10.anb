@@ -1,0 +1,36 @@
+Protocol Ten:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    h/1;
+
+Types:
+    Agent A,B;
+    Number Kf;
+    Data M;
+    Symmetric_key;
+    Function h;
+    Mapping pk,sk
+
+Knowledge:
+    A : A, B, pk(A), sk(A), pk(B), M;
+    B : A, B, pk(A), pk(B), sk(B);
+
+Public:
+    A, B, pk(A), pk(B);
+
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [t1] A -> B (Kf) : A . pk(A) . aenc{ Kf }sk(A);
+    [t2] B -> A      : B . pk(B) . h(Kf);
+    [t3] A -> B      : aenc{ senc{ M }Kf . A . B }pk(B);
+
+Goals:
+    B ->* A : Kf;
+
+ChannelKeys:
+
+end

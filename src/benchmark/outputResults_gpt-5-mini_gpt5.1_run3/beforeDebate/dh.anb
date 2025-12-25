@@ -1,0 +1,35 @@
+Protocol DIFFIE_HELLMAN:
+
+Declarations:
+    g/0;
+    exp/2;
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number X,Y,N;
+    Symmetric_key KAB;
+    Function exp
+
+Knowledge:
+    A : A, B, g();
+    B : A, B, g();
+
+Public:
+    A, B, g();
+
+Private:
+
+Actions:
+    [dh1] A -> B (X) : exp(g(), X);
+    [dh2] B -> A (Y) : exp(g(), Y);
+    [dh3] A -> B (N) : senc{ N }exp(exp(g(), X), Y);
+
+Goals:
+    A -> B : exp(exp(g(), X), Y);
+    exp(exp(g(), X), Y) secret between A,B;
+
+ChannelKeys:
+    K(A,B): exp(exp(g(), X), Y);
+
+end

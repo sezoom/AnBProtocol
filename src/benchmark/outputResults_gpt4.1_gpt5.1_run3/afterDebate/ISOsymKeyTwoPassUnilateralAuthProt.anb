@@ -1,0 +1,31 @@
+Protocol ISO_twopass_symm:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number NB;
+    Data tagITS1, tagITS2, Text2;
+    Symmetric_key skAB;
+
+Knowledge:
+    A : A, B, skAB;
+    B : A, B, skAB;
+
+Public:
+    A, B;
+
+Private:
+    skAB;
+
+Actions:
+    [m1] B -> A (NB) : tagITS1 . NB;
+    [m2] A -> B      : senc{ tagITS2 . NB . B . Text2 }skAB;
+
+Goals:
+    B ->* A : Text2;
+
+ChannelKeys:
+
+end

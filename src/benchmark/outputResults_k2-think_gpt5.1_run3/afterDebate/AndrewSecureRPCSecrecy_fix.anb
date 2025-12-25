@@ -1,0 +1,41 @@
+Protocol Andrew_Secure_RPC_Secrecy:
+
+Declarations:
+    senc/2;
+    succ/1;
+
+Types:
+    Agent A,B;
+    Number nA,nB,nB2;
+    Data tagRPC1, tagRPC2, tagRPC3, tagRPC4;
+    Symmetric_key KAB;
+    Function;
+    Mapping;
+
+Knowledge:
+    A : A, B, KAB;
+    B : A, B, KAB;
+
+Public:
+    A,B;
+
+Private:
+    KAB;
+
+Actions:
+    [m1] A -> B (nA) : tagRPC1 . A . senc{nA}KAB;
+    [m2] B -> A (nB) : senc{ tagRPC2 . succ(nA) . nB }KAB;
+    [m3] A -> B : senc{ tagRPC3 . succ(nB) }KAB;
+    [m4] B -> A (nB2) : senc{ tagRPC4 . nB2 }KAB;
+
+Goals:
+    B -> A : A . B . nA . nB;
+    A -> B : A . B . nA . nB;
+    B ->* A : nB2;
+    nA secret between A,B;
+    nB secret between A,B;
+    nB2 secret between A,B;
+
+ChannelKeys:
+
+end

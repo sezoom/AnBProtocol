@@ -21,7 +21,7 @@ KEYWORDS = set(HEADER_KEYS) | {
     "symmetric_key", "function",
     "secret", "between",
     "public", "private", "knowledge", "actions", "goals", "channelkeys",
-    "senc", "aenc", "hash","pk", "sk","k","g","kdf","K"
+    "senc", "aenc", "hash","pk", "sk","k","g","kdf","K","h"
 }
 
 def strip_comments(s: str) -> str:
@@ -179,29 +179,39 @@ def make_abstractifier(rename_map: dict[str,str]):
     """
     extra: dict[str,str] = {}
     counter = [0]
+    counter_actions = [0]
 
-    def repl(m: re.Match) -> str:
-        tok = m.group(0)
-        if tok in KEYWORDS:
-            return tok
-        if tok in rename_map:
-            return rename_map[tok]
-        if tok in extra:
-            return extra[tok]
-        if counter[0] == 0:
-            extra[tok] = "proto"
+    def transform(text: str, sec: str | None = None) -> str:
+        def repl(m: re.Match) -> str:
+            tok = m.group(0)
+            if tok in KEYWORDS:
+                return tok
+            if tok in rename_map:
+                return rename_map[tok]
+            if tok in extra:
+                return extra[tok]
+
+            # first extra token → 'proto'
+            if counter[0] == 0:
+                extra[tok] = "proto"
+                counter[0] += 1
+                return extra[tok]
+
+            # special naming inside Actions section
+            if sec == "actions":
+                extra[tok] = f"m{counter_actions[0]}"
+                counter_actions[0] += 1
+                return extra[tok]
+
+            # default naming for all other sections
+            new = f"i{counter[0]}"
             counter[0] += 1
-            return extra[tok]
-        new = f"i{counter[0]}"
-        counter[0] += 1
-        extra[tok] = new
-        return new
+            extra[tok] = new
+            return new
 
-    def transform(text: str) -> str:
         return _id_re.sub(repl, text)
 
     return transform
-
 def sort_list_whole(line: str, seps: str = ",") -> str:
     """
     Treat the whole line as a (possibly structured) list and sort
@@ -458,7 +468,7 @@ def clauses_from_text(s: str) -> list[str]:
             continue
 
         # Abstractify identifiers in this line (once)
-        line = abstractify(content)
+        line = abstractify(content,sec)
 
         # Outside known sections: keep as-is (e.g., protocol line)
         if sec is None or sec not in HEADER_KEYS:
@@ -640,7 +650,7 @@ def compute_metrics(gt_dir, pred_dir):
             print("|pr|",len(pr))
             print("ExactCoverage_EC:",ec)
             print("ROUGE_L:", rougeL)
-            # exit()
+        #     # exit()
 
     cols = ["file","gt_clauses","pred_clauses","TP","FN","FP",
             "ExactCoverage_EC","BoundedErrorRate_BER","JaccardIndex","ROUGE_L"]
@@ -670,16 +680,14 @@ if __name__ == "__main__":
 
     ## set up the path to folders
     GT = Path("../dataset/anb")
-    # BD = Path("benchmark/outputResults_gemini-2.5-pro_gpt5.1/beforeDebate/")
-    # AD = Path("benchmark/outputResults_gemini-2.5-pro_gpt5.1/afterDebate/")
+    # BD = Path("benchmark/outputResults_gemini-2.5-pro_gpt5.1_run3/beforeDebate/")
+    # AD = Path("benchmark/outputResults_gemini-2.5-pro_gpt5.1_run3/afterDebate/")
     # BD = Path("benchmark/outputResults_gpt4.1_gpt5.1_run3/beforeDebate/")
     # AD = Path("benchmark/outputResults_gpt4.1_gpt5.1_run3/afterDebate/")
-    # BD = Path("benchmark/outputResults_k2-think_gpt5.1/beforeDebate/")
-    # AD = Path("benchmark/outputResults_k2-think_gpt5.1/beforeDebate/")
     BD = Path("benchmark/outputResults_k2-think_gpt5.1_run3/beforeDebate/")
     AD = Path("benchmark/outputResults_k2-think_gpt5.1_run3/afterDebate/")
-    # BD = Path("benchmark/outputResults_gpt-5-mini_gpt5.1/beforeDebate/")
-    # AD = Path("benchmark/outputResults_gpt-5-mini_gpt5.1/afterDebate/")
+    # BD = Path("benchmark/outputResults_gpt-5-mini_gpt5.1_run3/beforeDebate/")
+    # AD = Path("benchmark/outputResults_gpt-5-mini_gpt5.1_run3/afterDebate/")
 
     bd_df, bd_agg, bd_details = compute_metrics(GT, BD)
     ad_df, ad_agg, ad_details = compute_metrics(GT, AD)

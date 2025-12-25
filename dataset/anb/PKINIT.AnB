@@ -25,7 +25,7 @@ Public:
     C,ath,g,s,pk(ath), pk(C);
 
 Private:
-    sk(ath), sk(C);
+   KCG,KCS,Ktemp,skag,skgs, sk(ath), sk(C);
 
 Actions:
     [m1] C   -> ath (N1) :

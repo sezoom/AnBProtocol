@@ -1,0 +1,38 @@
+Protocol Four:
+
+Declarations:
+    g/0;
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number N1,N2,x,y;
+
+Knowledge:
+    A : A, B, g();
+    B : A, B, g();
+
+Public:
+    A, B, g();
+
+Private:
+    x, y;
+
+Actions:
+    [m1] A -> B (x, N1) : g()^x . N1;
+    [m2] B -> A (y, N2) : g()^y . senc{ N1 }((g()^x)^y) . N2;
+    [m3] A -> B         : senc{ N2 }((g()^y)^x);
+
+Goals:
+    /* Mutual authentication on nonces */
+    A -> B : N1;
+    B -> A : N2;
+
+    /* Secrecy of the derived session key */
+    (g()^x)^y secret between A,B;
+
+ChannelKeys:
+    K(A,B): (g()^y)^x;
+    K(B,A): (g()^x)^y;
+
+end

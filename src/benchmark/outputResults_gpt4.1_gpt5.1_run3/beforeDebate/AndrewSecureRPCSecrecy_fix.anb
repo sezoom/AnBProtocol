@@ -1,0 +1,43 @@
+Protocol Andrew_Secure_RPC_Secrecy:
+
+Declarations:
+    senc/2;
+    succ/1;
+
+Types:
+    Agent A,B;
+    Number nA,nB,nB2;
+    Symmetric_key skAB;
+    Function succ;
+    Mapping
+
+Knowledge:
+    A : A, B, skAB;
+    B : A, B, skAB;
+
+Public:
+    A, B;
+
+Private:
+    skAB;
+
+Actions:
+    [m1] A -> B (nA)      : A . senc{ nA }skAB;
+    [m2] B -> A (nB)      : senc{ succ(nA) . nB }skAB;
+    [m3] A -> B           : senc{ succ(nB) }skAB;
+    [m4] B -> A (nB2)     : senc{ nB2 }skAB;
+
+Goals:
+    /* Mutual authentication on (A, B, nA, nB) */
+    B -> A : A . B . nA . nB;
+    A -> B : A . B . nA . nB;
+    /* Secrecy of nonces and final secret */
+    nA secret between A,B;
+    nB secret between A,B;
+    nB2 secret between A,B;
+    /* B authenticates A on nB2 (weak agreement) */
+    A ->* B : nB2;
+
+ChannelKeys:
+
+end

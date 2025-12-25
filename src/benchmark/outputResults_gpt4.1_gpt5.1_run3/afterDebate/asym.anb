@@ -1,0 +1,32 @@
+Protocol Asym:
+
+Declarations:
+    aenc/2;
+    pk/1;
+    sk/1;
+
+Types:
+    Agent A,B;
+    Number NA;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, B, pk(A), sk(A), pk(B);
+    B : A, B, pk(A), pk(B), sk(B);
+
+Public:
+    A, B, pk(A), pk(B);
+
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [a1] A -> B (NA) : aenc{ NA }sk(A);
+    [a2] B -> A (NA) : NA;
+
+Goals:
+    B -> A : NA;
+
+ChannelKeys:
+    /* no derived channel keys in this protocol */
+end

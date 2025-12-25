@@ -1,0 +1,31 @@
+Protocol Asym:
+
+Declarations:
+   aenc/2;
+   pk/1;
+   sk/1;
+
+Types:
+    Agent A,B;
+    Number NA;
+    Data tagAsym1;
+    Function ;
+    Mapping pk,sk;
+
+
+Knowledge:
+    A : A, pk(A), sk(A), pk(B), B;
+    B : B, pk(B), sk(B), pk(A), A;
+Public:
+    A, B, pk(A), pk(B);
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [m1] A -> B (NA) : aenc{ A . B . NA . tagAsym1 }sk(A);
+
+Goals:
+    B -> A : A . B . NA;
+ChannelKeys:
+
+end

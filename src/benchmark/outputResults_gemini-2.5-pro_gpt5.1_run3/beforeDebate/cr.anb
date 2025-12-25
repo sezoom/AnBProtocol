@@ -1,0 +1,34 @@
+Protocol CR:
+
+Declarations:
+    aenc/2;
+    h/1;
+
+Types:
+    Agent C,R;
+    Number n;
+    Function h;
+    Mapping pk,sk;
+
+Knowledge:
+    C : C, R, pk(C), sk(C), pk(R);
+    R : R, C, pk(R), sk(R), pk(C);
+
+Public:
+    C, R, pk(C), pk(R);
+
+Private:
+    sk(C), sk(R);
+
+Actions:
+    [cr1] C -> R (n) : aenc{ n }pk(R);
+    [cr2] R -> C     : h(n);
+
+Goals:
+    n secret between C,R;
+    h(n) secret between C,R;
+    R ->* C : h(n);
+
+ChannelKeys:
+
+end

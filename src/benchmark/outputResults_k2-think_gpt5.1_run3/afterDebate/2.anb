@@ -1,0 +1,39 @@
+Protocol OriginalProtocol:
+
+Declarations:
+    senc/2;
+    xor/2;
+
+Types:
+    Agent A, B;
+    Number N;
+    Data M;
+    Symmetric_key Ks;
+    Function xor;
+
+Knowledge:
+    A : A, B, Ks;
+    B : A, B, Ks;
+
+Public:
+    A, B;
+
+Private:
+    Ks;
+
+Actions:
+    [step1] A -> B (N) : N;
+    [step2] B -> A : xor(N, Ks);
+    [step3] A -> B : senc{ xor(M, N) }Ks;
+
+Goals:
+    Ks secret between A,B;
+    M secret between A,B;
+    xor(M, N) secret between A,B;
+    B -> A : N . xor(N, Ks);
+    A -> B : N;
+
+ChannelKeys:
+    K(A,B): Ks;
+    K(B,A): Ks;
+end

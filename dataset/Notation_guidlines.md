@@ -174,7 +174,7 @@ ChannelKeys:
     K(A,B): clientK(NA,NB,prf(PMS,NA,NB));
     K(B,A): serverK(NA,NB,prf(PMS,NA,NB));
 ```
-- Omit if not using directional channels.
+
 
 ---
 

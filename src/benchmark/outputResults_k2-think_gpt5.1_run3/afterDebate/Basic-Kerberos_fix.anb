@@ -1,0 +1,40 @@
+Protocol Basic_Kerberos:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B,S;
+    Number nA, tL, tA;
+    Data;
+    Symmetric_key kAS, kBS, kAB;
+    Function;
+    Mapping;
+
+Knowledge:
+    A : A, B, S, kAS;
+    B : A, B, S, kBS;
+    S : A, B, S, kAS, kBS;
+
+Public:
+    A, B, S;
+
+Private:
+    kAS, kBS, kAB;
+
+Actions:
+    [m1] A -> S (nA) : A . B . nA;
+    [m2] S -> A (tL) : senc{ kAB . B . nA . tL . senc{ kAB . A . tL }kBS }kAS;
+    [m3] A -> B (tA) : senc{ kAB . A . tL }kBS . senc{ A . tA }kAB;
+    [m4] B -> A () : senc{ tA }kAB;
+
+Goals:
+    A -> B : A . B . kAB . tA;
+    B -> A : A . B . kAB . tA;
+    kAB secret between A,B,S;
+
+ChannelKeys:
+    K(A,B): kAB;
+    K(B,A): kAB;
+
+end

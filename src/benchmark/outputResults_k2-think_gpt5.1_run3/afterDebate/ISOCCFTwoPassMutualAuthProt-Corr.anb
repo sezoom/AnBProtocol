@@ -1,0 +1,37 @@
+Protocol ISO_twopass_CCF:
+
+Declarations:
+    mac/2;
+
+Types:
+    Agent A,B;
+    Number NB;
+    Data tagISOTCCF1, Text2;
+    Symmetric_key skAB;
+
+Knowledge:
+    A : A, B, skAB;
+    B : A, B, skAB;
+
+Public:
+    A, B, tagISOTCCF1;
+
+Private:
+    skAB;
+
+Actions:
+    [m1] B -> A (NB) : tagISOTCCF1 . NB;
+    [m2] A -> B      : mac(NB . B . Text2, skAB) . NB . B . Text2;
+
+Goals:
+    B ->* A : Text2;
+
+ChannelKeys:
+end
+
+**Explanation of Changes:**
+1. Removed `Function mac;` from the `Types` section to eliminate duplication with the `Declarations` section, as `mac` is declared as a 2-arity constructor there.
+2. Omitted the `Mapping` line from `Types` since no mappings are used, correcting the syntactic error of `Mapping ;`.
+3. Updated the `mac` usage in `Actions [m2]` to `mac(NB . B . Text2, skAB)` to align with the arity-based declaration `mac/2;`.
+4. Ensured the `ChannelKeys` section is explicitly present and empty, adhering to style guidelines.
+5. Retained the goal `B ->* A : Text2;` assuming non-injective authentication is intended, as no intent mismatch was specified.

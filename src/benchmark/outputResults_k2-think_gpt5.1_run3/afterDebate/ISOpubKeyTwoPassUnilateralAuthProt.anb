@@ -1,0 +1,34 @@
+Protocol TwoPassAuth:
+
+Declarations:
+    aenc/2;
+
+Types:
+    Agent A,B,s;
+    Number RA,RB;
+    Data tagISO_twopass_symm1,tagISO_twopass_symm2,Text2;
+    Function aenc;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, B, s, pk(A), sk(A), pk(s);
+    B : A, B, s, pk(B), sk(B), pk(s);
+    s : s, pk(s), sk(s), A, B;
+
+Public:
+    A, B, s, pk(A), pk(B), pk(s), tagISO_twopass_symm1, tagISO_twopass_symm2;
+
+Private:
+    sk(A), sk(B), sk(s);
+
+Actions:
+    [m1] B -> A (RB) : tagISO_twopass_symm1 . RB;
+    [m2] A -> B (RA) : aenc{ tagISO_twopass_symm2 . A . pk(A) }sk(s)
+                     . aenc{ RA . RB . B . Text2 }sk(A);
+
+Goals:
+    B -> A : RA . RB . B . Text2;
+
+ChannelKeys:
+
+end

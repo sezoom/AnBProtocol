@@ -1,0 +1,39 @@
+Protocol DenningSacco:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B,S;
+    Number t;
+    Data payload;
+    Symmetric_key KAB, skAS, skBS;
+    Function ;
+    Mapping ;
+
+Knowledge:
+    A : A, B, S, skAS;
+    B : A, B, S, skBS;
+    S : A, B, S, skAS, skBS;
+
+Public:
+    A,B,S;
+
+Private:
+    skAS, skBS, KAB, t;
+
+Actions:
+    [m1] A -> S : A . B;
+    [m2] S -> A (KAB, t) : senc{ B . KAB . t . senc{ A . KAB . t }skBS }skAS;
+    [m3] A -> B : senc{ A . KAB . t }skBS;
+    [m4] B -> A : senc{ payload }KAB;
+
+Goals:
+    KAB secret between A,B;
+    B ->* A : payload;
+
+ChannelKeys:
+    K(A,B): KAB;
+    K(B,A): KAB;
+
+end

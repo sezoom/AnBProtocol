@@ -1,0 +1,45 @@
+Protocol nssk:
+
+Declarations:
+    senc/2;
+    f/1;
+
+Types:
+    Agent A,B,S;
+    Number NA,NB;
+    Data tagNSSK1,tagNSSK2,tagNSSK3,tagNSSK4,tagNSSK5;
+    Symmetric_key kAS,kBS,KAB;  // Corrected key names to match usage (lowercase 'k')
+    Function f;
+
+Knowledge:
+    A : A, B, S, kAS;
+    B : A, B, S, kBS;
+    S : A, B, S, kAS, kBS;
+
+Public:
+    A,B,S;
+
+Private:
+    kAS, kBS, KAB;
+
+Actions:
+    [nssk1] A -> S (NA) : tagNSSK1 . A . B . NA;
+    [nssk2] S -> A : senc{ tagNSSK2 . NA . B . KAB . senc{ tagNSSK3 . KAB . A }kBS }kAS;
+    [nssk3] A -> B : senc{ tagNSSK3 . KAB . A }kBS;
+    [nssk4] B -> A (NB) : senc{ tagNSSK4 . NB }KAB;
+    [nssk5] A -> B : senc{ tagNSSK5 . f(NB) }KAB;
+
+Goals:
+    B *->* A : NB;
+    KAB secret between A,B;
+
+ChannelKeys:
+    K(A,B): KAB;
+    K(B,A): KAB;
+
+end
+
+**Explanation of Changes:**
+1. **Symmetric_key Declaration:** Updated `Symmetric_key KAS,kBS,KAB;` to `Symmetric_key kAS,kBS,KAB;` to align the key names (kAS, kBS) with their usage in Knowledge, Private, and Actions sections, resolving the type/name mismatch.
+2. **Removed Invalid Mapping Line:** Deleted the empty `Mapping ;` line as it was syntactically incorrect and unused, per feedback guidance.
+3. **Consistency Check:** All other identifiers (tags, variables, functions) are now consistent with their declarations, ensuring no remaining mismatches.

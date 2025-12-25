@@ -1,0 +1,42 @@
+Protocol Eleven:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    h/1;
+    g/0;
+
+Types:
+    Agent A,B;
+    Number na, nb, N;
+    Data ;
+    Symmetric_key KAB;
+    Function h;
+    Mapping pk, sk;
+
+Knowledge:
+    A : A, B, sk(A), pk(A), pk(B), g();
+    B : A, B, sk(B), pk(B), pk(A), g();
+
+Public:
+    A, B, pk(A), pk(B), g();
+
+Private:
+    sk(A), sk(B), na, nb, N, KAB;
+
+Actions:
+    [m1] A -> B (na) : aenc{ g()^na . A . pk(A) }sk(A) . pk(A);
+    [m2] B -> A (nb, N) : aenc{ N . g()^nb . B . pk(B) }pk(A);
+    [m3] A -> B : senc{ h(N) }KAB;
+    [m4] B -> A : aenc{ g()^(na*nb) }sk(B);
+
+Goals:
+    B *->* A : A . B . g()^na . g()^nb . g()^(na*nb) . N;
+    N secret between A,B;
+    g()^(na*nb) secret between A,B;
+
+ChannelKeys:
+    K(A,B): g()^(na*nb);
+    K(B,A): g()^(na*nb);
+
+end

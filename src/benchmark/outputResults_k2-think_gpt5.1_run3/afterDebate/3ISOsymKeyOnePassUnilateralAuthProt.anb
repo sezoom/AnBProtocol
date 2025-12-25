@@ -1,0 +1,130 @@
+Protocol ISO_onepass_symm:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number NA;
+    Data m, tagISO1;
+    Mapping 
+
+Knowledge:
+    A : A, B, KAB;
+    B : A, B, KAB;
+
+Public:
+    A, B;
+
+Private:
+    KAB;
+
+Actions:
+    [m1] A -> B (NA) : senc{ tagISO1 . A . B . NA . m }KAB;
+
+Goals:
+    m secret between A,B;
+    NA secret between A,B;
+
+ChannelKeys:
+end
+
+Wait, no. The feedback said to omit the Mapping line if unused. The original Types had "Mapping " (empty). So I should remove that line. Let me correct.
+
+So the Types section after removing Function senc; and the empty Mapping line:
+
+Types:
+    Agent A,B;
+    Number NA;
+    Data m, tagISO1;
+
+Because the Mapping line was empty and should be omitted. So the correct Types is:
+
+Types:
+    Agent A,B;
+    Number NA;
+    Data m, tagISO1;
+
+Then, the updated protocol:
+
+Protocol ISO_onepass_symm:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number NA;
+    Data m, tagISO1;
+
+Knowledge:
+    A : A, B, KAB;
+    B : A, B, KAB;
+
+Public:
+    A, B;
+
+Private:
+    KAB;
+
+Actions:
+    [m1] A -> B (NA) : senc{ tagISO1 . A . B . NA . m }KAB;
+
+Goals:
+    m secret between A,B;
+    NA secret between A,B;
+
+ChannelKeys:
+end
+
+Yes, that's right. I had mistakenly left the Mapping line earlier. The feedback says "either omit the Mapping line entirely if unused". So the Mapping line should be removed. So the Types section now has Agent, Number, Data lines only.
+
+So the final answer is:
+
+Protocol ISO_onepass_symm:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number NA;
+    Data m, tagISO1;
+
+Knowledge:
+    A : A, B, KAB;
+    B : A, B, KAB;
+
+Public:
+    A, B;
+
+Private:
+    KAB;
+
+Actions:
+    [m1] A -> B (NA) : senc{ tagISO1 . A . B . NA . m }KAB;
+
+Goals:
+    m secret between A,B;
+    NA secret between A,B;
+
+ChannelKeys:
+end
+
+But wait, the template's Types section has "Function ....; Mapping ....;" as possible lines. But if there are no functions, and Mapping is omitted, then the Types section should not have those lines. The original Types had:
+
+Types:
+    Agent A,B;
+    Number NA;
+    Data m;
+    Function senc;
+    Mapping 
+
+After removing Function senc; and the empty Mapping line, the Types section is:
+
+Types:
+    Agent A,B;
+    Number NA;
+    Data m, tagISO1;
+
+Which is correct. So that's the update.

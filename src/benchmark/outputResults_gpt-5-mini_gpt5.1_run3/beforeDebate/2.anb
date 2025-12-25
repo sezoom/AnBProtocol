@@ -1,0 +1,39 @@
+Protocol Two:
+
+Declarations:
+    senc/2;
+    xor/2;
+
+Types:
+    Agent A,B;
+    Number NA;
+    Data M;
+    Symmetric_key Ks;
+    Function xor;
+
+Knowledge:
+    A : A, B, Ks, M;
+    B : A, B, Ks;
+
+Public:
+    A, B;
+
+Private:
+    Ks;
+
+Actions:
+    [step1] A -> B (NA) : NA;
+    [step2] B -> A : xor(NA,Ks);
+    [step3] A -> B : senc{ xor(M,NA) }Ks;
+
+Goals:
+    /* Mutual assurance that both parties demonstrated knowledge of Ks */
+    B -> A : Ks;
+    A -> B : Ks;
+    /* Confidentiality of the payload M */
+    M secret between A,B;
+
+ChannelKeys:
+    K(A,B): Ks;
+    K(B,A): Ks;
+end

@@ -1,0 +1,35 @@
+Protocol ISO_twopass_mutual_symm:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number NA,NB;
+    Data   tagITMS1,tagITMS2,tag,Text1,Text3;
+    Symmetric_key skAB;
+
+Knowledge:
+    A : A, B, skAB, tagITMS1, tagITMS2, tag, Text1;
+    B : A, B, skAB, tagITMS1, tagITMS2, tag, Text3;
+
+Public:
+    A, B, tagITMS1, tagITMS2, tag, Text1, Text3;
+
+Private:
+    skAB;
+
+Actions:
+    [m1] A -> B (NA) : senc{ tagITMS1 . NA . B . Text1 . tag }skAB;
+    [m2] B -> A (NB) : senc{ tagITMS2 . NB . A . Text3 }skAB;
+
+Goals:
+    /* B authenticates A on the application data Text1 */
+    B ->* A : Text1;
+
+    /* A authenticates B on the application data Text3 */
+    A ->* B : Text3;
+
+ChannelKeys:
+
+end

@@ -1,0 +1,45 @@
+Protocol Andrew_Secure_RPC_Secrecy:
+
+Declarations:
+    senc/2;
+    succ/1;
+
+Types:
+    Agent A,B;
+    Number nA,nB,nB2;
+    Data ;
+    Symmetric_key KAB;
+    Function succ;
+    Mapping 
+
+Knowledge:
+    A : A, B, KAB;
+    B : A, B, KAB;
+
+Public:
+    A, B;
+
+Private:
+    KAB;
+
+Actions:
+    [m1] A -> B (nA) : A . senc{ nA }KAB;
+    [m2] B -> A (nB) : senc{ succ(nA) . nB }KAB;
+    [m3] A -> B      : senc{ succ(nB) }KAB;
+    [m4] B -> A (nB2) : senc{ nB2 }KAB;
+
+Goals:
+    /* Mutual (injective) authentication on identities and nonces */
+    B -> A : A . B . nA . nB;
+    A -> B : A . B . nA . nB;
+    /* A (non-injective) authenticates B on the delivered secret nB2 */
+    A ->* B : nB2;
+    /* Secrecy of nonces */
+    nA secret between A,B;
+    nB secret between A,B;
+    nB2 secret between A,B;
+
+ChannelKeys:
+    K(A,B): KAB;
+    K(B,A): KAB;
+end

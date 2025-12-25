@@ -1,0 +1,41 @@
+Protocol Eight:
+
+Declarations:
+    aenc/2;
+    h/1;
+    pk/1;
+    sk/1;
+
+Types:
+    Agent A,B;
+    Number N;
+    Data M;
+    Function h;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, B, pk(A), sk(A), M, pk(B);
+    B : B, A, pk(B), sk(B), pk(A);
+
+Public:
+    A, B, pk(A), pk(B), M;
+
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [m1] A -> B             : aenc{ M }sk(A);
+    [m2] B -> A (N)         : B . pk(B) . aenc{ N }sk(B);
+    [m3] A -> B             : aenc{ N . pk(A) }pk(B);
+    [m4] B -> A             : h(M . B . N);
+
+Goals:
+    /* B weakly authenticates A on the tuple (A, M) */
+    B ->* A : A . M;
+
+    /* A weakly authenticates B on the tuple (B, N) */
+    A ->* B : B . N;
+
+ChannelKeys:
+
+end

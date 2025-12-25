@@ -1,0 +1,30 @@
+Protocol ISO_onepass_symm:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number nA;
+    Data m;
+    Symmetric_key kAB;
+
+Knowledge:
+    A : A, B, kAB;
+    B : A, B, kAB;
+
+Public:
+
+Private:
+    kAB;
+
+Actions:
+    [m1] A -> B (nA) : senc{ nA . B . m }kAB;
+
+Goals:
+    nA secret between A,B;
+    B ->* A : nA . B . m;
+
+ChannelKeys:
+
+end

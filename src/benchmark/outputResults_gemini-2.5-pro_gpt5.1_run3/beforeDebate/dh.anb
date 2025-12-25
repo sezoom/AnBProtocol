@@ -1,0 +1,37 @@
+Protocol DIFFIE_HELLMAN:
+
+Declarations:
+    g/0;
+    exp/2;
+    senc/2;
+
+Types:
+    Agent A, B;
+    Number x, y, n;
+    Function g, exp;
+
+Knowledge:
+    A : A, B, g();
+    B : A, B, g();
+
+Public:
+    A, B, g();
+
+Private:
+
+Actions:
+    [dh_1] A -> B (x) : g()^x;
+    [dh_2] B -> A (y) : g()^y;
+    [dh_3] A -> B (n) : senc{ n }((g()^x)^y);
+
+Goals:
+    /* The derived key should be secret */
+    (g()^x)^y secret between A, B;
+
+    /* B authenticates A on the nonce n, confirming the key */
+    B -> A : n;
+
+ChannelKeys:
+    K(A,B): (g()^x)^y;
+
+end

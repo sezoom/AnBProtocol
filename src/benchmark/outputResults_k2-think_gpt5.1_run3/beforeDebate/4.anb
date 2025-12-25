@@ -1,0 +1,38 @@
+Protocol Four:
+
+Declarations:
+    senc/2;
+    g/0;
+
+Types:
+    Agent A,B;
+    Number x,y,N1,N2;
+    Data ;
+    Symmetric_key K;
+    Function ;
+    Mapping ;
+
+Knowledge:
+    A : A, B, g();
+    B : A, B, g();
+
+Public:
+    A, B, g();
+
+Private:
+    x, y;
+
+Actions:
+    [m1] A -> B (x, N1) : g()^x . N1;
+    [m2] B -> A (y, N2) : g()^y . senc{N1}K . N2;
+    [m3] A -> B : senc{N2}K;
+
+Goals:
+    B -> A : N1;
+    A -> B : N2;
+    K secret between A,B;
+
+ChannelKeys:
+    K: g()^(x*y);
+
+end

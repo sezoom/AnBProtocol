@@ -1,0 +1,46 @@
+Protocol Twelve:
+
+Declarations:
+    senc/2;
+    h/1;
+
+Types:
+    Agent A,B,C;
+    Number N1,N2;
+    Data;
+    Symmetric_key Ka,Kb,Kf;
+    Function h;
+    Mapping;
+
+Knowledge:
+    A : A, B, C, Ka;
+    B : A, B, C, Kb;
+    C : A, B, C, Ka, Kb;
+
+Public:
+    A, B, C;
+
+Private:
+    Ka, Kb;
+
+Actions:
+    [m1] A -> C : A . B;
+    [m2] C -> A : senc{Kf}Ka . senc{Kf}Kb;
+    [m3] A -> B : senc{Kf}Kb;
+    [m4] B -> A (N2) : senc{N2}Kf;
+    [m5] A -> B (N1) : senc{N1}Kf;
+    [m6] B -> A : senc{h(N1)}Kf;
+
+Goals:
+    Kf secret between A,B,C;
+    N1 secret between A,B;
+    N2 secret between A,B;
+    C -> A : Kf;   /* A accepts Kf as provided by C */
+    C -> B : Kf;   /* B accepts Kf as provided by C */
+    B -> A : h(N1); /* B authenticates to A that it received N1 and holds Kf */
+    A -> B : N1;   /* A authenticates to B that it holds Kf */
+
+ChannelKeys:
+    K(A,B): Kf;
+
+end
