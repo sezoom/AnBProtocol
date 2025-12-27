@@ -40,6 +40,7 @@ def canonical_whitespace_and_tokens(s: str) -> str:
     s = re.sub(r"\s*([,:;{}()\[\].])\s*", r"\1", s)  # tighten punctuation spacing (incl '.')
     s = re.sub(r"\s*->\s*\*\s*", "->*", s)
     s = re.sub(r"\s*->\s*", "->", s)
+    s = re.sub(r"\s*\.\s*", ".", s).strip()
     return s.strip()
 
 # ---------------- Helpers for structured normalization ----------------
@@ -638,7 +639,7 @@ def compute_metrics(gt_dir, pred_dir):
             "pred_only": sorted(pr - gt),
             "intersection": sorted(gt & pr),
         }
-######Debug example################################
+######Debug################################
         if 1 or key == "signed_dh.anb":
             print("\n>>>",key)
             for i in details[key]:

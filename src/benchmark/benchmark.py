@@ -27,6 +27,7 @@ def canonical_whitespace_and_tokens(s: str) -> str:
     s = re.sub(r"\s*([,:;{}()\[\]])\s*", r"\1", s)  # tighten punctuation spacing
     s = re.sub(r"\s*->\s*\*\s*", "->*", s)
     s = re.sub(r"\s*->\s*", "->", s)
+    s = re.sub(r"\s*\.\s*", ".", s).strip()
     return s.strip()
 
 def clauses_from_text(s: str) -> list[str]:
@@ -141,11 +142,23 @@ def compute_metrics(gt_dir, pred_dir):
             "pred_only": sorted(pr - gt),
             "intersection": sorted(gt & pr),
         }
-
+        ######Debug################################
+        if 1:
+            print("\n>>>", key)
+            for i in details[key]:
+                print(f"\n{i}: {details[key][i]}")
+            print("TP:", tp)
+            print("FN:", fn)
+            print("FP:", fp)
+            print("|gt|", len(gt))
+            print("|pr|", len(pr))
+            print("ExactCoverage_EC:", ec)
+        #     # exit()
     # Explicit columns prevent KeyError even if rows is empty (it won't be if we passed the check above).
     cols = ["file","gt_clauses","pred_clauses","TP","FN","FP",
             "ExactCoverage_EC","BoundedErrorRate_BER","JaccardIndex"]
     df = pd.DataFrame(rows, columns=cols).sort_values("file").reset_index(drop=True)
+
 
     # Weighted/micro aggregates
     total_tp = int(df["TP"].sum())
@@ -171,16 +184,14 @@ if __name__ == "__main__":
 
     ## set up the path to folders
     GT = Path("../dataset/anb")
-    # BD = Path("benchmark/outputResults_gemini-2.5-pro_gpt5.1/beforeDebate/")
-    # AD = Path("benchmark/outputResults_gemini-2.5-pro_gpt5.1/afterDebate/")
-    # BD = Path("benchmark/outputResults_gpt4.1_gpt5.1_run2/beforeDebate/")
-    # AD = Path("benchmark/outputResults_gpt4.1_gpt5.1_run2/afterDebate/")
-    # BD = Path("benchmark/outputResults_k2-think_gpt5.1/beforeDebate/")
-    # AD = Path("benchmark/outputResults_k2-think_gpt5.1/afterDebate/")
-    BD = Path("benchmark/outputResults_k2-think_gpt5.1_run3/beforeDebate/")
-    AD = Path("benchmark/outputResults_k2-think_gpt5.1_run3/afterDebate/")
-    # BD = Path("benchmark/outputResults_gpt-5-mini_gpt5.1/beforeDebate/")
-    # AD = Path("benchmark/outputResults_gpt-5-mini_gpt5.1/afterDebate/")
+    BD = Path("benchmark/outputResults_gemini-2.5-pro_gpt5.1_run3/beforeDebate/")
+    AD = Path("benchmark/outputResults_gemini-2.5-pro_gpt5.1_run3/afterDebate/")
+    # BD = Path("benchmark/outputResults_gpt4.1_gpt5.1_run3/beforeDebate/")
+    # AD = Path("benchmark/outputResults_gpt4.1_gpt5.1_run3/afterDebate/")
+    # BD = Path("benchmark/outputResults_k2-think_gpt5.1_run3/beforeDebate/")
+    # AD = Path("benchmark/outputResults_k2-think_gpt5.1_run3/afterDebate/")
+    # BD = Path("benchmark/outputResults_gpt-5-mini_gpt5.1_run3/beforeDebate/")
+    # AD = Path("benchmark/outputResults_gpt-5-mini_gpt5.1_run3/afterDebate/")
     bd_df, bd_agg, bd_details = compute_metrics(GT, BD)
     ad_df, ad_agg, ad_details = compute_metrics(GT, AD)
 
