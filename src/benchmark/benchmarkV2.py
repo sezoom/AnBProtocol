@@ -2,6 +2,7 @@ from pathlib import Path
 import re, pandas as pd, numpy as np
 import math
 from collections import Counter
+from dataclasses import dataclass
 
 # ---------------- Normalization (full) ----------------
 _comment_block_re = re.compile(r"/\*.*?\*/", re.S)
@@ -213,6 +214,7 @@ def make_abstractifier(rename_map: dict[str,str]):
         return _id_re.sub(repl, text)
 
     return transform
+
 def sort_list_whole(line: str, seps: str = ",") -> str:
     """
     Treat the whole line as a (possibly structured) list and sort
@@ -233,6 +235,184 @@ def sort_list_after_colon(line: str, seps: str = ",") -> str:
     items_sorted = sorted(items)
     return f"{left}:{','.join(items_sorted)}"
 
+# ---------------- Binder-free AC term machinery ----------------
+
+@dataclass(frozen=True)
+class Term:
+    op: str
+    args: tuple  # children; () for leaves
+
+# '.' is associative + commutative
+AC_FUNCS = {"."}
+
+def find_matching(s: str, start: int, open_ch="{", close_ch="}") -> int:
+    """
+    Given s[start] == open_ch, find index of its matching close_ch.
+    Raises ValueError if not found.
+    """
+    assert s[start] == open_ch
+    depth = 0
+    for i in range(start, len(s)):
+        ch = s[i]
+        if ch == open_ch:
+            depth += 1
+        elif ch == close_ch:
+            depth -= 1
+            if depth == 0:
+                return i
+    raise ValueError(f"No matching {close_ch} for {open_ch} in {s!r}")
+
+def parse_term(s: str) -> Term:
+    """
+    Parse a (normalized) message term string into a Term AST, supporting:
+      - '.' as an AC operator at top level
+      - senc{payload}key, aenc{payload}key, hash{payload}
+      - generic function calls f(arg1, arg2, ...)
+      - identifiers / constants as leaves
+    """
+    s = strip_outer_parens(s.strip())
+    if not s:
+        return Term("•empty•", ())
+
+    # 1) Top-level '.' (AC operator)
+    parts = split_top_level(s, seps=".", openers="{([", closers="})]")
+    if len(parts) > 1:
+        children = tuple(parse_term(p) for p in parts if p)
+        return Term(".", children)
+
+    # 2) Curly crypto: senc{payload}key, aenc{payload}key, hash{payload}
+    crypto_syms = ["senc", "aenc", "hash"]
+    m = re.match(r"^(" + "|".join(crypto_syms) + r")\{", s)
+    if m:
+        fname = m.group(1)
+        brace_idx = len(fname)
+        close_idx = find_matching(s, brace_idx, "{", "}")
+        inner = s[brace_idx + 1 : close_idx]   # inside {...}
+        rest  = s[close_idx + 1 :].strip()     # after '}' (key or empty)
+
+        payload_t = parse_term(inner) if inner.strip() else Term("•empty•", ())
+        args = [payload_t]
+        if rest:
+            args.append(parse_term(rest))
+        return Term(fname, tuple(args))
+
+    # 3) Parenthesized function calls: f(args)
+    m = re.match(r"^([a-z_][a-z0-9_]*)\((.*)\)$", s)
+    if m:
+        fname = m.group(1)
+        inner = m.group(2)
+        arg_parts = split_top_level(inner, seps=",", openers="{([", closers="})]")
+        args = tuple(parse_term(p) for p in arg_parts if p.strip())
+        return Term(fname, args)
+
+    # 4) Bare identifier / constant
+    return Term(s, ())
+
+def term_to_string(t: Term) -> str:
+    """
+    Canonical pretty-printer consistent with parse_term.
+    """
+    if not t.args:
+        return t.op
+
+    # AC '.' printer
+    if t.op == ".":
+        return ".".join(term_to_string(c) for c in t.args)
+
+    # Curly crypto
+    if t.op in {"senc", "aenc", "hash"}:
+        if len(t.args) == 1:
+            return f"{t.op}{{{term_to_string(t.args[0])}}}"
+        elif len(t.args) == 2:
+            return f"{t.op}{{{term_to_string(t.args[0])}}}{term_to_string(t.args[1])}"
+
+    # Generic function call
+    return f"{t.op}(" + ",".join(term_to_string(c) for c in t.args) + ")"
+
+def normalize_term(t: Term) -> Term:
+    """
+    Normalize a term modulo associativity+commutativity of operators in AC_FUNCS.
+
+      - For op in AC_FUNCS:
+          * recursively normalize children
+          * flatten nested nodes with same op
+          * sort children by their canonical string
+
+      - For other ops:
+          * recursively normalize children, keep order
+    """
+    if not t.args:
+        return t
+
+    norm_children = [normalize_term(c) for c in t.args]
+
+    if t.op in AC_FUNCS:
+        flat = []
+        for c in norm_children:
+            if c.op == t.op:
+                flat.extend(c.args)
+            else:
+                flat.append(c)
+        flat.sort(key=term_to_string)
+        return Term(t.op, tuple(flat))
+
+    return Term(t.op, tuple(norm_children))
+
+### ALPHA: placeholders iN / mN → canonical v1,v2,… (α-conversion on abstract variables)
+_placeholder_re = re.compile(r"^(i\d+|m\d+)$")
+
+def alpha_normalize_term(t: Term) -> Term:
+    """
+    α-normalization for abstract placeholders:
+      - Any leaf/function name matching i[0-9]+ or m[0-9]+ is treated as
+        a bound/abstract variable.
+      - We rename them to v1, v2, ... in first-occurrence order within the term.
+
+    Two terms that are identical up to renaming of these placeholders
+    normalize to the same α-normal form.
+    """
+    mapping: dict[str, str] = {}
+    counter = [1]
+
+    def visit(node: Term) -> Term:
+        op = node.op
+        if _placeholder_re.match(op):
+            if op not in mapping:
+                mapping[op] = f"v{counter[0]}"
+                counter[0] += 1
+            new_op = mapping[op]
+        else:
+            new_op = op
+
+        if not node.args:
+            return Term(new_op, ())
+        new_args = tuple(visit(a) for a in node.args)
+        return Term(new_op, new_args)
+
+    return visit(t)
+
+def canonical_term_string(s: str) -> str:
+    """
+    Take a raw payload/term string and return a canonical string
+    modulo:
+      - AC of '.',
+      - senc{X}(Y) / senc{X}((Y)) / senc{X}Y → senc{X}Y,
+      - α-renaming of abstract placeholders iN/mN → v1,v2,... .
+    """
+    s = s.strip()
+    if not s:
+        return s
+    # normalize whitespace around '.' etc
+    s = re.sub(r"\s+", " ", s)
+    s = re.sub(r"\s*\.\s*", ".", s)
+    s = normalize_senc_payload(s)
+    t = parse_term(s)
+    t_norm = normalize_term(t)
+    t_alpha = alpha_normalize_term(t_norm)  # <<< α-conversion step
+    return term_to_string(t_alpha)
+
+# ---------------- Clause-level canonicalization using AC+α ----------------
+
 _action_re = re.compile(
     r"^(?P<label>\[[^\]]*\])?"
     r"(?P<src>[^-]+)->(?P<dst>[^(:]+)"
@@ -249,12 +429,10 @@ def canonicalize_action_line(line: str) -> str:
         '[i3]a1->a2:senc{n3}f1(n1,n2)' and
         '[i3]a1->a2(n3):senc{n3}f1(n1,n2)' are treated as equal.
 
-      - We normalize payloads of the form:
-          senc{n3}(f1(n1,n2)), senc{n3}((f1(n1,n2))), senc{n3}f1(n1,n2)
-        to a single canonical form:
-          senc{n3}f1(n1,n2)
-
-      - We sort top-level payload components (split by '.').
+      - Payloads are fully normalized as binder-free AC terms with α-conversion:
+          - '.' is AC (flatten + sort at any depth),
+          - senc{X}(Y), senc{X}((Y)), senc{X}Y unify to senc{X}Y,
+          - abstract placeholders iN/mN are α-renamed to v1,v2,...
     """
     m = _action_re.match(line)
     if not m:
@@ -263,42 +441,22 @@ def canonicalize_action_line(line: str) -> str:
     label   = (m.group("label") or "").strip()
     src     = m.group("src").strip()
     dst     = m.group("dst").strip()
-    fresh   = (m.group("fresh") or "").strip()
+    # fresh is intentionally ignored in the output (AC equality on payload only)
     payload = m.group("payload").strip()
 
-    # (1) Normalize payload around senc{...} to remove redundant parentheses
-    payload = normalize_senc_payload(payload)
+    payload_canon = canonical_term_string(payload)
 
-    # (2) (optional) still sort fresh identifiers internally,
-    #     but we DO NOT include them in the output string.
-    #     This makes '[i3]a1->a2:senc{n3}...' and
-    #     '[i3]a1->a2(n3):senc{n3}...' identical.
-    if fresh:
-        f_items = [x.strip() for x in split_top_level(fresh, seps=",.") if x.strip()]
-        f_items = sorted(f_items)
-        fresh_sorted = ",".join(f_items)
-    else:
-        fresh_sorted = ""
-
-    # (3) Sort payload at top-level by '.'
-    p_items = [x.strip() for x in split_top_level(payload, seps=".") if x.strip()]
-    p_items = sorted(p_items)
-    payload_sorted = ".".join(p_items)
-
-    # (4) Build canonical form (NO fresh list in header)
     out = ""
     if label:
         out += label
-    out += f"{src}->{dst}"
-    # We intentionally drop the '(fresh_sorted)' part here
-    out += f":{payload_sorted}"
+    out += f"{src}->{dst}:{payload_canon}"
     return out
 
 def canonicalize_goal_line(line: str) -> str:
     """
     For Goals:
       - If 'secret between', sort the principals after 'between'
-      - Otherwise, for 'A->B:KAB.NA.NB', sort identifiers after ':' only
+      - Otherwise, for 'A->B:KAB.NA.NB', normalize the RHS as an AC+α term.
     """
     if "secret between" in line:
         m = re.match(r"^([a-z0-9_]+)\s+secret between\s+(.+)$", line)
@@ -313,22 +471,20 @@ def canonicalize_goal_line(line: str) -> str:
     if ":" not in line:
         return line
     left, right = line.split(":", 1)
-    items = [x.strip() for x in split_top_level(right, seps=".") if x.strip()]
-    items = sorted(items)
-    return f"{left}:{'.'.join(items)}"
+    right_canon = canonical_term_string(right)
+    return f"{left}:{right_canon}"
 
 def canonicalize_channelkey_line(line: str) -> str:
     """
     For ChannelKeys:
-      - Sort identifiers after ':' only (treat ','  as separator)
-        e.g., K(A,B): K1.K2  -> K(A,B):K1,K2 (sorted)
+      - Normalize the RHS after ':' as an AC+α term
+        (usually a multiset of keys, '.' is AC).
     """
     if ":" not in line:
         return line
     left, right = line.split(":", 1)
-    items = [x.strip() for x in split_top_level(right, seps=",.") if x.strip()]
-    items = sorted(items)
-    return f"{left}:{','.join(items)}"
+    right_canon = canonical_term_string(right)
+    return f"{left}:{right_canon}"
 
 # ---------------- New clauses_from_text with your 5 steps ----------------
 
@@ -338,8 +494,8 @@ def clauses_from_text(s: str) -> list[str]:
       1) abstracts identifiers (except keywords) via type-based renaming,
       2) treats each section as a list,
       3) sorts sub-lists for sections except Actions/Goals/ChannelKeys,
-      4) in Actions, sorts fresh IDs and payload only,
-      5) in Goals & ChannelKeys, sorts IDs after ':' only.
+      4) in Actions, normalizes payload as binder-free AC+α term (fresh ignored),
+      5) in Goals & ChannelKeys, normalizes RHS as binder-free AC+α term,
       6) Handles empty sections correctly, e.g.:
         Public:
 
@@ -469,7 +625,7 @@ def clauses_from_text(s: str) -> list[str]:
             continue
 
         # Abstractify identifiers in this line (once)
-        line = abstractify(content,sec)
+        line = abstractify(content, sec)
 
         # Outside known sections: keep as-is (e.g., protocol line)
         if sec is None or sec not in HEADER_KEYS:
@@ -496,19 +652,19 @@ def clauses_from_text(s: str) -> list[str]:
             clauses.append(f"{sec}:{sorted_line}")
             continue
 
-        # Actions: sort fresh identifiers and payload only
+        # Actions: normalize payload as binder-free AC+α term (fresh ignored)
         if sec == "actions":
             canon = canonicalize_action_line(line)
             clauses.append(f"{sec}:{canon}")
             continue
 
-        # Goals: sort identifiers after ':' only (plus 'secret between' handling)
+        # Goals: normalize RHS as binder-free AC+α term (plus 'secret between' handling)
         if sec == "goals":
             canon = canonicalize_goal_line(line)
             clauses.append(f"{sec}:{canon}")
             continue
 
-        # ChannelKeys: sort identifiers after ':' only
+        # ChannelKeys: normalize RHS as binder-free AC+α term
         if sec == "channelkeys":
             canon = canonicalize_channelkey_line(line)
             clauses.append(f"{sec}:{canon}")
@@ -655,7 +811,7 @@ def compute_metrics(gt_dir, pred_dir):
 
     cols = ["file","gt_clauses","pred_clauses","TP","FN","FP",
             "ExactCoverage_EC","BoundedErrorRate_BER","JaccardIndex","ROUGE_L"]
-    df = pd.DataFrame(rows, columns=cols).sort_values("file").reset_index(drop=True)
+    df = pd.DataFrame(rows, columns=cols).sort_values("ExactCoverage_EC",ascending=False).reset_index(drop=True)
 
     total_tp = int(df["TP"].sum())
     total_fn = int(df["FN"].sum())
@@ -681,12 +837,12 @@ if __name__ == "__main__":
 
     ## set up the path to folders
     GT = Path("../dataset/anb")
-    # BD = Path("benchmark/outputResults_gemini-2.5-pro_gpt5.1_run3/beforeDebate/")
-    # AD = Path("benchmark/outputResults_gemini-2.5-pro_gpt5.1_run3/afterDebate/")
+    BD = Path("benchmark/outputResults_gemini-2.5-pro_gpt5.1_run3/beforeDebate/")
+    AD = Path("benchmark/outputResults_gemini-2.5-pro_gpt5.1_run3/afterDebate/")
     # BD = Path("benchmark/outputResults_gpt4.1_gpt5.1_run3/beforeDebate/")
     # AD = Path("benchmark/outputResults_gpt4.1_gpt5.1_run3/afterDebate/")
-    BD = Path("benchmark/outputResults_k2-think_gpt5.1_run3/beforeDebate/")
-    AD = Path("benchmark/outputResults_k2-think_gpt5.1_run3/afterDebate/")
+    # BD = Path("benchmark/outputResults_k2-think_gpt5.1_run3/beforeDebate/")
+    # AD = Path("benchmark/outputResults_k2-think_gpt5.1_run3/afterDebate/")
     # BD = Path("benchmark/outputResults_gpt-5-mini_gpt5.1_run3/beforeDebate/")
     # AD = Path("benchmark/outputResults_gpt-5-mini_gpt5.1_run3/afterDebate/")
 
