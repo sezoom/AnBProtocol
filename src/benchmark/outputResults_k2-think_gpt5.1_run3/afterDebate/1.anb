@@ -1,0 +1,29 @@
+Protocol One:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number Na;
+    Data M;
+    Symmetric_key Ks;
+
+Knowledge:
+    A : A, B, Ks, M;
+    B : A, B, Ks;
+
+Public:
+    A,B;
+
+Private:
+    Ks, M;
+
+Actions:
+    [m1] A -> B (Na) : Na;
+    [m2] B -> A : senc{Na}Ks;
+    [m3] A -> B : senc{M}Ks;
+
+Goals:
+    M secret between A,B;
+end

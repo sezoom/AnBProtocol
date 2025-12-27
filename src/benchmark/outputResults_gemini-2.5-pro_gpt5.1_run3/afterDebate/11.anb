@@ -1,0 +1,47 @@
+Protocol Eleven:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    h/1;
+    mul/2;
+    exp/2;
+    kdf/1;
+
+Types:
+    Agent A,B;
+    Number na,nb,N;
+    Data gGen;
+    Function h,mul,exp,kdf;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, B, pk(A), sk(A), pk(B), gGen;
+    B : B, A, pk(B), sk(B), pk(A), gGen;
+
+Public:
+    A, B, pk(A), pk(B), gGen;
+
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [step1] A -> B (na)     : aenc{ exp(gGen,na) . A . pk(A) }sk(A);
+    [step2] B -> A (nb, N)  : aenc{ N . exp(gGen,nb) . B . pk(B) }pk(A);
+    [step3] A -> B          : senc{ h(N) }kdf(exp(gGen, mul(na,nb)));
+    [step4] B -> A          : aenc{ exp(gGen, mul(na,nb)) }sk(B);
+
+Goals:
+    /* Agreement on the session parameters */
+    A -> B : A . B . exp(gGen,na) . exp(gGen,nb) . exp(gGen, mul(na,nb)) . N;
+    B -> A : A . B . exp(gGen,na) . exp(gGen,nb) . exp(gGen, mul(na,nb)) . N;
+
+    /* Secrecy of the nonce and the derived key */
+    N secret between A,B;
+    exp(gGen, mul(na,nb)) secret between A,B;
+
+ChannelKeys:
+    K(A,B): kdf(exp(gGen, mul(na,nb)));
+    K(B,A): kdf(exp(gGen, mul(na,nb)));
+
+end

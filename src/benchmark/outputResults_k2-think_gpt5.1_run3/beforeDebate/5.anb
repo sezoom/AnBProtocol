@@ -1,0 +1,42 @@
+Protocol Five:
+
+Declarations:
+    senc/2;
+    h/1;
+
+Types:
+    Agent A,B;
+    Number n,m;
+    Data ;
+    Symmetric_key KAB;
+    Function h;
+    Mapping ;
+
+Knowledge:
+    A : A, B, KAB;
+    B : A, B, KAB;
+
+Public:
+    A,B;
+
+Private:
+    KAB;
+
+Actions:
+    [e1] A -> B (n) : senc{ A . B . n . h(n) }KAB;
+    [e2] B -> A (m) : senc{ m }KAB;
+    [e3] A -> B     : senc{ h(m) }KAB;
+
+Goals:
+    /* A authenticates to B via nonce n */
+    A -> B : n;
+    /* B authenticates to A via nonce m */
+    B -> A : m;
+    n secret between A,B;
+    m secret between A,B;
+
+ChannelKeys:
+
+;
+
+end

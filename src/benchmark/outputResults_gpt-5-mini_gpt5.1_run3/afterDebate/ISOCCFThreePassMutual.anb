@@ -1,0 +1,30 @@
+Protocol ISO_threepass_mutual_CCF:
+
+Declarations:
+
+Types:
+    Agent A,B;
+    Number NA,NB;
+    Data tagISOTMC1, Text2, Text4;
+    Function mac;
+    Mapping none;
+
+Knowledge:
+    A : A, B, skAB;
+    B : A, B, skAB;
+Public:
+    A, B, tagISOTMC1;
+Private:
+    skAB;
+
+Actions:
+    [m1] B -> A (NB) : tagISOTMC1 . NB;
+    [m2] A -> B (NA) : mac{ NA . NB . B . Text2 }skAB . NA . NB . B . Text2;
+    [m3] B -> A      : mac{ NB . NA . Text4 }skAB . NB . NA . Text4;
+
+Goals:
+    B ->* A : Text2;
+    A ->* B : Text4;
+ChannelKeys:
+
+end

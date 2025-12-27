@@ -1,0 +1,31 @@
+Protocol ISO_twopass_mutual_symm:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B;
+    Number NA,NB;
+    Data tagITMS1,tagITMS2,tag,Text1,Text3;
+
+Knowledge:
+    A : A, B, skAB, tagITMS1, tagITMS2, tag;
+    B : A, B, skAB, tagITMS1, tagITMS2, tag;
+
+Public:
+    A,B,tagITMS1,tagITMS2,tag;
+
+Private:
+    skAB;
+
+Actions:
+    [m1] A -> B (NA) : senc{ tagITMS1 . NA . B . Text1 . tag }skAB;
+    [m2] B -> A (NB) : senc{ tagITMS2 . NB . A . Text3 }skAB;
+
+Goals:
+    B ->* A : Text3;
+    A ->* B : Text1;
+
+ChannelKeys:
+
+end

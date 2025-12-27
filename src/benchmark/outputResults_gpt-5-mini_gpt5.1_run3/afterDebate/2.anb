@@ -1,0 +1,37 @@
+Protocol Two:
+
+Declarations:
+   senc/2;
+   xor/2;
+   kdf/2;
+
+Types:
+    Agent A,B;
+    Number NA;
+    Data M;
+    Symmetric_key Ks;
+    Function xor;
+    Function kdf;
+
+Knowledge:
+    A : A, B, Ks, M;
+    B : A, B, Ks;
+Public:
+    A, B;
+Private:
+    Ks;
+
+Actions:
+    [step1] A -> B (NA) : NA;
+    [step2] B -> A : senc{NA}Ks;
+    [step3] A -> B : senc{ xor(M,NA) }Ks;
+
+Goals:
+    B -> A : senc{NA}Ks;
+    A -> B : senc{ xor(M,NA) }Ks;
+    M secret between A,B;
+
+ChannelKeys:
+    K(A,B): kdf(Ks,NA);
+    K(B,A): kdf(Ks,NA);
+end

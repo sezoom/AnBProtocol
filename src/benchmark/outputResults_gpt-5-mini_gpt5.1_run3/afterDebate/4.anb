@@ -1,0 +1,36 @@
+=== Template ===
+Protocol Four:
+
+Declarations:
+   g/0;
+   exp/2;
+   senc/2;
+   kdf/1;
+
+Types:
+    Agent A,B;
+    Number X,Y,N1,N2;
+    Symmetric_key K;
+
+Knowledge:
+    A : A, B, g();
+    B : A, B, g();
+Public:
+    A, B, g();
+Private:
+    X, Y, N1, N2;
+
+Actions:
+    [step1] A -> B (X, N1) : exp(g(),X) . N1;
+    [step2] B -> A (Y, N2) : exp(g(),Y) . senc{ N1 }kdf(exp(exp(g(),X),Y)) . N2;
+    [step3] A -> B : senc{ N2 }kdf(exp(exp(g(),X),Y));
+
+Goals:
+    B -> A : kdf(exp(exp(g(),X),Y));
+    A -> B : kdf(exp(exp(g(),X),Y));
+    kdf(exp(exp(g(),X),Y)) secret between A,B;
+
+ChannelKeys:
+    K(A,B): kdf(exp(exp(g(),X),Y));
+    K(B,A): kdf(exp(exp(g(),X),Y));
+end

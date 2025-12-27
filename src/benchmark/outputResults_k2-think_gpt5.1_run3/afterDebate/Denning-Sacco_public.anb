@@ -1,0 +1,33 @@
+Protocol DenningSaccoPub:
+
+Declarations:
+    aenc/2;
+
+Types:
+    Agent A,B,S;
+    Number tA;
+    Symmetric_key KAB;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A,B,S,pk(A),sk(A),pk(B),pk(S);
+    B : A,B,S,pk(B),sk(B),pk(A),pk(S);
+    S : A,B,S,pk(S),sk(S),pk(A),pk(B);
+
+Public:
+    A,B,S,pk(A),pk(B),pk(S);
+
+Private:
+    sk(A),sk(B),sk(S),KAB;
+
+Actions:
+    [m1] A -> S : A . B;
+    [m2] S -> A : aenc{ A . pk(A) }sk(S) . aenc{ B . pk(B) }sk(S);
+    [m3] A -> B (tA) : aenc{ A . pk(A) }sk(S) . aenc{ B . pk(B) }sk(S) . aenc{ aenc{ KAB . tA }sk(A) }pk(B);
+
+Goals:
+    KAB secret between A,B;
+
+ChannelKeys:
+
+end

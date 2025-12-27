@@ -1,0 +1,46 @@
+Protocol TLS_Cert_Auth:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    hash/1;
+    prf/3;
+
+Types:
+    Agent A,B,S;
+    Number NA,NB,Sid,PMS;
+    Data PA,PB,tagTLS1,tagTLS2,tagTLS3,tagTLS4,certA,certB;
+    Function hash,prf;
+    Mapping pk,sk,K;
+
+Knowledge:
+    A : A, B, S, pk(A), sk(A), pk(S), certA;
+    B : A, B, S, pk(B), sk(B), pk(S), certB;
+    S : A, B, S, pk(S), sk(S), pk(A), pk(B);
+
+Public:
+    A, B, S, pk(A), pk(B), pk(S);
+    certA;
+    certB;
+
+Private:
+    sk(A), sk(B), sk(S);
+
+Actions:
+    [m1] A -> B (NA, Sid, PA) : A . B . Sid . NA . PA . tagTLS1;
+    [m2] B -> A (NB, PB)      : B . A . Sid . NA . NB . PB . certB . tagTLS2;
+    [m3] A -> B (PMS)         : certA . aenc{ PMS }pk(B) . aenc{ hash(NB . B . PMS . tagTLS3) }sk(A) . senc{ hash(A . B . Sid . NA . NB . PA . PB) }K(A,B);
+    [m4] B -> A              : senc{ hash(A . B . NA . NB . Sid . PA . PB . PMS . tagTLS4) }K(B,A);
+
+Goals:
+    /* B authenticates A on the derived key */
+    B -> A : prf(PMS, NA, NB);
+
+    /* The derived key is secret between A and B */
+    prf(PMS, NA, NB) secret between A,B;
+
+ChannelKeys:
+    K(A,B): prf(PMS, NA, NB);
+    K(B,A): prf(PMS, NA, NB);
+
+end

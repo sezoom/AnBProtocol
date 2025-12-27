@@ -1,0 +1,37 @@
+Protocol Yahalom:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A,B,S;
+    Number NA,NB;
+    Symmetric_key KAS,KBS,KAB;
+
+Knowledge:
+    A : A, B, S, KAS;
+    B : B, A, S, KBS;
+    S : S, A, B, KAS, KBS;
+
+Public:
+    A, B, S;
+
+Private:
+    KAS, KBS, KAB;
+
+Actions:
+    [p1] A -> B (NA) : A . NA;
+    [p2] B -> S (NB) : B . senc{ A . NA . NB }KBS;
+    [p3] S -> A (KAB) : senc{ B . NA . NB . KAB }KAS . senc{ A . KAB }KBS;
+    [p4] A -> B      : senc{ A . KAB }KBS . senc{ NB }KAB;
+
+Goals:
+    A -> B : KAB . NA . NB;
+    B -> A : KAB . NA . NB;
+    KAB secret between A,B;
+
+ChannelKeys:
+    K(A,B): KAB;
+    K(B,A): KAB;
+
+end

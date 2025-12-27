@@ -1,0 +1,37 @@
+Protocol OtwayRees:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent P1,P2,S;
+    Number C,R1,R2;
+    Symmetric_key K1,K2,KC;
+
+Knowledge:
+    P1 : P1, P2, S, K1;
+    P2 : P1, P2, S, K2;
+    S  : P1, P2, S, K1, K2;
+
+Public:
+    P1, P2, S;
+
+Private:
+    K1, K2;
+
+Actions:
+    [m1] P1 -> P2 (C, R1) : C . P1 . P2 . senc{ R1 . C . P1 . P2 }K1;
+    [m2] P2 -> S  (R2)    : C . P1 . P2 . senc{ R1 . C . P1 . P2 }K1 . senc{ R2 . C . P1 . P2 }K2;
+    [m3] S  -> P2  (KC)   : C . senc{ R1 . KC }K1 . senc{ R2 . KC }K2;
+    [m4] P2 -> P1         : C . senc{ R1 . KC }K1;
+
+Goals:
+    P2 -> P1 : KC;
+    P1 -> P2 : KC;
+    KC secret between P1,P2;
+
+ChannelKeys:
+    K(P1,P2): KC;
+    K(P2,P1): KC;
+
+end

@@ -1,0 +1,36 @@
+Protocol Asym:
+
+Declarations:
+    aenc/2;
+
+Types:
+    Agent A,B;
+    Number n;
+
+Knowledge:
+    A : A, pk(A), sk(A), pk(B), B;
+    B : B, pk(B), sk(B), pk(A), A;
+
+Public:
+    A,B,pk(A),pk(B);
+
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [m1] A -> B (n) : aenc{ n }pk(B);  % Public-key encryption using B's public key to ensure confidentiality
+
+Goals:
+    B -> A : n;  % Goal: B decrypts the received message and sends n back to A
+
+ChannelKeys:
+    % Empty section; no channel-specific keys are required; protocol uses agent public/private keys.
+end
+
+**Explanation of Changes:**  
+1. **Types Section:** Removed empty type declarations (`Data ;`, `Symmetric_key ;`, `Function ;`) as they are unused and semantically odd per feedback.  
+2. **Actions Section:** Adjusted encryption key from `sk(A)` (A’s private key) to `pk(B)` (B’s public key) to align with public-key encryption semantics for confidentiality, assuming the intent is for A to send n confidentially to B. Added a comment to clarify the encryption purpose.  
+3. **ChannelKeys Section:** Added a comment to explain the empty section, adhering to guidelines for clarity.  
+4. **Goals Section:** Retained the original goal but added a comment to clarify that B’s sending of n to A follows decryption of the encrypted message.  
+
+All syntactic and structural requirements (sections, declarations, message format) are maintained, and semantic clarity is improved.

@@ -1,0 +1,37 @@
+Protocol ITMSAuth:
+
+Declarations:
+    senc/2;
+
+Types:
+    Agent A, B;
+    Number NA, NB;
+    Data tagITMS2, tagITMS3, Text2, Text4;
+    Symmetric_key KAB;
+    Function;
+    Mapping;
+
+Knowledge:
+    A : A, B, KAB;
+    B : A, B, KAB;
+
+Public:
+    A, B;
+
+Private:
+    KAB;
+
+Actions:
+    [m1] B -> A (NB)        : B . A . NB;
+    [m2] A -> B (NA)        : A . B . NA . senc{ tagITMS3 . NA . NB . B . Text2 }KAB;
+    [m3] B -> A             : B . A . senc{ tagITMS2 . NB . NA . Text4 }KAB;
+
+Goals:
+    B -> A : NA . NB;
+    A -> B : NA . NB;
+    Text2 secret between A,B;
+    Text4 secret between A,B;
+
+ChannelKeys:
+
+end

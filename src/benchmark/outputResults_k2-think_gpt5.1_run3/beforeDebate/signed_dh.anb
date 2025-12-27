@@ -1,0 +1,42 @@
+Protocol SIGNED_DIFFIE_HELLMAN:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    h/1;
+    g/0;
+    kdf/2;
+
+Types:
+    Agent A,B;
+    Number x,y;
+    Data STS;
+    Symmetric_key DHkey;
+    Function h,kdf;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, pk(A), sk(A), pk(B), g();
+    B : B, pk(B), sk(B), pk(A), g();
+
+Public:
+    A, B, pk(A), pk(B), g(), STS;
+
+Private:
+    sk(A), sk(B);
+
+Actions:
+    [step1] A -> B (x) : g()^x;
+    [step2] B -> A (y) : g()^y . senc{ aenc{ h(g()^x . g()^y) }sk(B) }DHkey;
+    [step3] A -> B      : senc{ aenc{ h(g()^x . g()^y) }sk(A) }DHkey;
+
+Goals:
+    B -> A : h(g()^x . g()^y);
+    A -> B : h(g()^x . g()^y);
+    DHkey secret between A,B;
+
+ChannelKeys:
+    K(A,B): DHkey;
+    K(B,A): DHkey;
+
+end

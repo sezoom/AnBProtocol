@@ -1,0 +1,35 @@
+Protocol ISO_twopass_mutual_CORR:
+
+Declarations:
+    aenc/2;
+
+Types:
+    Agent A,B,S;
+    Number NA,NB;
+    Data Text1,Text2, tagisopubkeytwopmauth1, tagisopubkeytwopmauth2, tag;
+    Mapping pk,sk
+
+Knowledge:
+    A : A, pk(A), sk(A), pk(B), pk(S), tag;
+    B : B, pk(B), sk(B), pk(A), pk(S), tag;
+    S : S, sk(S), pk(S), A, B;
+
+Public:
+    A, B, pk(A), pk(B), pk(S), tag;
+
+Private:
+    sk(A), sk(B), sk(S);
+
+Actions:
+    [m1] A -> B (NA) : aenc{ A . pk(A) }sk(S) . aenc{ tagisopubkeytwopmauth1 . NA . B . Text1 . tag }sk(A);
+    [m2] B -> A (NB) : aenc{ B . pk(B) }sk(S) . aenc{ tagisopubkeytwopmauth2 . NB . A . Text2 }sk(B);
+
+Goals:
+    /* B non-injective authenticates A on Text1 */
+    B ->* A : Text1;
+    /* A non-injective authenticates B on Text2 */
+    A ->* B : Text2;
+
+ChannelKeys:
+
+end

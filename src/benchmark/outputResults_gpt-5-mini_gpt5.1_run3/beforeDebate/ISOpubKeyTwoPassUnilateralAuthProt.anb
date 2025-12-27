@@ -1,0 +1,33 @@
+Protocol TwoPassSymm:
+
+Declarations:
+    aenc/2;
+
+Types:
+    Agent A,B,s;
+    Number RA,RB;
+    Data Text2, tagISO_twopass_symm1, tagISO_twopass_symm2;
+    Mapping pk,sk
+
+Knowledge:
+    A : A, pk(A), sk(A), pk(s);
+    B : B, pk(B), pk(s);
+    s : s, pk(s), sk(s);
+
+Public:
+    A, B, pk(s), tagISO_twopass_symm1, tagISO_twopass_symm2;
+
+Private:
+    sk(A), sk(s);
+
+Actions:
+    [m1] B -> A (RB) : tagISO_twopass_symm1 . RB;
+    [m2] A -> B (RA) : aenc{ tagISO_twopass_symm2 . A . pk(A) }sk(s) . aenc{ RA . RB . B . Text2 }sk(A);
+
+Goals:
+    /* Verifier B authenticates claimant A on the claimant's signed tuple */
+    B -> A : aenc{ RA . RB . B . Text2 }sk(A);
+
+ChannelKeys:
+
+end

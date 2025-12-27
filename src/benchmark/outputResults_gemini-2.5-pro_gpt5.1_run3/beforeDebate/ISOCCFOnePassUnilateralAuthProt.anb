@@ -1,0 +1,34 @@
+Protocol ISO_onepass_CCF:
+
+Declarations:
+    f/5;
+
+Types:
+    Agent A,B;
+    Number NA;
+    Data tagISO_onepass_CCF1, tagISO_onepass_CCF2, Text1, Text2;
+    Symmetric_key skAB;
+    Function f;
+
+Knowledge:
+    A : A, B, skAB, Text1, Text2, tagISO_onepass_CCF1, tagISO_onepass_CCF2;
+    B : A, B, skAB, Text1, Text2, tagISO_onepass_CCF1, tagISO_onepass_CCF2;
+
+Public:
+    A, B, Text1, Text2, tagISO_onepass_CCF1, tagISO_onepass_CCF2;
+
+Private:
+    skAB;
+
+Actions:
+    /* A sends a nonce, verifier ID, unauthenticated text, a MAC, and authenticated text */
+    [m1] A -> B (NA) : tagISO_onepass_CCF1 . NA . B . Text2 . f(tagISO_onepass_CCF2, NA, B, Text1, skAB) . Text1;
+
+Goals:
+    /* B non-injectively authenticates A on the nonce, verifier identity, and authenticated text */
+    B ->* A : NA . B . Text1;
+
+ChannelKeys:
+    /* No channel keys are established in this protocol */
+
+end

@@ -1,0 +1,46 @@
+Protocol Nine:
+
+Declarations:
+    aenc/2;
+    senc/2;
+
+Types:
+    Agent A,B,S;
+    Data M;
+    Symmetric_key Kb;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, S, pk(A), sk(A);
+    B : B, S, A, M;
+    S : S, A, B;
+
+Public:
+    A, B, S, pk(A);
+
+Private:
+    sk(A);
+
+Actions:
+    /* 1. A signs its identity and public key to S */
+    [m1] A -> S      : aenc{ A . pk(A) }sk(A);
+
+    /* 2. B requests A's key from S, providing a fresh key Kb for the reply */
+    [m2] B -> S (Kb) : A . Kb;
+
+    /* 3. S returns A's public key, encrypted under Kb */
+    [m3] S -> B      : senc{ pk(A) }Kb;
+
+    /* 4. B uses A's public key to send an encrypted message M */
+    [m4] B -> A      : aenc{ M }pk(A);
+
+Goals:
+    /* B authenticates that S vouches for pk(A) */
+    B ->* S : pk(A);
+
+    /* The message M should remain secret between A and B */
+    M secret between A,B;
+
+ChannelKeys:
+
+end

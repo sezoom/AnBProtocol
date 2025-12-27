@@ -1,0 +1,45 @@
+Protocol Kerberos_PKINIT:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    hash/1;
+
+Types:
+    Agent C,g,ath,s;
+    Number N1,N2,T0,T1,T2;
+    Data tagKPKI1,tagKPKI10,tagKPKI8,tagKPKI9,tagKPKI11,tagKPKI3,tagKPKI4,tagKPKI5,tagKPKI2,tagKPKI6,tagKPKI7,tagKPKI13,tagKPKI12,tagKPKI14,tag,Payload;
+    Symmetric_key skag,skgs,KCG,KCS,Ktemp;
+    Function hash;
+    Mapping pk,sk
+
+Knowledge:
+    C : C, pk(C), sk(C), pk(ath), ath, g, s;
+    g : g, skag, skgs, pk(ath), pk(C), ath, s;
+    ath : ath, sk(ath), pk(ath), pk(C), skag, g;
+    s : s, skgs, pk(ath), pk(C), g;
+
+Public:
+    C, g, s, ath, pk(C), pk(ath);
+
+Private:
+    sk(C), sk(ath), skag, skgs;
+
+Actions:
+    [m1] C -> ath (N1) : tagKPKI1 . C . g . N1 . aenc{ tagKPKI10 . T0 . N1 . hash(tagKPKI8 . C . g . N1) }sk(C);
+    [m2] ath -> C (KCG, Ktemp) : tagKPKI9 . C . senc{ ath . C . g . KCG . T1 }skag . senc{ g . KCG . T1 . N1 }Ktemp . aenc{ tag . aenc{ tagKPKI11 . Ktemp }sk(ath) }pk(C);
+    [m3] C -> g (N2) : s . N2 . senc{ ath . C . g . KCG . T1 }skag . senc{ tagKPKI3 . C . T1 }KCG;
+    [m4] g -> C (KCS) : tagKPKI4 . C . senc{ tagKPKI5 . C . s . KCS . T2 }skgs . senc{ tagKPKI2 . s . KCS . T2 . N2 }KCG;
+    [m5] C -> s : senc{ tagKPKI6 . C . s . KCS . T2 }skgs . senc{ tagKPKI7 . C . hash(tagKPKI13 . T2) }KCS;
+    [m6] s -> C : senc{ tagKPKI12 . hash(tagKPKI14 . T2) }KCS . senc{ tagKPKI11 . tag . Payload }KCS;
+
+Goals:
+    /* s non-injectively authenticates to C on Payload */
+    s *->* C : Payload;
+    /* KCS is the channel key between C and s */
+    KCS secret between C,s;
+
+ChannelKeys:
+    K(C,g): KCG;
+    K(C,s): KCS;
+end

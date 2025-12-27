@@ -1,0 +1,41 @@
+Protocol NSSK:
+
+Declarations:
+    senc/2;
+    f/1;
+
+Types:
+    Agent A,B,S;
+    Number NA,NB;
+    Data tagNSSK1,tagNSSK2,tagNSSK3,tagNSSK4,tagNSSK5;
+    Symmetric_key KAS,KBS,KAB;
+    Function f;
+
+Knowledge:
+    A : A, B, S, KAS, NA;
+    B : A, B, S, KBS;
+    S : A, B, S, KAS, KBS;
+
+Public:
+    A,B,S;
+
+Private:
+    KAS,KBS;
+
+Actions:
+    [m1] A -> S (NA) : tagNSSK1 . A . B . NA;
+    [m2] S -> A (KAB) : senc{ tagNSSK2 . NA . B . KAB . senc{ tagNSSK3 . KAB . A }KBS }KAS;
+    [m3] A -> B       : senc{ tagNSSK3 . KAB . A }KBS;
+    [m4] B -> A (NB) : senc{ tagNSSK4 . NB }KAB;
+    [m5] A -> B       : senc{ tagNSSK5 . f(NB) }KAB;
+
+Goals:
+    /* B non-injectively authenticates A on the nonce NB */
+    B *->* A : NB;
+    KAB secret between A,B;
+
+ChannelKeys:
+    K(A,B): KAB;
+    K(B,A): KAB;
+
+end

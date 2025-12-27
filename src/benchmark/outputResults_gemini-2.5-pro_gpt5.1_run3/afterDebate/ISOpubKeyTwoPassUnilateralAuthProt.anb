@@ -1,0 +1,35 @@
+Protocol ISO_TwoPass_Unilateral:
+
+Declarations:
+    aenc/2;
+    sign/2;
+    pk/1;
+    sk/1;
+
+Types:
+    Agent A,B,S;
+    Number RA,RB;
+    Data   tagISO_twopass_symm1, tagISO_twopass_symm2, Text2;
+    Mapping pk,sk;
+
+Knowledge:
+    A : A, B, S, pk(A), sk(A), pk(S), Text2, sign{ tagISO_twopass_symm2 . A . pk(A) }sk(S);
+    B : B, A, S, pk(S), pk(A), Text2;
+    S : S, A, pk(S), sk(S), pk(A);
+
+Public:
+    A, B, S, pk(S), pk(A);
+
+Private:
+    sk(A), sk(S);
+
+Actions:
+    [m1] B -> A (RB) : tagISO_twopass_symm1 . RB;
+    [m2] A -> B (RA) : sign{ tagISO_twopass_symm2 . A . pk(A) }sk(S) . aenc{ RA . RB . B . Text2 }sk(A);
+
+Goals:
+    B -> A : RA . RB . B . Text2;
+
+ChannelKeys:
+
+end

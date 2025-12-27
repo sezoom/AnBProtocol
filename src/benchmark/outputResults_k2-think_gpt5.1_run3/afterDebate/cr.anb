@@ -1,0 +1,44 @@
+protobuf
+Protocol ExampleProto:
+
+Declarations:
+    aenc/2;   // Asymmetric encryption function (plaintext, public key)
+    senc/2;   // Symmetric encryption function (plaintext, key)
+    h/1;      // Hash function (input)
+    prf/3;    // Pseudorandom function (input, param1, param2)
+    g/0;      // Group generator (no arguments)
+    kdf/2;    // Key derivation function (input, salt)
+
+Types:
+    Agent A,B,S;          // Agents involved
+    Number NA,NB,Sid;     // Nonces and session ID (NA: A's nonce, NB: B's nonce)
+    Data tagE1,tagE2;     // Tags for message integrity (if applicable)
+    Function h,prf,kdf,g; // Cryptographic functions
+    Mapping pk/1, sk/1;    // Public/private key mappings (pk(agent), sk(agent))
+
+Knowledge:
+    A : A, B, S, pk(A), sk(A), pk(B), Sid, NA, tagE1;  // A knows its own keys, B's public key, session ID, generated nonce, and tag
+    B : A, B, S, pk(B), sk(B), pk(A), Sid, NB, tagE2;  // B knows its own keys, A's public key, session ID, generated nonce, and tag
+    S : S, sk(S), pk(S), A, B, pk(A), pk(B);            // S knows its keys and other agents' public keys (though not active in flows)
+
+Public:
+    A,B,S,pk(A), pk(B), pk(S), Sid;  // Publicly known identities and keys
+
+Private:
+    sk(A), sk(B), sk(S), KAB;         // Private keys and shared session key KAB
+
+Actions:
+    [e1] A -> B : aenc{ A . B . Sid . NA . tagE1 }pk(B);  // A encrypts msg with B's public key; includes A, B, Sid, NA, tagE1
+    [e2] B -> A : aenc{ B . A . Sid . NB . tagE2 }pk(A);  // B encrypts msg with A's public key; includes B, A, Sid, NB, tagE2
+    [e3] A -> B : senc{ h(NA . NB . Sid) }KAB;             // A encrypts hash with shared KAB and sends to B
+
+ChannelKeys:
+    KAB: kdf(prf( (g()^NA)^NB , NA, NB ), Sid);  // Shared key derived via PRF on DH-like shared secret, then KDF with Sid
+
+Goals:
+    /* B authenticates A by verifying the hash of A's nonce, B's nonce, and SID matches local computation */
+    B knows h(NA . NB . Sid) matches computed value;
+    /* Confidentiality: Hash value must not be known to parties other than A and B */
+    h(NA . NB . Sid) confidential;
+
+end

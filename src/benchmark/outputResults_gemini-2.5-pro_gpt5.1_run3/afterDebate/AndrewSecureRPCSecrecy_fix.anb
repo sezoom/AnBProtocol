@@ -1,0 +1,44 @@
+Protocol Andrew_Secure_RPC_Secrecy:
+
+Declarations:
+    senc/2;
+    succ/1;
+
+Types:
+    Agent A,B;
+    Number NA,NB,NB2;
+    Symmetric_key KAB;
+    Function succ;
+
+Knowledge:
+    A : A, B, KAB;
+    B : A, B, KAB;
+
+Public:
+    A,B;
+
+Private:
+    KAB;
+
+Actions:
+    [m1] A -> B (NA)  : A . senc{ NA }KAB;
+    [m2] B -> A (NB)  : senc{ succ(NA) . NB }KAB;
+    [m3] A -> B       : senc{ succ(NB) }KAB;
+    [m4] B -> A (NB2) : senc{ NB2 }KAB;
+
+Goals:
+    /* Mutual authentication on the nonces */
+    B -> A : NA . NB;
+    A -> B : NA . NB;
+
+    /* A authenticates B on the final secret value */
+    A -> B : NB2;
+
+    /* Secrecy of all nonces/secrets */
+    NA secret between A,B;
+    NB secret between A,B;
+    NB2 secret between A,B;
+
+ChannelKeys:
+
+end

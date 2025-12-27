@@ -1,0 +1,36 @@
+Protocol Five:
+
+Declarations:
+    senc/2;
+    h/1;
+
+Types:
+    Agent A,B;
+    Number NA,NB;
+    Symmetric_key KAB;
+    Function h;
+
+Knowledge:
+    A : A, B, KAB;
+    B : A, B, KAB;
+
+Public:
+    A, B;
+
+Private:
+    KAB;
+
+Actions:
+    [step1] A -> B (NA) : senc{ A . B . NA . h(NA) }KAB;
+    [step2] B -> A (NB) : senc{ B . A . NB }KAB;
+    [step3] A -> B      : senc{ h(NB) }KAB;
+
+Goals:
+    B -> A : NA;
+    A -> B : NB;
+    KAB secret between A,B;
+
+ChannelKeys:
+    K(A,B): KAB;
+    K(B,A): KAB;
+end

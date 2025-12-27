@@ -1,0 +1,31 @@
+Protocol ISO_onepass_CCF:
+
+Declarations:
+    f/5;
+
+Types:
+    Agent A,B;
+    Number NA;
+    Data tagISO_onepass_CCF1, tagISO_onepass_CCF2, Text1, Text2;
+    Symmetric_key skAB;
+    Function f;
+
+Knowledge:
+    A : A, B, skAB;
+    B : A, B, skAB;
+
+Public:
+    A, B, tagISO_onepass_CCF1, tagISO_onepass_CCF2;
+
+Private:
+    skAB;
+
+Actions:
+    [m1] A -> B (NA) : tagISO_onepass_CCF1 . NA . B . Text2 . f(tagISO_onepass_CCF2, NA, B, Text1, skAB) . Text1;
+
+Goals:
+    B ->* A : NA . B . Text1;
+
+ChannelKeys:
+
+end

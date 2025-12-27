@@ -1,0 +1,37 @@
+Protocol SimpleHandshake:
+
+Declarations:
+    senc/2;
+    kdf/2;
+
+Types:
+    Agent A,B;
+    Number NA,NB;
+    Data ACK;
+    Function kdf;
+
+
+Knowledge:
+    A : A, B;
+    B : A, B;
+Public:
+    A, B, ACK;
+Private:
+    
+
+Actions:
+    [step1] A -> B (NA) : NA;
+    [step2] B -> A (NB) : NB;
+    [step3] A -> B      : senc{ ACK }kdf(NA,NB);
+
+Goals:
+    /* B authenticates A on the successful exchange */
+    B -> A : senc{ ACK }kdf(NA,NB);
+    /* The derived key is secret between A and B */
+    kdf(NA,NB) secret between A,B;
+
+ChannelKeys:
+    K(A,B): kdf(NA,NB);
+    K(B,A): kdf(NA,NB);
+
+end

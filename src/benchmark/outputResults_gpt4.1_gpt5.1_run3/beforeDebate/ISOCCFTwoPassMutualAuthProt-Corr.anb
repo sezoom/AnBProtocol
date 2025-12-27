@@ -1,0 +1,32 @@
+Protocol ISO_twopass_CCF:
+
+Declarations:
+    mac/2;
+
+Types:
+    Agent A,B;
+    Number NB;
+    Data tagISOTCCF1,Text2;
+    Symmetric_key skAB;
+    Function mac;
+
+Knowledge:
+    A : A, B, skAB, mac;
+    B : A, B, skAB, mac;
+
+Public:
+    A, B, tagISOTCCF1, mac;
+
+Private:
+    skAB;
+
+Actions:
+    [m1] B -> A (NB) : tagISOTCCF1 . NB;
+    [m2] A -> B      : mac{ NB . B . Text2 }skAB . NB . B . Text2;
+
+Goals:
+    B *-> A : Text2;
+
+ChannelKeys:
+
+end

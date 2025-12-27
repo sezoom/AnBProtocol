@@ -1,0 +1,51 @@
+Protocol NSCK:
+
+Declarations:
+    senc/2;
+    pre/2;
+
+Types:
+    Agent A,B,S;
+    Number NA,NB;
+    Data   tagnsck1,tagnsck2,tagnsck3,tagnsck4,tagnsck5,tagnsck6,tagnsck7;
+    Symmetric_key skAS,skBS,KAB;
+    Function pre;
+
+Knowledge:
+    A : A, B, S, skAS;
+    B : A, B, S, skBS;
+    S : A, B, S, skAS, skBS;
+
+Public:
+    A, B, S;
+
+Private:
+    skAS, skBS;
+
+Actions:
+    [m1] A -> S (NA) : tagnsck3 . A . B . NA;
+
+    /* S generates KAB and sends it to A, along with a ticket for B. */
+    /* Note: The original description is inconsistent, stating the ticket for B */
+    /* uses tagnsck4 here but tagnsck2 in message m3. We assume tagnsck2 is */
+    /* used consistently, as A cannot re-tag the encrypted ticket. */
+    [m2] S -> A (KAB) : senc{ tagnsck6 . NA . B . KAB . senc{ tagnsck2 . KAB . A }skBS }skAS;
+
+    [m3] A -> B : senc{ tagnsck2 . KAB . A }skBS;
+
+    [m4] B -> A (NB) : senc{ tagnsck1 . NB }KAB;
+
+    [m5] A -> B : senc{ tagnsck5 . pre(tagnsck7, NB) }KAB;
+
+Goals:
+    /* B non-injectively authenticates A on the nonce NB */
+    B ->* A : NB;
+
+    /* The session key KAB should remain secret between A and B */
+    KAB secret between A,B;
+
+ChannelKeys:
+    K(A,B): KAB;
+    K(B,A): KAB;
+
+end

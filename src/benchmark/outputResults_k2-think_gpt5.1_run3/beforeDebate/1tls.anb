@@ -1,0 +1,42 @@
+Protocol TLS:
+
+Declarations:
+    aenc/2;
+    senc/2;
+    hash/1;
+    prf/3;
+
+Types:
+    Agent A,B,S;
+    Number NA,NB,Sid,PMS;
+    Data PA,PB,tagTLS1,tagTLS2,tagTLS3,tagTLS4;
+    Symmetric_key ;
+    Function hash,prf;
+    Mapping pk,sk
+
+Knowledge:
+    A : A, B, S, pk(A), sk(A), pk(B), pk(S);
+    B : A, B, S, pk(B), sk(B), pk(A), pk(S);
+    S : S, sk(S), pk(S), A, B, pk(A), pk(B);
+
+Public:
+    A, B, S, pk(A), pk(B), pk(S);
+
+Private:
+    sk(A), sk(B), sk(S);
+
+Actions:
+    [m1] A -> B (NA) : aenc{ A . B . Sid . NA . PA . tagTLS1 }sk(A);
+    [m2] B -> A (NB) : aenc{ B . A . Sid . NB . PB . tagTLS2 . NA . aenc{ B . pk(B) }sk(S) }pk(A);
+    [m3] A -> B (PMS) : aenc{ A . pk(A) }sk(S) . aenc{ PMS }pk(B) . aenc{ hash(NB . B . PMS . tagTLS3) }sk(A) . senc{ hash(A . B . Sid . NA . NB . PA . PB) }K(A,B);
+    [m4] B -> A      : senc{ hash(A . B . NA . NB . Sid . PA . PB . PMS . tagTLS4) }K(B,A);
+
+Goals:
+    B -> A : prf(PMS, NA, NB);
+    prf(PMS, NA, NB) secret between A,B;
+
+ChannelKeys:
+    K(A,B): prf(PMS, NA, NB);
+    K(B,A): prf(PMS, NA, NB);
+
+end
