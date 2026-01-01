@@ -1,0 +1,19 @@
+Mutual Authentication:
+	1.	If an honest initiator completes the handshake claiming to talk to peer X, then X must have participated in that handshake as the peer.
+	2.	If an honest host A accepts a plaintext message over the established channel that claims to be from host B, then B must have intentionally sent that message to A on that channel.
+
+
+{attackerModel}
+
+=== Input ===
+{protocol}
+
+=== Task ==
+	1.	Does it satisfy condition (1)?
+	2.	Does it satisfy condition (2)?
+
+==== Output Format (Restricted) ====
+<yes/no> if the conditions hold or not
+<justification> if any condition doesn't hold in short specific reasoning.
+
+No need for a summary section

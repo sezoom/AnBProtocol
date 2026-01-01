@@ -1,0 +1,19 @@
+Secrecy:
+For every run in which:
+    - the endpoints of the channel are honest,
+	- the transport data message is sent over that channel, and
+	- the attacker does not initially know the traffic key,
+
+{attackerModel}
+
+=== Input ===
+{protocol}
+
+=== Task ==
+	- Identify messages and the traffic key in the protocol, then argue whether Transport-Secrecy holds.
+
+==== Output Format (Restricted) ====
+<yes/no> if the goal hold or not
+<justification> if the goal doesn't hold in short specific reasoning.
+
+No need for a summary section

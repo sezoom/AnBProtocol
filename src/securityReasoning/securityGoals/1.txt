@@ -1,0 +1,13 @@
+Correctness:
+Given the following Alice–Bob protocol, answer:
+	1.	Does the protocol guarantee that, whenever an honest initiator and an honest responder complete the handshake without message modification, they use the same transport data key on both sides?
+	2.	Justify your answer concisely.
+
+===Input===
+{protocol}
+
+==== Output Format (Restricted) ====
+<yes/no> if the goal hold or not
+<justification> if the goal doesn't hold in short specific reasoning.
+
+No need for a summary section

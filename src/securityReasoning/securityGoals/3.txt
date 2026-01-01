@@ -1,0 +1,18 @@
+Forward Secrecy:
+For every run and every completed session between honest parties, assume that:
+{attackerModel}
+	- after the session ends and sender and recipient delete all session keys and chaining keys, the adversary learns all static private keys and any pre-shared keys involved in the protocol.
+
+Then the adversary cannot reconstruct the cleartext of the session’s application data messages.
+
+=== Task ==
+Using this definition, determine whether the protocol has Forward Secrecy or not, and justify your reasoning.
+
+=== Input ===
+{protocol}
+
+==== Output Format (Restricted) ====
+<yes/no> if the goal hold or not
+<justification> if the goal doesn't hold in short specific reasoning.
+
+No need for a summary section
