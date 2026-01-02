@@ -1,0 +1,24 @@
+Active Adversary Model
+
+Intuition
+The Dolev–Yao adversary is assumed to have complete control over the network: they can intercept, block, modify, replay, and inject arbitrary messages.
+
+Capabilities
+	1.	Control the network
+	2.	Act as any role in the protocol
+	3.	Use cryptographic operations symbolically
+        - The adversary can encrypt data if they know the plaintext and the key.
+        - Can decrypt ciphertexts if they know the correct key.
+        - Can verify signatures if they know the corresponding public key.
+        - Can generate signatures if they have the signing key.
+        - Can compute hashes or MACs on any inputs they know.
+	    - They can freely combine and decompose structured messages using the public operators and constructors of the term algebra.
+	4.	Corrupt keys after the fact:
+	    - In some analyses we consider what happens if the adversary later learns certain long-term keys and then tries to decrypt previously recorded traffic.
+
+Limitations
+they still cannot:
+	1.	Break ideal cryptography
+	2.	Exploit out-of-model vulnerabilities
+	    - Cannot perform side-channel attacks, timing attacks, or implementation-level exploits unless these are explicitly included in the model.
+	    - Cannot use parsing bugs, memory corruption, or API misuse not described in the abstract protocol specification.

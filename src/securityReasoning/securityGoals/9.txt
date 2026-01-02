@@ -1,0 +1,16 @@
+Channel Binding:
+Whenever two sessions (possibly on different parties) have the same final session transcript, they also share the same view of the session (same peer identities, roles, and relevant state) and derive the same session keys / traffic keys.
+
+{attackerModel}
+
+=== Input ===
+{protocol}
+
+=== Task ==
+	- Identify if the protocol satisfy Channel Binding.
+
+==== Output Format (Restricted) ====
+<yes/no> if the goal hold or not
+<justification> if the goal doesn't hold in short specific reasoning.
+
+No need for a summary section

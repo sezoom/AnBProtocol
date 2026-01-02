@@ -1,0 +1,29 @@
+Passive Adversary Model
+
+Intuition
+A passive adversary (also called an eavesdropper) can observe everything sent over the network but does not modify any messages. They are “listening on the wire” and trying to learn secrets, but they do not interfere with how the protocol runs.
+
+Capabilities
+A passive adversary is assumed to:
+	1.	Observe all network traffic
+	    - Can record, store, and analyze every message sent between honest parties.
+	    - Can see cleartext fields and the length, timing, and ordering of messages.
+	    - Can observe many sessions in parallel.
+	2.	Perform unbounded symbolic computation
+	    - In a symbolic (Dolev–Yao-style) model, cryptographic primitives are ideal:
+        - The adversary can encrypt, decrypt, hash, or MAC only if they have the required keys or inputs.
+        - Without the correct key, they cannot break cryptography.
+	    - They can compute any function on values they already know (e.g., recombine nonces, evaluate public functions).
+	3.	Use public information
+	    - Knows all public parameters (algorithms, public keys, group parameters, etc.).
+	    - Knows the protocol specification and can adapt their reasoning as new messages appear.
+	4.	Corrupt keys after the fact:
+	    - In some analyses we consider what happens if the adversary later learns certain long-term keys and then tries to decrypt previously recorded traffic.
+
+Limitations
+A passive adversary cannot:
+	1.	Modify, drop, or inject messages
+	2.	Impersonate honest participants
+	3.	Break ideal cryptography
+
+

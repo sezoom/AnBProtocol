@@ -9,4 +9,3 @@
 8.txt: Session Uniqueness
 9.txt: Channel Binding
 10.txt: Identity Hiding
-11.txt: DoS Resistance

@@ -1,0 +1,23 @@
+Identity Hiding:
+By watching the network traffic of a single session, an adversary who does not know any static private keys at that time must not be able to infer which static long-term keys / identities are participating in that session.
+
+{attackerModel}
+
+
+=== Input ===
+{protocol}
+
+=== Task ==
+Analyze:
+how static identities or static keys appear in the protocol:
+	•	Are they sent in the clear?
+	•	Encrypted under some key?
+	•	Implicitly encoded in signatures, ciphertext structure, or certificates?
+
+Based on your reasoning, state whether the protocol satisfy Identity Hiding or not
+
+==== Output Format (Restricted) ====
+<yes/no> if the protocol satisfy Identity Hiding or not
+<justification> if the protocol is not secure in short specific reasoning.
+
+No need for a summary section

@@ -1,0 +1,29 @@
+Resistance against Identity Mis-Binding/unknown key-share attacks, where:
+	- Two honest parties end up with the same traffic key for a session,
+	- But at least one of them is mistaken about which peer they share that key with.
+
+{attackerModel}
+
+=== Input ===
+{protocol}
+
+=== Task ==
+Analyze the protocol as follows:
+	1-	Describe how session/traffic keys are computed, including which inputs (nonces, ephemeral keys, static keys, identities, roles) are used.
+	2- Try to build a scenario where:
+	    - Honest party U completes a session and associates the derived key with peer identity 'X',
+	    - Honest party V completes a session and associates the same key with peer identity 'Y',
+	    - and either X ≠ V or Y ≠ U
+	3.	If such a scenario exists, write it as a concrete message trace and explain why both honest parties accept, and why their views of the peer identity differ.
+
+Based on your reasoning, state whether the protocol is:
+	•	resistant to identity mis-binding / UKS attacks, or not
+
+==== Output Format (Restricted) ====
+<yes/no> if the protocol secure or not
+<justification> if the protocol is not secure in short specific reasoning.
+
+No need for a summary section
+
+
+
