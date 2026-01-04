@@ -20,17 +20,17 @@ def single(
     if not text.strip():
         raise SystemExit("[protoflow] The input file is empty. Please provide a protocol description.")
     graph = build_graph()
-    state = {"protocol": text}
+    protocol = {"protocol": text}
 
-    result = graph.invoke(state, config={"configurable": {"thread_id": in_.stem}})
+    state = graph.invoke(protocol, config={"configurable": {"thread_id": in_.stem}})
 
-    rendered = result["result"]
+    rendered = state['combined_output']
 
 
 ## simple output for text file
     if out.suffix.lower() != ".txt":
         out = out.with_suffix(".txt")
-    out.write_text(rendered.ascii, encoding="utf-8")
+    out.write_text(rendered, encoding="utf-8")
     console.print(Panel.fit(f"Done. Wrote [bold]{out}[/bold]"))
 
 
