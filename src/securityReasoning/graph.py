@@ -13,9 +13,11 @@ from IPython.display import Image, display
 from langgraph.checkpoint.memory import MemorySaver
 
 
-llm=make_llm(os.getenv("LLM_REASONING"))
+llm=make_llm(os.getenv("LLM_REASONING"),temperature=0.1)
 
-ADVERSARY_MODEL_PATH = Path(__file__).resolve().parent / "adversaryModel" / "active.txt"
+Console().print(f"Model Name: [green]{llm.model_name}[/green]")
+Console().print(f"Temperature: [green]{llm.temperature}[/green]")
+
 PROMPT_1_PATH = Path(__file__).resolve().parent / "securityGoals" / "1.txt"
 PROMPT_2_PATH = Path(__file__).resolve().parent/ "securityGoals" / "2.txt"
 PROMPT_3_PATH = Path(__file__).resolve().parent/ "securityGoals" / "3.txt"
@@ -53,6 +55,7 @@ def parse_goal_output(text: str):
 # Graph state
 class State(TypedDict):
     protocol: str
+    adversaryModel:str
     adversaryModel: str
     resultForGoal1: str
     reasonForGoal1: str
@@ -82,7 +85,7 @@ def call_llm_1(state: State):
         template=PROMPT_1_PATH.read_text()
     )
 
-    output = (prompt | llm).invoke({"protocol": state['protocol'], "attackerModel": ADVERSARY_MODEL_PATH.read_text()})
+    output = (prompt | llm).invoke({"protocol": state['protocol'], "attackerModel": state['adversaryModel']})
     result, reason = parse_goal_output(output.content)
     return {"resultForGoal1":result,"reasonForGoal1": reason}
 
@@ -92,7 +95,7 @@ def call_llm_2(state: State):
     prompt = PromptTemplate(
         template=PROMPT_2_PATH.read_text()
     )
-    output = (prompt | llm).invoke({"protocol": state['protocol'], "attackerModel": ADVERSARY_MODEL_PATH.read_text()})
+    output = (prompt | llm).invoke({"protocol": state['protocol'], "attackerModel": state['adversaryModel']})
     result, reason = parse_goal_output(output.content)
     return {"resultForGoal2":result,"reasonForGoal2": reason}
 
@@ -101,7 +104,7 @@ def call_llm_3(state: State):
     prompt = PromptTemplate(
         template=PROMPT_3_PATH.read_text()
     )
-    output = (prompt | llm).invoke({"protocol": state['protocol'], "attackerModel": ADVERSARY_MODEL_PATH.read_text()})
+    output = (prompt | llm).invoke({"protocol": state['protocol'], "attackerModel": state['adversaryModel']})
     result, reason = parse_goal_output(output.content)
     return {"resultForGoal3":result,"reasonForGoal3": reason}
 
@@ -109,7 +112,7 @@ def call_llm_4(state: State):
     prompt = PromptTemplate(
         template=PROMPT_4_PATH.read_text()
     )
-    output = (prompt | llm).invoke({"protocol": state['protocol'], "attackerModel": ADVERSARY_MODEL_PATH.read_text()})
+    output = (prompt | llm).invoke({"protocol": state['protocol'], "attackerModel": state['adversaryModel']})
     result, reason = parse_goal_output(output.content)
     return {"resultForGoal4":result,"reasonForGoal4": reason}
 
@@ -117,7 +120,7 @@ def call_llm_5(state: State):
     prompt = PromptTemplate(
         template=PROMPT_5_PATH.read_text()
     )
-    output = (prompt | llm).invoke({"protocol": state['protocol'], "attackerModel": ADVERSARY_MODEL_PATH.read_text()})
+    output = (prompt | llm).invoke({"protocol": state['protocol'], "attackerModel": state['adversaryModel']})
     result, reason = parse_goal_output(output.content)
     return {"resultForGoal5":result,"reasonForGoal5": reason}
 
@@ -125,7 +128,7 @@ def call_llm_6(state: State):
     prompt = PromptTemplate(
         template=PROMPT_6_PATH.read_text()
     )
-    output = (prompt | llm).invoke({"protocol": state['protocol'], "attackerModel": ADVERSARY_MODEL_PATH.read_text()})
+    output = (prompt | llm).invoke({"protocol": state['protocol'], "attackerModel": state['adversaryModel']})
     result, reason = parse_goal_output(output.content)
     return {"resultForGoal6":result,"reasonForGoal6": reason}
 
@@ -133,7 +136,7 @@ def call_llm_7(state: State):
     prompt = PromptTemplate(
         template=PROMPT_7_PATH.read_text()
     )
-    output = (prompt | llm).invoke({"protocol": state['protocol'], "attackerModel": ADVERSARY_MODEL_PATH.read_text()})
+    output = (prompt | llm).invoke({"protocol": state['protocol'], "attackerModel": state['adversaryModel']})
     result, reason = parse_goal_output(output.content)
     return {"resultForGoal7":result,"reasonForGoal7": reason}
 
@@ -141,7 +144,7 @@ def call_llm_8(state: State):
     prompt = PromptTemplate(
         template=PROMPT_8_PATH.read_text()
     )
-    output = (prompt | llm).invoke({"protocol": state['protocol'], "attackerModel": ADVERSARY_MODEL_PATH.read_text()})
+    output = (prompt | llm).invoke({"protocol": state['protocol'], "attackerModel": state['adversaryModel']})
     result, reason = parse_goal_output(output.content)
     return {"resultForGoal8":result,"reasonForGoal8": reason}
 
@@ -149,7 +152,7 @@ def call_llm_9(state: State):
     prompt = PromptTemplate(
         template=PROMPT_9_PATH.read_text()
     )
-    output = (prompt | llm).invoke({"protocol": state['protocol'], "attackerModel": ADVERSARY_MODEL_PATH.read_text()})
+    output = (prompt | llm).invoke({"protocol": state['protocol'], "attackerModel": state['adversaryModel']})
     result, reason = parse_goal_output(output.content)
     return {"resultForGoal9":result,"reasonForGoal9": reason}
 
@@ -157,7 +160,7 @@ def call_llm_10(state: State):
     prompt = PromptTemplate(
         template=PROMPT_10_PATH.read_text()
     )
-    output = (prompt | llm).invoke({"protocol": state['protocol'], "attackerModel": ADVERSARY_MODEL_PATH.read_text()})
+    output = (prompt | llm).invoke({"protocol": state['protocol'], "attackerModel": state['adversaryModel']})
     result, reason = parse_goal_output(output.content)
     return {"resultForGoal10":result,"reasonForGoal10": reason}
 
@@ -186,7 +189,6 @@ def aggregator(state: State):
     total = 0
     yes_count = 0
     no_count = 0
-    other_count = 0
 
     # First pass: compute stats
     for i in range(1, 11):
@@ -201,16 +203,14 @@ def aggregator(state: State):
             yes_count += 1
         elif res_norm == "no":
             no_count += 1
-        else:
-            other_count += 1
+
 
     # Build summary header
     header_lines = []
-    header_lines.append("=== Security Goal Evaluation Summary ===")
+    header_lines.append("=== Security Evaluation Summary ===")
     header_lines.append(f"Total goals evaluated : {total}")
     header_lines.append(f"Goals satisfied (yes)  : {yes_count}")
     header_lines.append(f"Goals violated (no)    : {no_count}")
-    header_lines.append(f"Other/unknown          : {other_count}")
 
     if total > 0:
         yes_pct = 100.0 * yes_count / total
@@ -222,6 +222,12 @@ def aggregator(state: State):
     header_lines.append("=" * 40)
     header_lines.append("")
 
+
+    header_lines.append(state['protocol'])
+    header_lines.append("")
+
+    header_lines.append("=== Security Evaluation ===")
+
     # Second pass: per-goal details
     detail_lines = []
     for i in range(1, 11):
@@ -231,8 +237,8 @@ def aggregator(state: State):
         if not res and not reason:
             continue  # skip goals with no data
 
-        title = GOAL_TITLES.get(i, f"Goal {i}")
-        detail_lines.append(f"--- Goal {i}: {title} ---")
+        title = GOAL_TITLES.get(i)
+        detail_lines.append(f"---{i}: {title} ---")
         detail_lines.append(f"Result: {res or 'N/A'}")
 
         if reason:

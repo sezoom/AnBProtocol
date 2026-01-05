@@ -9,7 +9,7 @@
 	- Identify if the protocol secure against replay attack. In particular, an attacker must not be able to record a valid message and later replay it in a way that makes an honest recipient accept it again as fresh or valid in a new session.
 
 ==== Output Format (Restricted) ====
-<yes/no> if the goal hold or not
+<yes/no> where yes if the  Resistance against Replay hold and no otherwise
 <justification> if the goal doesn't hold in short specific reasoning.
 
 No need for a summary section

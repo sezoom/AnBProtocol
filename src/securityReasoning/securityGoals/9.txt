@@ -10,7 +10,7 @@ Whenever two sessions (possibly on different parties) have the same final sessio
 	- Identify if the protocol satisfy Channel Binding.
 
 ==== Output Format (Restricted) ====
-<yes/no> if the goal hold or not
+<yes/no> where yes if the goal hold or no otherwise
 <justification> if the goal doesn't hold in short specific reasoning.
 
 No need for a summary section

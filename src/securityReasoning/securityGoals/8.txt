@@ -20,7 +20,7 @@ Analyze:
 Based on your reasoning, state whether the protocol satisfies Session Uniqueness or is vulnerable to session merging / duplication.
 
 ==== Output Format (Restricted) ====
-<yes/no> if the protocol secure or not
+<yes/no> where yes if the protocol secure and no otherwise
 <justification> if the protocol is not secure in short specific reasoning.
 
 No need for a summary section

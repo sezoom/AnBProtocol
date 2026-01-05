@@ -5,8 +5,8 @@ from .llm import make_llm
 import os
 from pathlib import Path
 
-llm1=make_llm(os.getenv("LLM_OPTIMIZER"))
-llm2=make_llm(os.getenv("LLM_EVALUATOR"))
+llm1=make_llm(os.getenv("LLM_OPTIMIZER"),0.1)
+llm2=make_llm(os.getenv("LLM_EVALUATOR"),0.1)
 
 GUIDELINES_PATH = Path(__file__).resolve().parent.parent.parent / "dataset" / "Notation_guidlines.md"
 

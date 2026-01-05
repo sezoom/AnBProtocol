@@ -10,7 +10,7 @@ The attacker compromises the static long-term key(s) of some recipient role (for
 	-  check if the protocol secure against KCI or not such that the attacker can make the recipient accept protocol or application messages as if they were sent by some other honest peer (i.e., impersonate a peer to the compromised recipient)?
 
 ==== Output Format (Restricted) ====
-<yes/no> if the goal hold or not
+<yes/no> where yes if the goal hold or not
 <justification> if the goal doesn't hold in short specific reasoning.
 
 No need for a summary section

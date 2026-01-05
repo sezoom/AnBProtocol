@@ -13,7 +13,7 @@ Mutual Authentication:
 	2.	Does it satisfy condition (2)?
 
 ==== Output Format (Restricted) ====
-<yes/no> if the conditions hold or not
+<yes/no> where yes if the conditions hold and no otherwise
 <justification> if any condition doesn't hold in short specific reasoning.
 
 No need for a summary section

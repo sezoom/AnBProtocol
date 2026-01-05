@@ -1,7 +1,7 @@
 Secrecy:
 For every run in which:
     - the endpoints of the channel are honest,
-	- the transport data message is sent over that channel, and
+	- the transport message of type Data or any term defined as private is sent over that channel, and
 	- the attacker does not initially know the traffic key,
 
 {attackerModel}
@@ -13,7 +13,7 @@ For every run in which:
 	- Identify messages and the traffic key in the protocol, then argue whether Transport-Secrecy holds.
 
 ==== Output Format (Restricted) ====
-<yes/no> if the goal hold or not
+<yes/no> where yes if the secrecy hold and no otherwise
 <justification> if the goal doesn't hold in short specific reasoning.
 
 No need for a summary section

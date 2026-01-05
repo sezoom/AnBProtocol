@@ -12,7 +12,7 @@ Using this definition, determine whether the protocol has Forward Secrecy or not
 {protocol}
 
 ==== Output Format (Restricted) ====
-<yes/no> if the goal hold or not
+<yes/no> where yes if the Forward Secrecy hold and no otherwise
 <justification> if the goal doesn't hold in short specific reasoning.
 
 No need for a summary section

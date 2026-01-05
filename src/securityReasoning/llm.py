@@ -44,7 +44,7 @@ def make_llm(model: Optional[str] = None, temperature: float = 0.1) -> ChatOpenA
     if "gemini" in model:
                 return ChatGoogleGenerativeAI(
                     model=model,
-                    temperature=0.1
+                    temperature=temperature
                 )
     else:
         if "k2-think" in model:
@@ -52,7 +52,7 @@ def make_llm(model: Optional[str] = None, temperature: float = 0.1) -> ChatOpenA
                     model="MBZUAI-IFM/K2-Think",
                     api_key=K2_THINK_API_KEY,
                     base_url="https://api.k2think.ai/v2",
-                temperature=0.1)
+                temperature=temperature)
         else:
             #model = model or os.getenv("PROTOFLOW_MODEL", "gpt-4.1")
             return ChatOpenAI(model=model, temperature=temperature)

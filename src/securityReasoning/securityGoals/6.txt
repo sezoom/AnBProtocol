@@ -20,7 +20,7 @@ Based on your reasoning, state whether the protocol is:
 	•	resistant to identity mis-binding / UKS attacks, or not
 
 ==== Output Format (Restricted) ====
-<yes/no> if the protocol secure or not
+<yes/no> where yes if the protocol resistant to identity mis-binding / UKS attacks otherwise no
 <justification> if the protocol is not secure in short specific reasoning.
 
 No need for a summary section

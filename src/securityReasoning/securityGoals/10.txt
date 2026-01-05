@@ -17,7 +17,7 @@ how static identities or static keys appear in the protocol:
 Based on your reasoning, state whether the protocol satisfy Identity Hiding or not
 
 ==== Output Format (Restricted) ====
-<yes/no> if the protocol satisfy Identity Hiding or not
+<yes/no> where yes if the protocol satisfy Identity Hiding or no otherwise
 <justification> if the protocol is not secure in short specific reasoning.
 
 No need for a summary section
