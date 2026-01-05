@@ -56,7 +56,6 @@ def parse_goal_output(text: str):
 class State(TypedDict):
     protocol: str
     adversaryModel:str
-    adversaryModel: str
     resultForGoal1: str
     reasonForGoal1: str
     resultForGoal2: str
@@ -208,7 +207,8 @@ def aggregator(state: State):
     # Build summary header
     header_lines = []
     header_lines.append("=== Security Evaluation Summary ===")
-    header_lines.append(f"Total goals evaluated : {total}")
+    header_lines.append(f"Adversary              : {state['adversaryModel'].split('\n')[0]}")
+    header_lines.append(f"Total goals evaluated  : {total}")
     header_lines.append(f"Goals satisfied (yes)  : {yes_count}")
     header_lines.append(f"Goals violated (no)    : {no_count}")
 
