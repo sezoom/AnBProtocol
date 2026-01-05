@@ -1,0 +1,15 @@
+ Resistance against Replay:
+ Any protocol message sent may be accepted at most once by a given recipient.
+{attackerModel}
+
+=== Input ===
+{protocol}
+
+=== Task ==
+	- Identify if the protocol secure against replay attack. In particular, an attacker must not be able to record a valid message and later replay it in a way that makes an honest recipient accept it again as fresh or valid in a new session.
+
+==== Output Format (Restricted) ====
+<yes/no> where yes if the  Resistance against Replay hold and no otherwise
+<justification> if the goal doesn't hold in short specific reasoning.
+
+No need for a summary section

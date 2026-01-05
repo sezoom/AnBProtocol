@@ -1,0 +1,27 @@
+Session Uniqueness:
+	- For any given traffic key, there is at most one honest initiator session and at most one honest responder session using that key.
+	- For any given handshake transcript, there is at most one honest initiator session and at most one honest responder session corresponding to it.
+
+{attackerModel}
+
+=== Input ===
+{protocol}
+
+=== Task ==
+Analyze:
+	1.	Describe the session parameters (nonces, ephemeral keys, session IDs, etc.) and how they are chosen (fresh randomness vs reused values).
+	2.	Explain how traffic keys are computed from these parameters.
+	3.	Try to construct an attack or scenario where:
+	    - an honest party starts two logically distinct initiator sessions that both end with the same traffic key, or
+	    - an honest party starts two distinct responder sessions that both end with the same traffic key, or
+	    - two distinct initiator sessions (or two distinct responder sessions) share the same handshake transcript.
+	4.	If you find such a scenario, describe it step by step and argue why these are genuinely different sessions (not just redundant views of the same run).
+
+Based on your reasoning, state whether the protocol satisfies Session Uniqueness or is vulnerable to session merging / duplication.
+
+==== Output Format (Restricted) ====
+<yes/no> where yes if the protocol secure and no otherwise
+<justification> if the protocol is not secure in short specific reasoning.
+
+No need for a summary section
+

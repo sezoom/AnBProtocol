@@ -1,0 +1,11 @@
+## Security Goals
+1.txt: Correctness
+2.txt: Secrecy
+3.txt: Forward Secrecy
+4.txt: Mutual Authentication
+5.txt: Resistance against Key Compromise Impersonation (KCI)
+6.txt: Resistance against Identity Mis-Binding
+7.txt: Resistance against Replay
+8.txt: Session Uniqueness
+9.txt: Channel Binding
+10.txt: Identity Hiding
